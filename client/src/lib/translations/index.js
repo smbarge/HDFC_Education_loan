@@ -1,7 +1,7 @@
 export const translations = {
   en: {
     header: {
-      title: "MAMFDC",
+      title: "Maulana Azad Minorities Financial Development Corporation Limited",
       subtitle: "A Govt. of Maharashtra Undertaking"
     },
     hero: {
@@ -41,7 +41,6 @@ export const translations = {
     },
     stats: {
       title: "Trusted by Thousands",
-      subtitle: "MAMFDC - Maharashtra State Minorities Development Corporation",
       tagline: "A Government of Maharashtra Undertaking",
       students: "Students Benefited",
       loans: "Loans Disbursed",
@@ -60,7 +59,7 @@ export const translations = {
       },
       interest: {
         question: "What is the interest rate?",
-        answer: "Starting from 4% per annum with government subsidy"
+        answer: "Starting from 3% per annum with government subsidy"
       }
     },
     eligibility: {
@@ -70,7 +69,6 @@ export const translations = {
         title: "Community",
         items: [
           "Must belong to minority communities: Muslim, Sikh, Christian, Parsi, Buddhist, Jain, or Jewish",
-          "Valid community certificate required",
           "Permanent resident of Maharashtra"
         ]
       },
@@ -90,10 +88,10 @@ export const translations = {
         ]
       },
       documents: {
-        title: "Documents Required",
+        title: "Repayment Period",
         items: [
-          "Aadhar Card & PAN Card",
-          "Community & Income Certificate"
+          "Repayment starts 6 months after completion of education",
+          "Maximum repayment period: 5 years"
         ]
       }
     },
@@ -107,13 +105,13 @@ export const translations = {
       },
       interest: {
         title: "Subsidized Interest Rates",
-        rate: "From 4% p.a.",
-        description: "Enjoy competitive interest rates starting from 4% per annum with government subsidy benefits"
+        rate: "From 3% p.a.",
+        description: "Enjoy competitive interest rates starting from 3% per annum with government subsidy benefits"
       },
       repayment: {
         title: "Flexible Repayment",
-        period: "Up to 7 Years",
-        description: "Repayment tenure up to 7 years with moratorium period during course duration"
+        period: "Up to 5 Years",
+        description: "Repayment tenure up to 5 years without moratorium period during course duration"
       },
       documentation: {
         title: "Simple Documentation",
@@ -146,8 +144,7 @@ export const translations = {
           "Admission Letter (if available)",
           "Required Documents for Foreign Education Students (In addition to above documents):",
           "* Complete photocopy of Passport",
-          "* Photocopy of Visa",
-          "Affidavit"
+          "* Photocopy of Visa"
         ]
       },
       coApplicant: {
@@ -157,8 +154,7 @@ export const translations = {
           "Income Certificate (From Tehsildar - Original)",
           "Ration Card",
           "Photocopy of Bank Passbook",
-          "Business/Job Certificate (if available)",
-          "Affidavit"
+          "Business/Job Certificate (if available)"
         ]
       },
       guarantorProperty: {
@@ -173,9 +169,7 @@ export const translations = {
           "* Aadhar Card",
           "* Salary Certificate (Original)",
           "* Office ID Card",
-          "* Form 24(A)",
-          "Affidavit",
-          "Property Owner Information"
+          "* Form 24(A)"
         ]
       },
       guarantorLIC: {
@@ -191,9 +185,7 @@ export const translations = {
           "D) Fixed Deposit Holder (FD) Guarantor:",
           "* Aadhar Card",
           "* Cross signature on passport size colored photo of guarantor on application is mandatory",
-          "* Original Fixed Deposit (FD)",
-          "Affidavit",
-          "Property Owner Information"
+          "* Original Fixed Deposit (FD)"
         ]
       }
     },
@@ -216,9 +208,10 @@ export const translations = {
       copyright: "© 2026 MAMFDC. All rights reserved. Government of Maharashtra."
     }
   },
+
   hi: {
     header: {
-      title: "एमएएमएफडीसी",
+      title: "मौलाना आज़ाद अल्पसंख्यक वित्त विकास निगम लिमिटेड",
       subtitle: "महाराष्ट्र सरकार का उपक्रम"
     },
     hero: {
@@ -277,7 +270,7 @@ export const translations = {
       },
       interest: {
         question: "ब्याज दर क्या है?",
-        answer: "सरकारी सब्सिडी के साथ 4% प्रति वर्ष से शुरू"
+        answer: "सरकारी सब्सिडी के साथ 3% प्रति वर्ष से शुरू"
       }
     },
     eligibility: {
@@ -287,7 +280,6 @@ export const translations = {
         title: "समुदाय",
         items: [
           "अल्पसंख्यक समुदायों से संबंधित होना चाहिए: मुस्लिम, सिख, ईसाई, पारसी, बौद्ध, जैन या यहूदी",
-          "वैध समुदाय प्रमाणपत्र आवश्यक",
           "महाराष्ट्र का स्थायी निवासी"
         ]
       },
@@ -307,10 +299,10 @@ export const translations = {
         ]
       },
       documents: {
-        title: "आवश्यक दस्तावेज",
+        title: "पुनर्भुगतान अवधि",
         items: [
-          "आधार कार्ड और पैन कार्ड",
-          "समुदाय और आय प्रमाणपत्र"
+          "शिक्षा पूर्ण होने के 6 महीने बाद पुनर्भुगतान शुरू होगा",
+          "अधिकतम पुनर्भुगतान अवधि: 5 वर्ष"
         ]
       }
     },
@@ -324,13 +316,13 @@ export const translations = {
       },
       interest: {
         title: "रियायती ब्याज दरें",
-        rate: "4% प्रति वर्ष से",
-        description: "सरकारी सब्सिडी लाभों के साथ 4% प्रति वर्ष से शुरू होने वाली प्रतिस्पर्धी ब्याज दरों का आनंद लें"
+        rate: "3% प्रति वर्ष से",
+        description: "सरकारी सब्सिडी लाभों के साथ 3% प्रति वर्ष से शुरू होने वाली प्रतिस्पर्धी ब्याज दरों का आनंद लें"
       },
       repayment: {
-        title: "लचीली पुनर्भुगतान",
-        period: "7 वर्ष तक",
-        description: "पाठ्यक्रम अवधि के दौरान अधिस्थगन अवधि के साथ 7 वर्ष तक की पुनर्भुगतान अवधि"
+        title: "लचीली पुनर्भुगतान सुविधा",
+        period: "अधिकतम 5 वर्ष",
+        description: "पाठ्यक्रम अवधि के दौरान बिना किसी मोरेटोरियम अवधि के 5 वर्ष तक की पुनर्भुगतान अवधि"
       },
       documentation: {
         title: "सरल दस्तावेज़ीकरण",
@@ -363,8 +355,7 @@ export const translations = {
           "प्रवेश पत्र (यदि उपलब्ध हो)",
           "विदेशी शिक्षा के छात्रों के लिए आवश्यक दस्तावेज (उपरोक्त दस्तावेजों के अलावा):",
           "* पासपोर्ट की पूर्ण फोटोकॉपी",
-          "* वीजा की फोटोकॉपी",
-          "शपथ पत्र"
+          "* वीजा की फोटोकॉपी"
         ]
       },
       coApplicant: {
@@ -374,8 +365,7 @@ export const translations = {
           "आय प्रमाणपत्र (तहसीलदार से - मूल)",
           "राशन कार्ड",
           "बैंक पासबुक की फोटोकॉपी",
-          "व्यवसाय/नौकरी प्रमाणपत्र (यदि उपलब्ध हो)",
-          "शपथ पत्र"
+          "व्यवसाय/नौकरी प्रमाणपत्र (यदि उपलब्ध हो)"
         ]
       },
       guarantorProperty: {
@@ -390,9 +380,7 @@ export const translations = {
           "* आधार कार्ड",
           "* वेतन प्रमाणपत्र (मूल)",
           "* कार्यालय पहचान पत्र",
-          "* फॉर्म 24(अ)",
-          "शपथ पत्र",
-          "संपत्ति मालिक की जानकारी"
+          "* फॉर्म 24(अ)"
         ]
       },
       guarantorLIC: {
@@ -408,9 +396,7 @@ export const translations = {
           "ड) सावधि जमा धारक (एफडी) गारंटर:",
           "* आधार कार्ड",
           "* आवेदन पर गारंटर की पासपोर्ट आकार की रंगीन फोटो पर क्रॉस हस्ताक्षर अनिवार्य है",
-          "* मूल सावधि जमा (एफडी)",
-          "शपथ पत्र",
-          "संपत्ति मालिक की जानकारी"
+          "* मूल सावधि जमा (एफडी)"
         ]
       }
     },
@@ -433,9 +419,10 @@ export const translations = {
       copyright: "© 2026 एमएएमएफडीसी। सर्वाधिकार सुरक्षित। महाराष्ट्र सरकार।"
     }
   },
+
   mr: {
     header: {
-      title: "एमएएमएफडीसी",
+      title: "मौलाना आझाद अल्पसंख्याक वित्त विकास महामंडळ लिमिटेड",
       subtitle: "महाराष्ट्र शासनाचा उपक्रम"
     },
     hero: {
@@ -504,7 +491,6 @@ export const translations = {
         title: "समुदाय",
         items: [
           "अल्पसंख्याक समुदायांशी संबंधित असणे आवश्यक: मुस्लिम, शीख, ख्रिश्चन, पारशी, बौद्ध, जैन किंवा ज्यू",
-          "वैध समुदाय प्रमाणपत्र आवश्यक",
           "महाराष्ट्राचा कायमचा रहिवासी"
         ]
       },
@@ -524,12 +510,13 @@ export const translations = {
         ]
       },
       documents: {
-        title: "आवश्यक कागदपत्रे",
+        title: "परतफेड कालावधी",
         items: [
-          "आधार कार्ड आणि पॅन कार्ड",
-          "समुदाय आणि उत्पन्न प्रमाणपत्र"
+          "शिक्षण पूर्ण झाल्यानंतर 6 महिन्यांनी परतफेड सुरू होईल",
+          "कमाल परतफेड कालावधी: 5 वर्षे"
         ]
       }
+
     },
     benefits: {
       title: "कर्जाचे फायदे आणि वैशिष्ट्ये",
@@ -541,13 +528,13 @@ export const translations = {
       },
       interest: {
         title: "सवलतीचे व्याजदर",
-        rate: "४% प्रतिवर्ष पासून",
-        description: "सरकारी अनुदान फायद्यांसह ४% प्रतिवर्ष पासून सुरू होणाऱ्या स्पर्धात्मक व्याजदरांचा आनंद घ्या"
+        rate: "3% प्रतिवर्ष पासून",
+        description: "सरकारी अनुदान फायद्यांसह 3% प्रतिवर्ष पासून सुरू होणाऱ्या स्पर्धात्मक व्याजदरांचा आनंद घ्या"
       },
-      repayment: {
+     repayment: {
         title: "लवचिक परतफेड",
-        period: "७ वर्षे पर्यंत",
-        description: "अभ्यासक्रम कालावधी दरम्यान स्थगिती कालावधीसह ७ वर्षांपर्यंत परतफेड कालावधी"
+        period: "कमाल 5 वर्षे",
+        description: "अभ्यासक्रमाच्या कालावधीत कोणत्याही मोरेटोरियम कालावधीशिवाय 5 वर्षांपर्यंत परतफेड कालावधी"
       },
       documentation: {
         title: "सोपे कागदपत्रे",
@@ -580,8 +567,7 @@ export const translations = {
           "प्रवेश पत्र / अ‍ॅडमिशन लेटर (असल्यास)",
           "परदेशातील शिक्षणाकरिता विद्यार्थ्यांची आवश्यक कागदपत्रे (वरील कागदपत्रांव्यतिरिक्त):",
           "* संपूर्ण पासपोर्टची छायांकित प्रत",
-          "* व्हिसाची (Visa) छायांकित प्रत",
-          "प्रतिज्ञापत्र (Affidavit)"
+          "* व्हिसाची (Visa) छायांकित प्रत"
         ]
       },
       coApplicant: {
@@ -591,8 +577,7 @@ export const translations = {
           "उत्पन्न प्रमाणपत्र (तहसीलदार यांचे – मूळ)",
           "रेशन कार्ड",
           "बँक पासबुकची छायांकित प्रत",
-          "व्यवसाय / नोकरी प्रमाणपत्र (असल्यास)",
-          "प्रतिज्ञापत्र"
+          "व्यवसाय / नोकरी प्रमाणपत्र (असल्यास)"
         ]
       },
       guarantorProperty: {
@@ -607,9 +592,7 @@ export const translations = {
           "* आधार कार्ड",
           "* पगार प्रमाणपत्र (मूळ)",
           "* कार्यालयाचे ओळखपत्र",
-          "* नमुना – २४ (अ)",
-          "प्रतिज्ञापत्र",
-          "मालमत्ता धारक माहिती"
+          "* नमुना – २४ (अ)"
         ]
       },
       guarantorLIC: {
@@ -625,9 +608,7 @@ export const translations = {
           "ड) मुदती ठेवीदार (FD) हमीदार:",
           "* आधार कार्ड",
           "* अर्जावरील हमीदाराच्या पासपोर्ट साईज रंगीत फोटोवर क्रॉस स्वाक्षरी असणे आवश्यक",
-          "* मूळ मुदत ठेव (FD)",
-          "प्रतिज्ञापत्र",
-          "मालमत्ता धारक माहिती"
+          "* मूळ मुदत ठेव (FD)"
         ]
       }
     },

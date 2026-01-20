@@ -28,10 +28,11 @@
   };
 </script>
 
-<footer class="bg-gray-900 text-white py-12">
+<footer class="bg-gray-900 text-white py-5">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="grid md:grid-cols-3 gap-8 mb-8">
-      <!-- About -->
+
+    <!-- <div class="grid md:grid-cols-3 gap-8 mb-8">
+ 
       <div>
         <div class="flex items-center gap-3 mb-4">
           <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center">
@@ -41,14 +42,18 @@
             </svg>
           </div>
           <div>
-            <h3 class="font-bold text-lg">MAMFDC</h3>
+              <h1 class="text-base sm:text-lg md:text-xl font-bold text-white">
+                {t?.header?.title?.split(' Minorities ')[0]} Minorities
+                <br />
+                {t?.header?.title?.split(' Minorities ')[1]}
+              </h1>
             <p class="text-sm text-gray-400">{t?.header?.subtitle || 'Government Initiative'}</p>
           </div>
         </div>
         <p class="text-gray-400 text-sm">{t?.footer?.about?.description || 'Empowering minority communities through education.'}</p>
       </div>
 
-      <!-- Quick Links -->
+
       <div>
         <h4 class="font-bold mb-4">{t?.footer?.quickLinks?.title || 'Quick Links'}</h4>
         <ul class="space-y-2 text-gray-400">
@@ -66,7 +71,7 @@
         </ul>
       </div>
 
-      <!-- Contact -->
+   
       <div>
         <h4 class="font-bold mb-4">{t?.footer?.contact?.title || 'Contact Us'}</h4>
         <ul class="space-y-3 text-gray-400 text-sm">
@@ -91,10 +96,12 @@
           </li>
         </ul>
       </div>
-    </div>
+    </div> -->
 
     <div class="border-t border-gray-800 pt-8 text-center text-gray-400 text-sm">
       {t?.footer?.copyright || '© 2026 MAMFDC. All rights reserved.'}
     </div>
   </div>
 </footer>
+
+
