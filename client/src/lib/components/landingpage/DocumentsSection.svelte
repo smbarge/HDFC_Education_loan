@@ -101,7 +101,7 @@
 
 <section class="pt-8 pb-6 md:pt-10 md:pb-8 bg-gradient-to-b from-gray-50 to-white">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <!-- Section Header -->
+   
     <div 
       class="documents-header text-center mb-12 lg:mb-16 transition-all duration-700"
       class:opacity-0={!visibleItems.has('header')}
@@ -118,7 +118,7 @@
       </p>
     </div>
 
-    <!-- Documents Grid -->
+   
     <div class="grid md:grid-cols-2 gap-6 lg:gap-8">
       {#each sections as section, index}
         <div 
@@ -132,7 +132,7 @@
           class:delay-150={Math.floor(index / 2) === 1}
           data-index={index}
         >
-          <!-- Card Header -->
+          
           <div class="flex items-center gap-4 mb-6">
             <div class="w-12 h-12 {section.iconBg} rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
               <svg class="w-6 h-6 {section.iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -144,7 +144,6 @@
             </h3>
           </div>
 
-          <!-- Document List -->
           <ul class="space-y-3">
             {#each (t?.documents?.[section.key]?.items || []) as item}
               {@const formatted = formatItem(item)}
@@ -171,10 +170,10 @@
             {/each}
           </ul>
 
-          <!-- Decorative corner accent -->
+          
           <div class="absolute top-0 right-0 w-20 h-20 {section.iconBg} rounded-bl-full opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
           
-          <!-- Bottom progress indicator -->
+         
           <div class="mt-6 pt-4 border-t border-gray-100">
             <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
               <div class="h-full {section.iconBg} rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
@@ -184,7 +183,6 @@
       {/each}
     </div>
 
-    <!-- Bottom Note (Optional) -->
     {#if t?.documents?.note}
       <div 
         class="documents-note mt-8 lg:mt-12 p-6 bg-blue-50 border border-blue-200 rounded-xl hover:shadow-md transition-all duration-700"

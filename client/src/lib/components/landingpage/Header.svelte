@@ -23,13 +23,11 @@
 <header class="bg-white shadow-md sticky top-0 z-50">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 py-4">
-      <!-- Logo + Title -->
+      <!-- Logo and Title -->
       <div class="flex items-center gap-3 sm:gap-4">
-            <!-- Background box (less height) -->
             <div
               class="w-15 h-10 sm:w-19 sm:h-12 md:w-19 md:h-14 bg-purple-500 border border-purple-200 rounded-lg flex items-center justify-center overflow-hidden"
             >
-              <!-- Logo (taller inside) -->
               <img
                 src="/MaulanaAzad.jpg"
                 alt="MAMFDC Logo"
@@ -37,7 +35,6 @@
               />
             </div>
 
-            <!-- Title -->
             <div class="leading-tight">
               <h1 class="text-base sm:text-lg md:text-xl font-bold text-gray-900">
                 {t?.header?.title?.split(' Minorities ')[0]} Minorities
@@ -51,8 +48,6 @@
             </div>
           </div>
 
-
-      <!-- Language Buttons -->
       <div class="flex flex-wrap items-center gap-2">
         <button
           on:click={() => changeLang('en')}

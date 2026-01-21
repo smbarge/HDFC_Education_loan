@@ -42,17 +42,16 @@
 </script>
 
 <section class="relative bg-gradient-to-br from-purple-50 via-white to-indigo-50 pt-8 pb-6 md:pt-10 md:pb-8 overflow-hidden">
-  <!-- Background Decorations -->
   <div class="absolute inset-0 opacity-20">
-    <div class="absolute top-0 right-0 w-96 h-96 bg-purple-600 rounded-full blur-3xl {mounted ? 'animate-bounce' : ''}" style="animation-duration: 3s;"></div>
-    <div class="absolute bottom-0 left-0 w-96 h-96 bg-indigo-600 rounded-full blur-3xl {mounted ? 'animate-bounce' : ''}" style="animation-duration: 3s; animation-delay: 1.5s;"></div>
+    <div class="absolute top-0 right-0 w-96 h-96 bg-purple-400 rounded-full blur-3xl {mounted ? 'animate-bounce' : ''}" style="animation-duration: 3s;"></div>
+    <div class="absolute bottom-0 left-0 w-96 h-96 bg-indigo-400 rounded-full blur-3xl {mounted ? 'animate-bounce' : ''}" style="animation-duration: 3s; animation-delay: 1.5s;"></div>
   </div>
 
   <div class="relative max-w-screen-xl mx-auto px-4 md:px-6 lg:px-8">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-24 items-center">
-      <!-- Left Content -->
+   
       <div class="space-y-6 md:space-y-8">
-        <!-- Badge -->
+      
         <div class="transition-all duration-700 delay-100"
              class:opacity-0={!mounted}
              class:translate-y-8={!mounted}
@@ -66,7 +65,7 @@
           </div>
         </div>
 
-        <!-- Titles -->
+       
         <div class="space-y-4">
           <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight transition-all duration-700 delay-200"
               class:opacity-0={!mounted}
@@ -91,7 +90,7 @@
           </p>
         </div>
 
-        <!-- CTA Buttons -->
+       
         <div class="flex flex-col sm:flex-row gap-4 transition-all duration-700 delay-500"
              class:opacity-0={!mounted}
              class:translate-y-8={!mounted}
@@ -115,7 +114,7 @@
           </button>
         </div>
 
-        <!-- Feature Cards -->
+
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
           <div class="transition-all duration-700 delay-[600ms]"
                class:opacity-0={!mounted}
@@ -179,7 +178,6 @@
         </div>
       </div>
 
-      <!-- Right Image -->
       <div class="relative hidden lg:flex h-full items-center gap-x-12 transition-all duration-700 delay-300"
            class:opacity-0={!mounted}
            class:translate-x-8={!mounted}
@@ -192,11 +190,11 @@
             class="w-full h-full object-cover rounded-2xl"
           />
 
-          <!-- lighter gradient overlay -->
+      
           <div class="absolute inset-0 bg-gradient-to-t from-purple-500/5 to-transparent"></div>
         </div>
 
-        <!-- softer background glow -->
+        
         <div class="absolute -bottom-6 -right-6 w-32 h-32 bg-indigo-400/5 rounded-full blur-2xl"></div>
         <div class="absolute -top-6 -left-6 w-32 h-32 bg-purple-400/5 rounded-full blur-2xl"></div>
       </div>

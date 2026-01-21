@@ -47,7 +47,7 @@
   ];
 
   onMount(() => {
-    // Intersection Observer for scroll animations
+    
     observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -63,11 +63,11 @@
       }
     );
 
-    // Observe all benefit cards
+   
     const cards = document.querySelectorAll('.benefit-card');
     cards.forEach((card) => observer.observe(card));
 
-    // Observe header
+ 
     const header = document.querySelector('.benefits-header');
     if (header) observer.observe(header);
 
@@ -79,7 +79,6 @@
 
 <section class="pt-8 pb-6 md:pt-10 md:pb-8 bg-white">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <!-- Section Header -->
     <div 
       class="benefits-header text-center mb-16 transition-all duration-700"
       class:opacity-0={!visibleItems.has('header')}
@@ -96,7 +95,7 @@
       </p>
     </div>
 
-    <!-- Benefits Grid -->
+  
     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
       {#each benefits as benefit, index}
         <div 
@@ -110,9 +109,8 @@
           class:delay-200={index % 3 === 2}
           data-index={index}
         >
-          <!-- Icon and Title Row -->
           <div class="flex items-start gap-4 mb-4">
-            <!-- Icon -->
+            
             <div class="flex-shrink-0 transform transition-transform duration-300 group-hover:scale-110">
               <div class="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center">
                 <svg class="w-8 h-8 {benefit.iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -121,13 +119,12 @@
               </div>
             </div>
 
-            <!-- Title and Amount -->
             <div class="flex-1">
               <h3 class="text-xl font-bold text-gray-900 mb-1">
                 {t?.benefits?.[benefit.key]?.title || benefit.key}
               </h3>
               
-              <!-- Amount/Value -->
+             
               <p class="text-base font-semibold text-purple-600">
                 {t?.benefits?.[benefit.key]?.amount || 
                  t?.benefits?.[benefit.key]?.rate || 
@@ -139,7 +136,7 @@
             </div>
           </div>
 
-          <!-- Description -->
+         
           <p class="text-base text-gray-600 leading-relaxed">
             {t?.benefits?.[benefit.key]?.description || ''}
           </p>

@@ -82,7 +82,7 @@
 
 <section class="pt-8 pb-6 md:pt-10 md:pb-8 bg-gradient-to-b from-white to-gray-50">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <!-- Section Header -->
+   
     <div 
       class="eligibility-header text-center mb-12 lg:mb-16 transition-all duration-700"
       class:opacity-0={!visibleItems.has('header')}
@@ -99,7 +99,7 @@
       </p>
     </div>
 
-    <!-- Eligibility Cards -->
+    
     <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
       {#each criteria as criterion, index}
         <div 
@@ -116,19 +116,17 @@
           class:delay-300={index % 4 === 3}
           data-index={index}
         >
-          <!-- Icon -->
+         
           <div class="w-14 h-14 {criterion.bgColor} rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
             <svg class="w-7 h-7 {criterion.iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={criterion.icon}/>
             </svg>
           </div>
 
-          <!-- Title -->
           <h3 class="text-lg md:text-xl font-bold text-gray-900 mb-4">
             {t?.eligibility?.[criterion.key]?.title || criterion.key}
           </h3>
 
-          <!-- Items List -->
           <ul class="space-y-3">
             {#each (t?.eligibility?.[criterion.key]?.items || []) as item}
               <li class="flex items-start gap-2.5 text-sm md:text-base text-gray-700">
@@ -140,16 +138,13 @@
             {/each}
           </ul>
 
-          <!-- Decorative Element -->
           <div class="absolute -bottom-1 -right-1 w-20 h-20 {criterion.bgColor} rounded-full blur-2xl opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
-          
-          <!-- Bottom accent line -->
+         
           <div class="absolute bottom-0 left-0 right-0 h-1 {criterion.bgColor} rounded-b-2xl transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
         </div>
       {/each}
     </div>
 
-    <!-- Optional CTA Section -->
     {#if t?.eligibility?.cta}
       <div 
         class="eligibility-cta mt-12 lg:mt-16 text-center transition-all duration-700"
@@ -174,7 +169,6 @@
       </div>
     {/if}
 
-    <!-- Bottom Note -->
     {#if t?.eligibility?.note}
       <div 
         class="eligibility-note mt-8 p-5 bg-blue-50 border-l-4 border-blue-500 rounded-lg transition-all duration-700"

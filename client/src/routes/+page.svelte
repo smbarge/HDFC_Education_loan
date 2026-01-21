@@ -23,7 +23,7 @@
     };
   });
 
-  // Add fallback to prevent errors
+
   $: t = translations[lang] || translations['en'];
 
 
@@ -31,7 +31,6 @@
   let qaVisibleItems = new Set();
   let qaObserver;
   
-  // Add this inside your existing onMount function
   onMount(() => {
     qaObserver = new IntersectionObserver(
       (entries) => {
@@ -64,7 +63,7 @@
 </script>
 
 <svelte:head>
-  <!-- <link rel="icon" type="image/png" href="/logo.png" /> -->
+ 
   <title>MAMFDC - Education Loan for Minority Communities</title>
   <meta name="description" content="Get education loans up to ₹5,00,000 with subsidized interest rates for students from minority communities in Maharashtra." />
 </svelte:head>
@@ -80,7 +79,7 @@
   <DocumentsSection />
   <StatsSection />
 
-   <!-- Quick Answers Section -->
+   
   <section class="py-16 bg-gray-50">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <h2 
