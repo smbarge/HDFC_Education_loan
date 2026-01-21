@@ -17,9 +17,9 @@
     { 
       key: 'applicant', 
       icon: 'user',
-      iconBg: 'bg-purple-100',
-      iconColor: 'text-purple-600',
-      hoverBorder: 'hover:border-purple-200'
+      iconBg: 'bg-blue-100',
+      iconColor: 'text-blue-600',
+      hoverBorder: 'hover:border-blue-200'
     },
     { 
       key: 'coApplicant', 
@@ -31,16 +31,16 @@
     { 
       key: 'guarantorProperty', 
       icon: 'home',
-      iconBg: 'bg-green-100',
-      iconColor: 'text-green-600',
-      hoverBorder: 'hover:border-green-200'
+      iconBg: 'bg-purple-100',
+      iconColor: 'text-purple-600',
+      hoverBorder: 'hover:border-purple-200'
     },
     { 
       key: 'guarantorLIC', 
       icon: 'shield',
-      iconBg: 'bg-orange-100',
-      iconColor: 'text-orange-600',
-      hoverBorder: 'hover:border-orange-200'
+      iconBg: 'bg-purple-100',
+      iconColor: 'text-purple-600',
+      hoverBorder: 'hover:border-purple-200'
     }
   ];
 
@@ -121,8 +121,7 @@
    
     <div class="grid md:grid-cols-2 gap-6 lg:gap-8">
       {#each sections as section, index}
-        <div 
-          class="document-card group bg-white rounded-2xl border-2 border-gray-200 {section.hoverBorder} p-6 lg:p-8 transition-all duration-700 hover:shadow-xl hover:-translate-y-1"
+        <div class="document-card group relative bg-white rounded-2xl border-2 border-gray-200 {section.hoverBorder} p-6 lg:p-8 transition-all duration-700 hover:shadow-xl hover:-translate-y-1"
           class:opacity-0={!visibleItems.has(String(index))}
           class:-translate-x-12={!visibleItems.has(String(index)) && index % 2 === 0}
           class:translate-x-12={!visibleItems.has(String(index)) && index % 2 === 1}
@@ -174,11 +173,18 @@
           <div class="absolute top-0 right-0 w-20 h-20 {section.iconBg} rounded-bl-full opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
           
          
-          <div class="mt-6 pt-4 border-t border-gray-100">
-            <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-              <div class="h-full {section.iconBg} rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+          <div class="absolute left-6 right-6 bottom-6">
+          <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div class="h-full {section.iconBg}
+                        rounded-full
+                        transform scale-x-0
+                        group-hover:scale-x-100
+                        transition-transform duration-500
+                        origin-left">
             </div>
           </div>
+        </div>
+
         </div>
       {/each}
     </div>

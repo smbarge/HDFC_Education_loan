@@ -103,8 +103,8 @@
         data-index="qa-0"
       >
         <div class="flex items-start gap-3 mb-3">
-          <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-            <span class="text-purple-600 font-bold">?</span>
+          <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <span class="text-blue-500 font-bold">?</span>
           </div>
           <h3 class="font-bold text-gray-900">{t.quickAnswers.maxLoan.question}</h3>
         </div>
@@ -120,8 +120,8 @@
         data-index="qa-1"
       >
         <div class="flex items-start gap-3 mb-3">
-          <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-            <span class="text-purple-600 font-bold">?</span>
+          <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <span class="text-blue-500 font-bold">?</span>
           </div>
           <h3 class="font-bold text-gray-900">{t.quickAnswers.approval.question}</h3>
         </div>
@@ -137,8 +137,8 @@
         data-index="qa-2"
       >
         <div class="flex items-start gap-3 mb-3">
-          <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-            <span class="text-purple-600 font-bold">?</span>
+          <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <span class="text-blue-500 font-bold">?</span>
           </div>
           <h3 class="font-bold text-gray-900">{t.quickAnswers.interest.question}</h3>
         </div>

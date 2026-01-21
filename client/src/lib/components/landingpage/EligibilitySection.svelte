@@ -17,30 +17,34 @@
     {
       key: 'community',
       icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
-      bgColor: 'bg-purple-100',
-      iconColor: 'text-purple-600',
-      hoverBorder: 'hover:border-purple-200'
+      bgColor: 'bg-sky-50',
+      iconColor: 'text-sky-600',
+      hoverBorder: 'hover:border-sky-100',
+      siconColor: 'text-emerald-400'
     },
     {
       key: 'age',
       icon: 'M12 14l9-5-9-5-9 5 9 5zM12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z',
-      bgColor: 'bg-blue-100',
-      iconColor: 'text-blue-600',
-      hoverBorder: 'hover:border-blue-200'
+      bgColor: 'bg-sky-50',
+      iconColor: 'text-sky-600',
+      hoverBorder: 'hover:border-sky-100',
+       siconColor: 'text-emerald-400'
     },
     {
       key: 'income',
       icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
-      bgColor: 'bg-green-100',
-      iconColor: 'text-green-600',
-      hoverBorder: 'hover:border-green-200'
+      bgColor: 'bg-sky-50',
+      iconColor: 'text-sky-600',
+      hoverBorder: 'hover:border-sky-100',
+      siconColor: 'text-emerald-400'
     },
     {
       key: 'documents',
       icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
-      bgColor: 'bg-orange-100',
-      iconColor: 'text-orange-600',
-      hoverBorder: 'hover:border-orange-200',
+      bgColor: 'bg-sky-50',
+      iconColor: 'text-sky-600',
+      hoverBorder: 'hover:border-sky-100',
+      siconColor: 'text-emerald-400'
     }
   ];
 
@@ -117,8 +121,8 @@
           data-index={index}
         >
          
-          <div class="w-14 h-14 {criterion.bgColor} rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-            <svg class="w-7 h-7 {criterion.iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="w-12 h-12 {criterion.bgColor} rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+            <svg class="w-8 h-8 {criterion.iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={criterion.icon}/>
             </svg>
           </div>
@@ -130,7 +134,7 @@
           <ul class="space-y-3">
             {#each (t?.eligibility?.[criterion.key]?.items || []) as item}
               <li class="flex items-start gap-2.5 text-sm md:text-base text-gray-700">
-                <svg class="w-5 h-5 {criterion.iconColor} flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 {criterion.siconColor} flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={checkIcon}/>
                 </svg>
                 <span class="leading-relaxed">{item}</span>

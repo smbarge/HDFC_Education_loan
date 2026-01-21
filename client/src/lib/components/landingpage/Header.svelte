@@ -26,18 +26,18 @@
       <!-- Logo and Title -->
       <div class="flex items-center gap-3 sm:gap-4">
             <div
-              class="w-15 h-10 sm:w-19 sm:h-12 md:w-19 md:h-14 bg-purple-500 border border-purple-200 rounded-lg flex items-center justify-center overflow-hidden"
+              class="w-15 h-10 sm:w-19 sm:h-12 md:w-19 md:h-14 border-purple-200 rounded-lg flex items-center justify-center overflow-hidden"
             >
               <img
                 src="/MaulanaAzad.jpg"
                 alt="MAMFDC Logo"
-                class="h-5 sm:h-10 md:h-12 w-auto object-contain"
+                class="h-7 sm:h-12 md:h-14 w-auto object-contain"
               />
             </div>
 
             <div class="leading-tight">
               <h1 class="text-base sm:text-lg md:text-xl font-bold text-gray-900">
-                {t?.header?.title?.split(' Minorities ')[0]} Minorities
+                {t?.header?.title?.split(' Minorities ')[0]}
                 <br />
                 {t?.header?.title?.split(' Minorities ')[1]}
               </h1>
