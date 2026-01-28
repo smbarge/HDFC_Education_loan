@@ -1,10 +1,9 @@
-<script>
+<!-- <script>
   import { onMount } from 'svelte';
   import { currentLanguage } from '$lib/stores/language';
   import { translations } from '$lib/translations/index';
   import Header from '$lib/components/landingpage/Header.svelte';
   import Hero from '$lib/components/landingpage/Hero.svelte';
-  // import SupportSection from '$lib/components/landingpage/BenefitsSection.svelte';
   import StatsSection from '$lib/components/landingpage/StatsSection.svelte';
   import EligibilitySection from '$lib/components/landingpage/EligibilitySection.svelte';
   import BenefitsSection from '$lib/components/landingpage/BenefitsSection.svelte';
@@ -26,8 +25,6 @@
 
   $: t = translations[lang] || translations['en'];
 
-
-  //Animation
   let qaVisibleItems = new Set();
   let qaObserver;
   
@@ -72,14 +69,9 @@
   <Header />
   <Hero />
   <BenefitsSection />
-  <!--<SupportSection />
-   -->
-  
   <EligibilitySection />
   <DocumentsSection />
   <StatsSection />
-
-   
   <section class="py-16 bg-gray-50">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <h2 
@@ -157,4 +149,10 @@
     padding: 0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   }
-</style>
+</style> -->
+
+<script>
+  import '../app.css';
+</script>
+
+<slot />

@@ -1,4 +1,90 @@
 <script>
+  import { page } from '$app/stores';
+  import { goto } from '$app/navigation';
+  import { i18n } from '$lib/i18n';
+  
+  // ✅ Get current locale and translations reactively
+  $: locale = $page.params.locale || 'en';
+  $: t = i18n[locale];
+  
+  // ✅ Get current path without locale
+  $: currentPath = $page.url.pathname.replace(`/${locale}`, '') || '';
+  
+  // ✅ Function to change language while preserving current page
+  function changeLanguage(newLocale) {
+    // Build new URL: /newLocale + currentPath
+    // Example: /en/login → /mr/login
+    goto(`/${newLocale}${currentPath}`);
+  }
+</script>
+
+<header class="bg-white shadow-sm sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+
+      <div class="flex items-center gap-3 sm:gap-4">
+            <div
+              class="w-15 h-10 sm:w-19 sm:h-12 md:w-19 md:h-14 border-purple-200 rounded-lg flex items-center justify-center overflow-hidden"
+            >
+              <img
+                src="/MaulanaAzad.jpg"
+                alt="MAMFDC Logo"
+                class="h-7 sm:h-12 md:h-14 w-auto object-contain"
+              />
+            </div>
+
+            <div class="leading-tight">
+               <h1 class="text-lg font-semibold text-gray-900">
+                  {t.header.title}
+                </h1>
+
+              <p class="text-[10px] sm:text-xs text-gray-600">
+                {t?.header?.subtitle || 'A Govt. of Maharashtra Undertaking'}
+              </p>
+            </div>
+      </div>
+      
+
+
+      <!-- Language Switcher -->
+      <div class="flex items-center gap-2">
+        <button
+          on:click={() => changeLanguage('en')}
+          class="px-3 py-1.5 rounded-md text-sm font-medium transition-colors
+                 {locale === 'en' 
+                   ? 'bg-purple-600 text-white' 
+                   : 'text-gray-700 hover:bg-gray-100'}"
+        >
+          English
+        </button>
+        
+        <button
+          on:click={() => changeLanguage('hi')}
+          class="px-3 py-1.5 rounded-md text-sm font-medium transition-colors
+                 {locale === 'hi' 
+                   ? 'bg-purple-600 text-white' 
+                   : 'text-gray-700 hover:bg-gray-100'}"
+        >
+          हिंदी
+        </button>
+        
+        <button
+          on:click={() => changeLanguage('mr')}
+          class="px-3 py-1.5 rounded-md text-sm font-medium transition-colors
+                 {locale === 'mr' 
+                   ? 'bg-purple-600 text-white' 
+                   : 'text-gray-700 hover:bg-gray-100'}"
+        >
+          मराठी
+        </button>
+      </div>
+
+    </div>
+  </div>
+</header>
+
+
+<!-- <script>
   import { currentLanguage, setLanguage } from '$lib/stores/language';
   import { translations } from '$lib/translations';
 
@@ -23,7 +109,7 @@
 <header class="bg-white shadow-md sticky top-0 z-50">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 py-4">
-      <!-- Logo and Title -->
+    
       <div class="flex items-center gap-3 sm:gap-4">
             <div
               class="w-15 h-10 sm:w-19 sm:h-12 md:w-19 md:h-14 border-purple-200 rounded-lg flex items-center justify-center overflow-hidden"
@@ -37,7 +123,7 @@
 
             <div class="leading-tight">
               <h1 class="text-base sm:text-lg md:text-xl font-bold text-gray-900">
-                {t?.header?.title?.split(' Minorities ')[0]}
+                {t?.header?.title?.split(' Minorities ')[0]} Minorities
                 <br />
                 {t?.header?.title?.split(' Minorities ')[1]}
               </h1>
@@ -81,4 +167,7 @@
       </div>
     </div>
   </div>
-</header>
+</header> -->
+
+
+
