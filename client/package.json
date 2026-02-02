@@ -19,6 +19,12 @@
   },
   "type": "module",
   "dependencies": {
-    "lucide-svelte": "^0.294.0"
+    "axios": "^1.13.4",
+    "bcryptjs": "^3.0.3",
+    "jsonwebtoken": "^9.0.3",
+    "lucide-svelte": "^0.294.0",
+    "pg": "^8.18.0",
+    "uuid": "^13.0.0",
+    "vest": "^5.4.6"
   }
 }

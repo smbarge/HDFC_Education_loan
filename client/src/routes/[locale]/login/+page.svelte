@@ -2,6 +2,8 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import Header from '$lib/components/landingpage/Header.svelte';
+  import loginValidation from '$lib/validation/login.js';
+
 
   export let data;
   $: t = data.t;
@@ -20,37 +22,29 @@
   let showPassword = false;
   let rememberMe = false;
 
-  function validateUsername() {
-    if (!formData.username) {
-      errors.username = t.errors.usernameRequired;
-      return false;
-    }
-    errors.username = '';
-    return true;
+  function runValidation(field = null) {
+  const result = loginValidation(formData, t);
+
+  if (field) {
+    errors[field] = result.getErrors(field)[0] || '';
+  } else {
+    errors.username = result.getErrors('username')[0] || '';
+    errors.password = result.getErrors('password')[0] || '';
   }
 
-  function validatePassword() {
-    if (!formData.password) {
-      errors.password = t.errors.passwordRequired;
-      return false;
-    }
-    if (formData.password.length < 6) {
-      errors.password = t.errors.passwordMinLength;
-      return false;
-    }
-    errors.password = '';
-    return true;
-  }
+  return !result.hasErrors();
+}
+
 
   function handleLogin() {
-    const isUsernameValid = validateUsername();
-    const isPasswordValid = validatePassword();
+  const isValid = runValidation();
 
-    if (isUsernameValid && isPasswordValid) {
-      console.log('Login successful');
-      goto(`/${locale}/dashboard`);
-    }
+  if (isValid) {
+    console.log('Login successful');
+    goto(`/${locale}/dashboard`);
   }
+}
+
 
   function goHome() {
     goto(`/${locale}`);
@@ -81,18 +75,18 @@
         <div class="relative rounded-2xl overflow-hidden shadow-2xl h-full bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600">
         
           <img
-            src="/login.jpg"
+            src ='/create-account.jpg'
             alt="Student education"
             class="absolute inset-0 w-full h-full object-cover"
           />
          
-          <div class="absolute inset-0 bg-gradient-to-t from-purple-900/60 via-purple-900/20 to-transparent"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-purple-300/60 via-purple-500/20 to-transparent"></div>
         
-          <div class="absolute inset-x-0 bottom-0 p-6 sm:p-8 text-white z-10">
+          <div class="absolute inset-x-0 bottom-0 p-6 sm:p-8 text-balck z-10">
             <h2 class="text-2xl sm:text-3xl font-bold mb-3">
               {t.login.welcomeBack}
             </h2>
-            <p class="text-base sm:text-lg text-gray-100 leading-relaxed">
+            <p class="text-base sm:text-lg text-balck-100 leading-relaxed">
               {t.login.accessAccount}
             </p>
           </div>
@@ -139,7 +133,7 @@
                   type="text"
                   id="username"
                   bind:value={formData.username}
-                  on:blur={validateUsername}
+                  on:blur={() => runValidation('username')}
                   on:input={() => errors.username = ''}
                   placeholder={t.login.usernamePlaceholder}
                   class="block w-full h-12 pl-12 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 {errors.username ? 'border-red-500 bg-red-50' : 'bg-white hover:border-purple-300'}"
@@ -182,7 +176,7 @@
                     id="password"
                     type="text"
                     bind:value={formData.password}
-                    on:blur={validatePassword}
+                    on:blur={() => runValidation('password')}
                     on:input={() => errors.password = ''}
                     placeholder={t.login.passwordPlaceholder}
                     class="w-full h-12 pl-11 pr-20 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none transition-all {errors.password ? 'border-red-500 bg-red-50' : 'bg-white hover:border-purple-300'}"
@@ -192,7 +186,8 @@
                     id="password"
                     type="password"
                     bind:value={formData.password}
-                    on:blur={validatePassword}
+                    on:blur={() => runValidation('password')}
+
                     on:input={() => errors.password = ''}
                     placeholder={t.login.passwordPlaceholder}
                     class="w-full h-12 pl-11 pr-20 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none transition-all {errors.password ? 'border-red-500 bg-red-50' : 'bg-white hover:border-purple-300'}"

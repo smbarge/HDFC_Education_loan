@@ -2,14 +2,10 @@
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
-  import { i18n } from '$lib/i18n';  // ✅ Import i18n
+  import { i18n } from '$lib/i18n';  
   
-  // ✅ Remove the t prop, get it reactively instead
-  // export let t;  ❌ Remove this
-  
-  // ✅ Get locale and translations reactively from the page store
   $: locale = $page.params.locale || 'en';
-  $: t = i18n[locale];  // ✅ This updates when locale changes
+  $: t = i18n[locale];  
   
   let mounted = false;
 

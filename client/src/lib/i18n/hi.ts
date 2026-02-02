@@ -203,7 +203,7 @@ export const hi = {
     secureLogin: 'सुरक्षित लॉगिन',
     loginSecure: 'आपका लॉगिन सुरक्षित है',
     protectedBy: 'महाराष्ट्र सरकार की सुरक्षा मानकों द्वारा संरक्षित',
-    welcomeBack: 'वापसी पर स्वागत है!',
+    welcomeBack: 'वापसी पर स्वागत है !',
     accessAccount: 'अपने शिक्षा ऋण आवेदनों को प्रबंधित करने और अपनी प्रगति को ट्रैक करने के लिए अपने खाते तक पहुंचें।',
     backToHome: 'होम पर वापस जाएं'
   },
@@ -220,8 +220,8 @@ export const hi = {
     Register_to_apply_for_an_education_loan: 'शिक्षा ऋण के लिए आवेदन करने हेतु पंजीकरण करें',
     Your_data_is_protected_by_Government_of_Maharashtra_security_standards: 'आपका डेटा महाराष्ट्र सरकार के सुरक्षा मानकों द्वारा सुरक्षित है',
     We_never_share_your_personal_information_with_third_parties: 'हम आपकी व्यक्तिगत जानकारी कभी भी किसी तीसरे पक्ष के साथ साझा नहीं करते हैं',
-    Education_Loan_for_Minority_Communities: 'अल्पसंख्यक समुदायों के लिए शिक्षा ऋण',
-    Register_now_to_apply_for_education_loans: 'सब्सिडी युक्त ब्याज दरों पर ₹5,00,000 तक के शिक्षा ऋण के लिए अभी पंजीकरण करें',
+    //Education_Loan_for_Minority_Communities: 'अल्पसंख्यक समुदायों के लिए शिक्षा ऋण',
+    //Register_now_to_apply_for_education_loans: 'सब्सिडी युक्त ब्याज दरों पर ₹5,00,000 तक के शिक्षा ऋण के लिए अभी पंजीकरण करें',
     Mobile_No_and_Name: 'मोबाइल नंबर और नाम',
     OTP_Verification: 'ओटीपी सत्यापन',
     Create_Account: 'खाता बनाएँ',
@@ -287,7 +287,532 @@ export const hi = {
     confirmPasswordMinLength: 'पासवर्ड कम से कम 6 अक्षर का होना चाहिए',
     confirmPasswordMatch: 'पासवर्ड मेल नहीं खाते',
     usernameOrMobileRequired: 'उपयोगकर्ता नाम या मोबाइल नंबर आवश्यक है'
+    },
+    dashboard: {
+    title: "एमएएमएफडीसी",
+    subtitle: "महाराष्ट्र सरकार का उपक्रम",
+    logout: "लॉग आउट",
+    welcome: "डैशबोर्ड",
+    welcomeMessage: "वापस स्वागत है! अपने ऋण आवेदन की प्रगति को ट्रैक करें और अपने खाते का प्रबंधन करें।",
+    
+    // Application Status
+    applicationStatus: "आवेदन की स्थिति",
+    overallProgress: "कुल प्रगति",
+    statusPending: "समीक्षाधीन",
+    statusInProgress: "प्रगति में",
+    statusApproved: "स्वीकृत",
+    statusRejected: "अस्वीकृत",
+    
+    // New User
+    welcomeNewUser: "एमएएमएफडीसी में आपका स्वागत है!",
+    newUserMessage: "आज ही अपनी शिक्षा ऋण आवेदन यात्रा शुरू करें। अपने शैक्षिक सपनों के लिए वित्तीय सहायता प्राप्त करें।",
+    startApplication: "नया आवेदन शुरू करें",
+    
+    // Benefits for New Users
+    benefitAmount: "₹5 लाख तक",
+    benefitAmountDesc: "₹5,00,000 तक का शिक्षा ऋण प्राप्त करें",
+    benefitRate: "कम ब्याज",
+    benefitRateDesc: "सरकारी सब्सिडी के साथ 3% प्रति वर्ष से शुरू",
+    benefitProcess: "त्वरित प्रक्रिया",
+    benefitProcessDesc: "15-20 कार्य दिवसों के भीतर स्वीकृति प्राप्त करें",
+    
+    // Documents
+    documentVerificationPending: "दस्तावेज़ सत्यापन लंबित",
+    dueBy: "समय सीमा",
+    uploadBy: "तक अपलोड करें",
+    uploadDocuments: "दस्तावेज़ अपलोड करें",
+    documentStatus: "दस्तावेज़ की स्थिति",
+    pendingDocuments: "लंबित दस्तावेज़",
+    documentsRemaining: "दस्तावेज़ शेष हैं",
+    verified: "सत्यापित",
+    
+    // Application Details
+    yourApplication: "आपका आवेदन",
+    applicationId: "आवेदन संख्या",
+    submitted: "प्रस्तुत किया गया",
+    lastUpdated: "अंतिम बार अपडेट किया गया",
+    progress: "प्रगति",
+    nextAction: "अगली कार्रवाई",
+    continue: "जारी रखें",
+    viewDetails: "विवरण देखें",
+    
+    // Status Messages
+    congratulations: "बधाई हो! आपका ऋण स्वीकृत हो गया है।",
+    approvedAmount: "स्वीकृत राशि",
+    applicationRejected: "हमें खेद है कि आपका आवेदन अस्वीकृत कर दिया गया है।",
+    reason: "कारण",
+    applyAgain: "फिर से आवेदन करें",
+    underReview: "आपका आवेदन समीक्षाधीन है। अपेक्षित समीक्षा पूर्णता तिथि",
+    
+    // Quick Actions
+    quickActions: "त्वरित क्रियाएं",
+    continueApplication: "आवेदन जारी रखें",
+    resumeIncomplete: "अपना अधूरा आवेदन फिर से शुरू करें",
+    submitRequired: "आवश्यक दस्तावेज़ जमा करें",
+    viewProfile: "प्रोफ़ाइल देखें",
+    manageAccount: "अपने खाते के विवरण का प्रबंधन करें",
+    trackStatus: "स्थिति ट्रैक करें",
+    checkApplicationStatus: "अपने आवेदन की स्थिति जांचें",
+    
+    // Recent Activity
+    recentActivity: "हाल की गतिविधि",
+    last7Days: "पिछले 7 दिन",
+    
+    // Notices
+    importantNotice: "महत्वपूर्ण सूचना",
+    noticeMessage: "सुनिश्चित करें कि आवेदन जमा करने के 15 दिनों के भीतर सभी दस्तावेज़ अपलोड हो जाएं। अधूरे आवेदन अस्वीकार किए जा सकते हैं।",
+    
+    // Loan Summary
+    loanSummary: "ऋण सारांश",
+    requestedAmount: "अनुरोधित राशि",
+    interestRate: "ब्याज दर",
+    loanTenure: "ऋण अवधि",
+    monthlyEMI: "मासिक ईएमआई",
+    emiNote: "ईएमआई गणना अनुमानित है। स्वीकृति और वितरण के आधार पर अंतिम राशि भिन्न हो सकती है।",
+    
+    // Help & Support
+    needHelp: "मदद चाहिए?",
+    emailSupport: "ईमेल सहायता",
+    liveChat: "लाइव चैट",
+    startChat: "चैट शुरू करें",
+    callSupport: "कॉल सहायता",
+    viewFAQs: "अक्सर पूछे जाने वाले प्रश्न देखें"
   },
+
+  welcome: {
+    title: "एमएएमएफडीसी",
+    subtitle: "महाराष्ट्र सरकार का उपक्रम",
+    logout: "लॉग आउट",
+    welcome: "डैशबोर्ड",
+    welcomeMessage: "वापस स्वागत है! अपने ऋण आवेदन की प्रगति को ट्रैक करें और अपने खाते का प्रबंधन करें।",
+    
+    // New User
+    welcomeNewUser: "एमएएमएफडीसी में आपका स्वागत है!",
+    newUserMessage: "आज ही अपनी शिक्षा ऋण आवेदन यात्रा शुरू करें। अपने शैक्षिक सपनों के लिए वित्तीय सहायता प्राप्त करें।",
+    startApplication: "नया आवेदन शुरू करें",
+    
+    // Benefits
+    whyChooseUs: 'MAMFDC को क्यों चुनें?',
+    benefitAmount: "₹5 लाख तक",
+    benefitAmountDesc: "₹5,00,000 तक का शिक्षा ऋण प्राप्त करें",
+    benefitRate: "कम ब्याज",
+    benefitRateDesc: "सरकारी सब्सिडी के साथ 3% प्रति वर्ष से शुरू",
+    benefitProcess: "त्वरित प्रक्रिया",
+    benefitProcessDesc: "15-20 कार्य दिवसों के भीतर स्वीकृति प्राप्त करें",
+    
+    
+    // Support
+    needHelp: "मदद चाहिए?",
+    emailSupport: "ईमेल सहायता",
+    liveChat: "लाइव चैट",
+    startChat: "चैट शुरू करें",
+    callSupport: "कॉल सहायता",
+    viewFAQs: "अक्सर पूछे जाने वाले प्रश्न देखें",
+
+    // How it works
+    howItWorks: 'यह कैसे काम करता है',
+    step1Title: 'आवेदन फॉर्म भरें',
+    step1Desc: 'अपने व्यक्तिगत और शैक्षिक विवरण के साथ ऑनलाइन आवेदन फॉर्म पूरा करें। इसमें केवल 10-15 मिनट लगते हैं।',
+    step2Title: 'दस्तावेज़ अपलोड करें',
+    step2Desc: 'आधार कार्ड, शैक्षिक प्रमाणपत्र और आय प्रमाण जैसे आवश्यक दस्तावेज़ डिजिटल रूप से जमा करें।',
+    step3Title: 'सत्यापन प्रक्रिया',
+    step3Desc: 'हमारी टीम आपके दस्तावेज़ों और पात्रता को सत्यापित करेगी। इसमें आमतौर पर 15-20 कार्य दिवस लगते हैं।',
+    step4Title: 'स्वीकृति प्राप्त करें',
+    step4Desc: 'एक बार स्वीकृत होने के बाद, ऋण राशि सीधे आपके शैक्षणिक संस्थान में वितरित की जाएगी।',
+
+    // Quick Info Cards
+    checkEligibility: 'पात्रता जांचें',
+    eligibilityDesc: 'देखें कि क्या आप शिक्षा ऋण कार्यक्रम के लिए योग्य हैं',
+    learnMore: 'और जानें',
+    requiredDocuments: 'आवश्यक दस्तावेज़',
+    documentsDesc: 'आवेदन के लिए आवश्यक दस्तावेज़ों की सूची देखें',
+    viewList: 'सूची देखें',
+
+    readyToStart: 'अपनी शिक्षा ऋण यात्रा शुरू करने के लिए तैयार हैं?'
+  },
+   stepper: {
+      step1: 'पहचान पूर्व-नापासणी',
+      step2: 'व्यक्तिगत विवरण',
+      step3: 'शैक्षणिक जानकारी',
+      step4: 'पारिवारिक विवरण',
+      step5: 'दस्तावेज़',
+      step6: 'समीक्षा और जमा करें'
+    },
+    applicationStart: {
+  // Page Title
+  pageTitle: "अपना आवेदन शुरू करें",
+  pageSubtitle: "कृपया ऋण आवेदन प्रक्रिया शुरू करने के लिए अपनी बुनियादी जानकारी प्रदान करें",
+  
+  // Minority Community Section
+  minorityTitle: "आवेदक का अल्पसंख्यक समुदाय चुनें",
+  minorityLabel: "अल्पसंख्यक समुदाय",
+  minorityPlaceholder: "अपना समुदाय चुनें",
+  minorityRequired: "कृपया अपना अल्पसंख्यक समुदाय चुनें",
+  communities: {
+    muslim: "मुस्लिम",
+    christian: "ईसाई",
+    sikh: "सिख",
+    buddhist: "बौद्ध",
+    jain: "जैन",
+    parsi: "पारसी",
+    jew: "यहूदी"
+  },
+  
+  // Maharashtra Residency
+  residencyQuestion: "क्या आप महाराष्ट्र राज्य के निवासी हैं?",
+  residencyYes: "हाँ",
+  residencyNo: "नहीं",
+  residencyRequired: "कृपया अपनी निवास स्थिति चुनें",
+  
+  // District Office
+  districtTitle: "जिला कार्यालय के लिए आवेदन:",
+  districtLabel: "जिला चुनें",
+  districtPlaceholder: "अपना जिला चुनें",
+  districtRequired: "कृपया अपना जिला चुनें",
+  
+  // Identity Verification Section
+  identityTitle: "पहचान सत्यापन",
+  identityInstruction: "आधार में पंजीकृत मोबाइल नंबर के साथ आधार कार्ड अपने पास रखें।",
+  
+  // Aadhar Number
+  aadharLabel: "आधार नंबर",
+  aadharPlaceholder: "12 अंकों का आधार नंबर दर्ज करें",
+  aadharRequired: "आधार नंबर आवश्यक है",
+  aadharInvalid: "कृपया वैध 12 अंकों का आधार नंबर दर्ज करें",
+  aadharFormat: "आधार नंबर 12 अंकों का होना चाहिए",
+  
+  // Applicant Name
+  nameLabel: "आवेदक का पूरा नाम (आधार कार्ड के अनुसार नाम)",
+  namePlaceholder: "आधार के अनुसार अपना पूरा नाम दर्ज करें",
+  nameRequired: "पूरा नाम आवश्यक है",
+  nameMinLength: "नाम कम से कम 3 अक्षरों का होना चाहिए",
+  
+  // Date of Birth
+  dobLabel: "जन्म तिथि",
+  dobPlaceholder: "अपनी जन्म तिथि चुनें",
+  dobRequired: "जन्म तिथि आवश्यक है",
+  
+  // Gender
+  genderLabel: "लिंग",
+  genderPlaceholder: "अपना लिंग चुनें",
+  genderRequired: "कृपया अपना लिंग चुनें",
+  genderOptions: {
+    male: "पुरुष",
+    female: "महिला",
+    other: "अन्य"
+  },
+  
+  // Consent
+  consentText: "मैं अपने विवरण प्राप्त करने के उद्देश्य से जारीकर्ता के साथ अपने विवरण साझा करने की सहमति प्रदान करता/करती हूं।",
+  consentRequired: "आगे बढ़ने के लिए आपको सहमति देनी होगी",
+  
+  // Buttons
+  proceed: "आगे बढ़ें",
+  cancel: "रद्द करें",
+  backToHome: "होम पर वापस जाएं",
+  
+  // Helper Text
+  mandatoryFields: "* चिह्नित सभी फ़ील्ड अनिवार्य हैं",
+  dataSecure: "आपका डेटा सुरक्षित और संरक्षित है"
+},
+
+  personalDetails: {
+    pageTitle: "छात्र के व्यक्तिगत विवरण",
+    backButton: "वापस",
+
+    mandatoryFields: " * से चिह्नित सभी फ़ील्ड अनिवार्य हैं",
+    accurateInfo: "कृपया अपने आधिकारिक दस्तावेज़ों के अनुसार सही जानकारी दें",
+
+    section1Title: "आवेदक के व्यक्तिगत विवरण",
+
+    mobileLabel: "मोबाइल नंबर",
+    mobilePlaceholder: "10 अंकों का मोबाइल नंबर दर्ज करें",
+    mobileRequired: "मोबाइल नंबर आवश्यक है",
+    mobileInvalid: "कृपया मान्य 10 अंकों का मोबाइल नंबर दर्ज करें",
+    mobileEditButton: "संपादित करें",
+    VerifyButton: "सत्यापित करें",
+
+    emailLabel: "ईमेल आईडी",
+    emailPlaceholder: "ईमेल पता दर्ज करें",
+    emailInvalid: "कृपया मान्य ईमेल पता दर्ज करें",
+    emailRequired: "कृपया पहले ईमेल दर्ज करें",
+
+    panLabel: "पैन कार्ड नंबर",
+    panPlaceholder: "पैन कार्ड नंबर दर्ज करें",
+    panInvalid: "कृपया मान्य पैन नंबर दर्ज करें (उदा. ABCDE1234F)",
+
+    rationLabel: "राशन कार्ड नंबर",
+    rationPlaceholder: "राशन कार्ड नंबर दर्ज करें",
+    rationRequired: "राशन कार्ड नंबर आवश्यक है",
+
+    section2Title: "वर्तमान पता",
+
+    currentStreetLabel: "वर्तमान पता",
+    streetPlaceholder: "पता दर्ज करें...",
+    streetRequired: "वर्तमान पता आवश्यक है",
+
+    districtLabel: "जिला",
+    districtPlaceholder: "जिला चुनें",
+    districtRequired: "जिला आवश्यक है",
+
+    talukaLabel: "तालुका",
+    talukaPlaceholder: "तालुका दर्ज करें",
+    talukaRequired: "तालुका आवश्यक है",
+
+    placeLabel: "स्थान",
+    placePlaceholder: "स्थान दर्ज करें",
+    placeRequired: "स्थान आवश्यक है",
+
+    areaLabel: "क्षेत्र",
+    areaPlaceholder: "क्षेत्र दर्ज करें",
+    areaRequired: "क्षेत्र आवश्यक है",
+
+    pinCodeLabel: "पिन कोड",
+    pinCodePlaceholder: "6 अंकों का पिन कोड दर्ज करें",
+    pinCodeRequired: "पिन कोड आवश्यक है",
+    pinCodeInvalid: "पिन कोड 6 अंकों का होना चाहिए",
+
+    sameAddressQuestion: "क्या वर्तमान पता और स्थायी पता समान है?",
+
+    section3Title: "स्थायी पता",
+
+    permanentStreetLabel: "स्थायी पता",
+
+    section4Title: "जीवन एवं शिक्षा विवरण",
+
+    maritalStatusLabel: "वैवाहिक स्थिति",
+    maritalPlaceholder: "वैवाहिक स्थिति चुनें",
+    maritalRequired: "वैवाहिक स्थिति आवश्यक है",
+    maritalOptions: {
+      single: "अविवाहित",
+      married: "विवाहित",
+      divorced: "तलाकशुदा",
+      widowed: "विधवा / विधुर"
+    },
+
+    educationLabel: "शैक्षणिक योग्यता (अंतिम उत्तीर्ण परीक्षा)",
+    educationPlaceholder: "अंतिम उत्तीर्ण परीक्षा दर्ज करें",
+    educationRequired: "शैक्षणिक योग्यता आवश्यक है",
+
+    section5Title: "अभिभावक / संरक्षक जानकारी",
+
+    parentNameLabel: "अभिभावक का नाम",
+    parentNamePlaceholder: "अभिभावक का नाम दर्ज करें",
+    parentNameRequired: "अभिभावक का नाम आवश्यक है",
+
+    relationshipLabel: "आवेदक से संबंध",
+    relationshipPlaceholder: "संबंध चुनें",
+    relationshipRequired: "संबंध आवश्यक है",
+    relationshipOptions: {
+      father: "पिता",
+      mother: "माता",
+      guardian: "संरक्षक"
+    },
+
+    occupationLabel: "अभिभावक का व्यवसाय",
+    occupationPlaceholder: "व्यवसाय दर्ज करें",
+    occupationRequired: "व्यवसाय आवश्यक है",
+
+    annualIncomeLabel: "परिवार की वार्षिक आय",
+    annualIncomePlaceholder: "वार्षिक आय दर्ज करें",
+    annualIncomeRequired: "वार्षिक आय आवश्यक है",
+    annualIncomeInvalid: "कृपया मान्य आय दर्ज करें",
+
+    section6Title: "जमानत घोषणा",
+
+    suretyQuestion: "क्या आवेदक / अभिभावक ने पहले जमानत दी है?",
+    suretyYes: "हाँ",
+    suretyNo: "नहीं",
+    suretyRequired: "कृपया जमानत स्थिति चुनें",
+
+    suretyDetailsLabel: "जमानत विवरण",
+    suretyDetailsPlaceholder: "पिछली जमानत का विवरण दें...",
+    suretyDetailsRequired: "जमानत विवरण आवश्यक है",
+
+    cancelButton: "रद्द करें",
+    proceedButton: "अगले चरण पर जाएँ",
+    processing: "प्रक्रिया जारी है...",
+
+    verificationTitle: "सत्यापन कोड दर्ज करें",
+    verificationSubtitle: "सत्यापन कोड",
+    verificationSentEmail: "कोड आपके ईमेल पर भेजा गया है",
+    verificationSentMobile: "कोड आपके मोबाइल पर भेजा गया है",
+    verificationResend: "कोड प्राप्त नहीं हुआ?",
+    verificationResendIn: "पुनः भेजें",
+    verificationResendButton: "पुनः भेजें",
+    verificationSending: "भेजा जा रहा है...",
+    verificationCancel: "रद्द करें",
+    verificationSubmit: "जमा करें"
+  },
+
+  academicInfo: {
+  pageTitle: "छात्र की शैक्षणिक जानकारी",
+  backButton: "वापस",
+
+  section1Title: "छात्र विवरण",
+
+  studentNameLabel: "छात्र का नाम",
+  studentNamePlaceholder: "छात्र का नाम दर्ज करें...",
+  studentNameRequired: "छात्र का नाम आवश्यक है",
+  studentNameMinLength: "नाम कम से कम 3 अक्षरों का होना चाहिए",
+
+  courseNameLabel: "कोर्स का नाम",
+  courseNamePlaceholder: "जैसे B.Tech, MBA, MBBS...",
+  courseNameRequired: "कोर्स का नाम आवश्यक है",
+
+  courseTypeLabel: "कोर्स प्रकार",
+  courseTypePlaceholder: "-- कोर्स प्रकार चुनें --",
+  courseTypeRequired: "कोर्स प्रकार आवश्यक है",
+
+  streamLabel: "स्ट्रीम / विशेषज्ञता",
+  streamPlaceholder: "-- स्ट्रीम चुनें --",
+  streamRequired: "स्ट्रीम / विशेषज्ञता आवश्यक है",
+
+  courseDurationLabel: "कोर्स अवधि",
+  courseDurationPlaceholder: "वर्षों में अवधि दर्ज करें...",
+  courseDurationRequired: "कोर्स अवधि आवश्यक है",
+  courseDurationInvalid: "कोर्स अवधि मान्य संख्या होनी चाहिए",
+
+  modeOfStudyLabel: "अध्ययन का तरीका",
+  modeOfStudyPlaceholder: "-- तरीका चुनें --",
+  modeOfStudyRequired: "अध्ययन का तरीका आवश्यक है",
+
+  courseTypes: {
+    ug: "स्नातक (UG)",
+    pg: "स्नातकोत्तर (PG)",
+    phd: "पीएचडी",
+    diploma: "डिप्लोमा",
+    certificate: "प्रमाणपत्र"
+  },
+
+  streams: {
+    engineering: "इंजीनियरिंग",
+    medical: "मेडिकल",
+    commerce: "वाणिज्य",
+    arts: "कला",
+    science: "विज्ञान",
+    law: "कानून",
+    management: "प्रबंधन",
+    other: "अन्य"
+  },
+
+  modesOfStudy: {
+    fullTime: "पूर्णकालिक",
+    partTime: "अंशकालिक",
+    distance: "दूरस्थ शिक्षा"
+  },
+
+  section2Title: "संस्थान विवरण",
+
+  instituteNameLabel: "संस्थान / कॉलेज का नाम",
+  instituteNamePlaceholder: "संस्थान का नाम दर्ज करें...",
+  instituteNameRequired: "संस्थान का नाम आवश्यक है",
+
+  universityNameLabel: "विश्वविद्यालय / बोर्ड का नाम",
+  universityNamePlaceholder: "विश्वविद्यालय / बोर्ड का नाम दर्ज करें...",
+  universityNameRequired: "विश्वविद्यालय / बोर्ड का नाम आवश्यक है",
+
+  instituteAddressLabel: "संस्थान का पता",
+  instituteAddressPlaceholder: "पूरा पता दर्ज करें...",
+  instituteAddressRequired: "संस्थान का पता आवश्यक है",
+
+  districtLabel: "जिला",
+  districtPlaceholder: "-- जिला चुनें --",
+  districtRequired: "जिला आवश्यक है",
+
+  talukaLabel: "तालुका",
+  talukaPlaceholder: "तालुका दर्ज करें",
+  talukaRequired: "तालुका आवश्यक है",
+
+  placeLabel: "स्थान",
+  placePlaceholder: "स्थान दर्ज करें",
+  placeRequired: "स्थान आवश्यक है",
+
+  pinCodeLabel: "पिन कोड",
+  pinCodePlaceholder: "पिन कोड दर्ज करें",
+  pinCodeRequired: "पिन कोड आवश्यक है",
+  pinCodeInvalid: "पिन कोड 6 अंकों का होना चाहिए",
+
+  section3Title: "प्रवेश एवं शुल्क विवरण",
+
+  admissionStatusLabel: "प्रवेश स्थिति",
+  admissionStatusPlaceholder: "-- स्थिति चुनें --",
+  admissionStatusRequired: "प्रवेश स्थिति आवश्यक है",
+
+  admissionYearLabel: "प्रवेश वर्ष",
+  admissionYearPlaceholder: "जैसे 2024",
+  admissionYearRequired: "प्रवेश वर्ष आवश्यक है",
+
+  totalCourseFeeLabel: "कुल कोर्स शुल्क",
+  totalCourseFeePlaceholder: "कुल शुल्क दर्ज करें...",
+  totalCourseFeeRequired: "कुल शुल्क आवश्यक है",
+  totalCourseFeeInvalid: "मान्य राशि दर्ज करें",
+
+  feePaidLabel: "भुगतान किया गया शुल्क (यदि कोई हो)",
+  feePaidPlaceholder: "भुगतान राशि दर्ज करें...",
+  feePaidInvalid: "मान्य राशि दर्ज करें",
+
+  remainingFeeLabel: "शेष शुल्क",
+  remainingFeePlaceholder: "शेष राशि दर्ज करें...",
+  remainingFeeRequired: "शेष शुल्क आवश्यक है",
+
+  admissionStatuses: {
+    confirmed: "पुष्ट",
+    provisional: "अस्थायी"
+  },
+
+  section4Title: "ऋण आवश्यकता विवरण",
+
+  loanRequiredLabel: "आवश्यक ऋण राशि",
+  loanRequiredPlaceholder: "ऋण राशि दर्ज करें...",
+  loanRequiredRequired: "ऋण राशि आवश्यक है",
+  loanRequiredInvalid: "मान्य राशि दर्ज करें",
+
+  purposeOfLoanLabel: "ऋण का उद्देश्य",
+  purposeOfLoanPlaceholder: "-- उद्देश्य चुनें --",
+  purposeOfLoanRequired: "ऋण का उद्देश्य आवश्यक है",
+
+  gstNumberLabel: "GST नंबर (वैकल्पिक)",
+  gstNumberPlaceholder: "GST नंबर दर्ज करें...",
+  gstNumberInvalid: "मान्य GST नंबर दर्ज करें",
+
+  loanPurposes: {
+    tuitionFee: "शिक्षा शुल्क",
+    hostelFee: "हॉस्टल शुल्क",
+    books: "किताबें एवं अध्ययन सामग्री",
+    equipment: "लैपटॉप / उपकरण",
+    other: "अन्य"
+  },
+
+  section5Title: "बैंक विवरण",
+
+  bankNameLabel: "राष्ट्रीयकृत बैंक का नाम",
+  bankNamePlaceholder: "बैंक का नाम दर्ज करें...",
+  bankNameRequired: "बैंक का नाम आवश्यक है",
+
+  ifscCodeLabel: "IFSC कोड",
+  ifscCodePlaceholder: "IFSC कोड दर्ज करें...",
+  ifscCodeRequired: "IFSC कोड आवश्यक है",
+  ifscCodeInvalid: "मान्य IFSC कोड दर्ज करें",
+
+  branchNameLabel: "शाखा का नाम",
+  branchNamePlaceholder: "शाखा का नाम दर्ज करें...",
+  branchNameRequired: "शाखा का नाम आवश्यक है",
+
+  accountNumberLabel: "खाता संख्या",
+  accountNumberPlaceholder: "खाता संख्या दर्ज करें...",
+  accountNumberRequired: "खाता संख्या आवश्यक है",
+  accountNumberInvalid: "खाता संख्या 9 से 18 अंकों की होनी चाहिए",
+
+  bankAddressLabel: "बैंक का पता",
+  bankAddressPlaceholder: "बैंक का पता दर्ज करें...",
+  bankAddressRequired: "बैंक का पता आवश्यक है",
+
+  cancelButton: "रद्द करें",
+  proceedButton: "अगले चरण पर जाएं",
+  processing: "प्रक्रिया जारी है..."
+},
+
   footer: {
     about: {
       title: "एमएएमएफडीसी के बारे में",
