@@ -4,24 +4,36 @@
   import { page } from '$app/stores';
   import { i18n } from '$lib/i18n';
   import Header from '$lib/components/landingpage/Header.svelte';
+  import { customVerifyApplicant } from '$lib/api/authApi';
+
+  
   import ProgressSteps from '$lib/components/registeration/ProgressSteps.svelte';
+  import createAccountValidation from '$lib/validation/resistration/createAccount';
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
 
   let username = '';
-  let password = '';
-  let confirmPassword = '';
   let showPassword = false;
   let showConfirmPassword = false;
+
+  // ✅ Group password fields into formData
+  let formData = {
+    password: '',
+    confirmPassword: ''
+  };
+
   let errors = {
     password: '',
     confirmPassword: ''
   };
 
+  // ✅ Add validation result variable
+  let validationResult = null;
+
   onMount(() => {
     if (typeof window !== 'undefined') {
-      const data = window.__registrationData;
+      const data = JSON.parse(sessionStorage.getItem('registration'));
       if (!data) {
         goto(`/${locale}/registration`);
         return;
@@ -34,65 +46,88 @@
     }
   });
 
-  function validatePassword() {
-    if (!password) {
-      errors.password = t.errors.passwordRequired;
-      return false;
+  // ✅ Validate single field
+  function validateField(fieldName) {
+    validationResult = createAccountValidation(formData, t);
+    
+    if (validationResult.hasErrors(fieldName)) {
+      errors[fieldName] = validationResult.getErrors(fieldName)[0];
+    } else {
+      errors[fieldName] = '';
     }
-    if (password.length < 6) {
-      errors.password = t.errors.passwordMinLength;
-      return false;
-    }
-    if (!/[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]/.test(password)) {
-      errors.password = t.errors.passwordSpecial;
-      return false;
-    }
-    if (!/[0-9]/.test(password)) {
-      errors.password = t.errors.passwordNumber;
-      return false;
-    }
-    errors.password = '';
-    return true;
+    
+    errors = { ...errors };
   }
 
-  function validateConfirmPassword() {
-    if (!confirmPassword) {
-      errors.confirmPassword = t.errors.confirmPasswordRequired;
-      return false;
-    }
-    if (confirmPassword.length < 6) {
-      errors.confirmPassword = t.errors.confirmPasswordMinLength;
-      return false;
-    }
-    if (confirmPassword !== password) {
-      errors.confirmPassword = t.errors.confirmPasswordMatch;
-      return false;
-    }
-    errors.confirmPassword = '';
-    return true;
-  }
-
-  function handleCreateAccount() {
-    const isPasswordValid = validatePassword();
-    const isConfirmPasswordValid = validateConfirmPassword();
-
-    if (isPasswordValid && isConfirmPasswordValid) {
-      if (typeof window !== 'undefined') {
-        delete window.__registrationData;
+  // ✅ Validate all fields
+  function validateAllFields() {
+    validationResult = createAccountValidation(formData, t);
+    
+    errors = {};
+    
+    ['password', 'confirmPassword'].forEach(field => {
+      if (validationResult.hasErrors(field)) {
+        errors[field] = validationResult.getErrors(field)[0];
       }
+    });
+    
+    return !validationResult.hasErrors();
+  }
+
+  async function handleCreateAccount() {
+    if (!validateAllFields()) return;
+
+    const data = JSON.parse(sessionStorage.getItem('registration'));
+    if (!data?.mobile || !data?.otpVerified) {
+      goto(`/${locale}/registration`);
+      return;
+    }
+
+    try {
+      // const res = await fetch('/api/auth', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({
+      //     action: 'register',
+      //     mobile: data.mobile,
+      //     name: data.name || data.mobile,
+      //     password: formData.password, // ✅ Use formData.password
+      //     otp: data.otp
+      //   })
+      // });
+
+      // const result = await res.json();
+
+      const result = await customVerifyApplicant({
+        mobile: data.mobile,
+        name: data.name || data.mobile,
+        password: formData.password,
+        mobileConfirmationCode: data.otp  // The OTP UID from session
+      });
+
+      if (result.error !== 0) {
+        alert(result.errorMsg || 'Registration failed');
+        return;
+      }
+
+      sessionStorage.removeItem('registration');
       goto(`/${locale}/registration/success`);
+
+    } catch (err) {
+      console.error(err);
+      alert('Something went wrong. Please try again.');
     }
   }
 
   function getPasswordStrength() {
-    if (!password) return { strength: 0, label: '', color: 'bg-gray-300' };
+    if (!formData.password) return { strength: 0, label: '', color: 'bg-gray-300' };
     
     let strength = 0;
-    if (password.length >= 6) strength++;
-    if (password.length >= 8) strength++;
-    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
-    if (/[0-9]/.test(password)) strength++;
-    if (/[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]/.test(password)) strength++;
+    if (formData.password.length >= 6) strength++;
+    if (formData.password.length >= 8) strength++;
+    if (/[a-z]/.test(formData.password) && /[A-Z]/.test(formData.password)) strength++;
+    if (/[0-9]/.test(formData.password)) strength++;
+    if (/[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]/.test(formData.password)) strength++;
     
     if (strength <= 2) return { strength, label: 'Weak', color: 'bg-red-500' };
     if (strength <= 3) return { strength, label: 'Medium', color: 'bg-yellow-500' };
@@ -127,7 +162,6 @@
 
   <ProgressSteps currentStep={3} {t} />
 
-  <!-- ✅ Centered Container -->
   <div class="max-w-2xl mx-auto px-4 py-12">
     <div class="bg-white rounded-2xl shadow-sm p-8 border border-gray-100">
       <div class="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 rounded-full mb-6">
@@ -167,8 +201,8 @@
               <input
                 type="text"
                 id="password"
-                bind:value={password}
-                on:blur={validatePassword}
+                bind:value={formData.password}
+                on:blur={() => validateField('password')}
                 on:input={() => errors.password = ''}
                 class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all {errors.password ? 'border-red-500 bg-red-50' : ''}"
                 placeholder={t.step3.passwordPlaceholder}
@@ -177,8 +211,8 @@
               <input
                 type="password"
                 id="password"
-                bind:value={password}
-                on:blur={validatePassword}
+                bind:value={formData.password}
+                on:blur={() => validateField('password')}
                 on:input={() => errors.password = ''}
                 class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all {errors.password ? 'border-red-500 bg-red-50' : ''}"
                 placeholder={t.step3.passwordPlaceholder}
@@ -202,7 +236,7 @@
             </button>
           </div>
 
-          {#if password}
+          {#if formData.password}
             <div class="mt-2">
               <div class="flex items-center gap-2 mb-1">
                 <div class="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
@@ -237,8 +271,8 @@
               <input
                 type="text"
                 id="confirmPassword"
-                bind:value={confirmPassword}
-                on:blur={validateConfirmPassword}
+                bind:value={formData.confirmPassword}
+                on:blur={() => validateField('confirmPassword')}
                 on:input={() => errors.confirmPassword = ''}
                 class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all {errors.confirmPassword ? 'border-red-500 bg-red-50' : ''}"
                 placeholder={t.step3.confirmPasswordPlaceholder}
@@ -247,8 +281,8 @@
               <input
                 type="password"
                 id="confirmPassword"
-                bind:value={confirmPassword}
-                on:blur={validateConfirmPassword}
+                bind:value={formData.confirmPassword}
+                on:blur={() => validateField('confirmPassword')}
                 on:input={() => errors.confirmPassword = ''}
                 class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all {errors.confirmPassword ? 'border-red-500 bg-red-50' : ''}"
                 placeholder={t.step3.confirmPasswordPlaceholder}
@@ -321,6 +355,7 @@
     </div>
   </div>
 </div>
+
 
 <!-- <script>
   import { goto } from '$app/navigation';

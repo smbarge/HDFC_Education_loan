@@ -5,6 +5,8 @@
   import { currentLang } from '$lib/translations/resistration';
   import { i18n } from '$lib/translations/resistration';
 
+  import { customVerifyApplicantAndSendOtp } from '$lib/api/authApi';
+
   let lang = 'en';
   let formData = {
     name: '',
@@ -56,20 +58,34 @@
     return true;
   }
 
-  function handleSubmit() {
-    const isNameValid = validateName();
-    const isMobileValid = validateMobile();
+  async function handleSubmit() {
+  const isNameValid = validateName();
+  const isMobileValid = validateMobile();
 
-    if (isNameValid && isMobileValid) {
-      if (typeof window !== 'undefined') {
-        window.__registrationData = {
-          name: formData.name,
-          mobile: formData.mobile
-        };
-      }
-      goto('/registration/verify');
+  if (!isNameValid || !isMobileValid) return;
+
+  try {
+    const res = await customVerifyApplicantAndSendOtp({ mobile: formData.mobile, name: formData.name });
+    
+    if (res.error !== 0) {
+      alert(res.errorMsg); // Show error
+      return;
     }
+
+    // Store OTP UID for next step
+    window.__registrationData = {
+      name: formData.name,
+      mobile: formData.mobile,
+      mobileVerificationId: res.mobileVerificationId
+    };
+
+    goto('/registration/verify');
+
+  } catch (err) {
+    console.error(err);
+    alert('Something went wrong');
   }
+}
 
   function goHome() {
     goto('/');

@@ -390,9 +390,9 @@ export const en = {
       step1: 'Identity Check',
       step2: 'Personal Details',
       step3: 'Academic Info',
-      step4: 'Family Details',
-      step5: 'Documents',
-      step6: 'Review & Submit'
+      step4: 'Guarantor Details',
+      step5: 'Collateral Details',
+      step6: 'Document Upload'
   },
 
   //Application Stape
@@ -793,6 +793,206 @@ export const en = {
       cancelButton: "Cancel",
       proceedButton: "Proceed to Next Step",
       processing: "Processing..."
+  },
+
+
+  guarantorDetails: {
+      // Page Header
+      pageTitle: "Guarantor Details",
+      backButton: "Back",
+      
+      // Tab Selection
+      tabApplicant: "The Applicant",
+      tabGuarantor: "The Guarantor ",
+      
+      // Section 1: Guarantor Personal Details
+      section1Title: "Guarantor Personal Details :",
+      
+      guarantorCommunityLabel: "Select community of the Guarantor",
+      guarantorCommunityRequired: "Community is required",
+      
+      guarantorFullNameLabel: "Guarantor's Full Name (Name as Per Aadhaar Card)",
+      guarantorFullNamePlaceholder: "Enter full name...",
+      guarantorFullNameRequired: "Full name is required",
+      guarantorFullNameMinLength: "Full name must be at least 3 characters",
+      
+      guarantorDOBLabel: "Date of Birth",
+      guarantorDOBRequired: "Date of birth is required",
+      
+      guarantorGenderLabel: "Gender",
+      guarantorGenderPlaceholder: "Select gender",
+      guarantorGenderRequired: "Gender is required",
+      genderOptions: {
+        male: "Male - पुरुष",
+        female: "Female - महिला",
+        other: "Other - इतर"
+      },
+      
+      guarantorAadharLabel: "Aadhar Number",
+      guarantorAadharPlaceholder: "Enter Aadhar Number...",
+      guarantorAadharInvalid: "Aadhar must be 12 digits",
+      
+      guarantorPANLabel: "Pan card number",
+      guarantorPANPlaceholder: "Enter pancard number...",
+      guarantorPANInvalid: "Invalid PAN format (ABCDE1234F)",
+      
+      guarantorMobileLabel: "Mobile Number",
+      guarantorMobilePlaceholder: "Enter mobile number...",
+      guarantorMobileRequired: "Mobile number is required",
+      guarantorMobileInvalid: "Invalid mobile number (10 digits starting with 6-9)",
+      
+      guarantorEmailLabel: "Email ID",
+      guarantorEmailPlaceholder: "Enter email...",
+      guarantorEmailInvalid: "Invalid email address",
+      
+      // Section 2: Current Address
+      section2Title: "Current Address",
+      
+      currentStreetAddressLabel: "Current Street Address",
+      currentStreetAddressPlaceholder: "Enter street address ...",
+      currentStreetAddressRequired: "Street address is required",
+      
+      currentDistrictLabel: "District",
+      currentDistrictPlaceholder: "Select District",
+      currentDistrictRequired: "District is required",
+      
+      currentTalukaLabel: "Taluka",
+      currentTalukaPlaceholder: "Select taluka",
+      currentTalukaRequired: "Taluka is required",
+      
+      currentPlaceLabel: "Place",
+      currentPlacePlaceholder: "Enter place...",
+      currentPlaceRequired: "Place is required",
+      
+      currentAreaLabel: "Area",
+      currentAreaPlaceholder: "Select Area",
+      currentAreaRequired: "Area is required",
+      
+      currentPinCodeLabel: "Pin Code",
+      currentPinCodePlaceholder: "Enter pincode...",
+      currentPinCodeRequired: "Pin code is required",
+      currentPinCodeInvalid: "Pin code must be 6 digits",
+      
+      // Same Address Checkbox
+      sameAddressLabel: "Is your current address the same as your permanent address?",
+      
+      // Section 3: Permanent Address
+      section3Title: "Permanent Address",
+      
+      permanentStreetAddressLabel: "Permanent Street Address",
+      permanentStreetAddressPlaceholder: "Enter street address ...",
+      permanentStreetAddressRequired: "Street address is required",
+      
+      permanentDistrictLabel: "District",
+      permanentDistrictRequired: "District is required",
+      
+      permanentTalukaLabel: "Taluka",
+      permanentTalukaRequired: "Taluka is required",
+      
+      permanentPlaceLabel: "Place",
+      permanentPlacePlaceholder: "Enter place...",
+      permanentPlaceRequired: "Place is required",
+      
+      permanentAreaLabel: "Area",
+      permanentAreaRequired: "Area is required",
+      
+      permanentPinCodeLabel: "Pin Code",
+      permanentPinCodeRequired: "Pin code is required",
+      permanentPinCodeInvalid: "Pin code must be 6 digits",
+      
+      // Section 4: Life & Education Details
+      section4Title: "Life & Education Details",
+      
+      maritalStatusLabel: "Select Marital Status",
+      maritalStatusPlaceholder: "Select status",
+      maritalStatusRequired: "Marital status is required",
+      
+      educationalQualificationLabel: "Educational Qualifications",
+      educationalQualificationRequired: "Educational qualification is required",
+      
+      // Section 5: Occupation of Guardian
+      section5Title: "Occupation of Guardian",
+      
+      guardianOccupationLabel: "Select Occupation of Guardian",
+      guardianOccupationPlaceholder: "Select occupation",
+      guardianOccupationRequired: "Occupation is required",
+      
+      annualIncomeLabel: "Annual Income",
+      annualIncomePlaceholder: "Enter annual income of family...",
+      annualIncomeRequired: "Annual income is required",
+      annualIncomeInvalid: "Annual income must be a valid number",
+      
+      // Section 6: Previous Surety
+      previousSuretyLabel: "Has the guarantor previously provided surety for anyone else?",
+      previousSuretySubtitle2: "(If yes, please provide details)",
+      previousSuretyRequired: "Please select an option",
+      previousSuretyYes: "Yes",
+      previousSuretyNo: "No",
+      
+      suretyDetailsPlaceholder: "Enter details here...",
+      suretyDetailsRequired: "Please provide details",
+      
+      // Buttons
+      cancelButton: "Cancel",
+      proceedButton: "Proceed",
+      processing: "Processing..."
+    },
+
+  collateralDetails: {
+      // Page Header
+      pageTitle: 'Applicant Collateral For The Loan',
+      
+      // Add Collateral Buttons
+      addPropertyButton: 'Add Collateral Property',
+      
+      addFDButton: 'Add Collateral FD',
+      
+      addLICButton: 'Add Collateral LIC',
+      
+      addGovtPropertyButton: 'Add Govt Collateral Property',
+      
+      // Empty State
+      noCollateralTitle: 'No collateral added yet',
+      noCollateralSubtitle: 'Click the buttons above to add collateral',
+      
+      // Action Buttons
+      cancelButton: 'Cancel',
+      proceedButton: 'Proceed',
+      processingButton: 'Processing...',
+      
+      // Collateral Card Labels
+      propertyCollateral: 'Property Collateral',
+      fdCollateral: 'FD Collateral',
+      licCollateral: 'LIC Collateral',
+      govtEmployee: 'Govt Employee',
+      
+      // Card Field Labels
+      type: 'Type',
+      surveyNo: 'Survey No',
+      village: 'Village',
+      value: 'Value',
+      bank: 'Bank',
+      branch: 'Branch',
+      amount: 'Amount',
+      maturity: 'Maturity',
+      policy: 'Policy',
+      receiptNo: 'Receipt No',
+      name: 'Name',
+      relation: 'Relation',
+      property: 'Property',
+      mobile: 'Mobile',
+      dept: 'Dept',
+      designation: 'Designation',
+      employeeID: 'Employee ID',
+      
+      // Tooltips
+      deleteTooltip: 'Delete',
+      editTooltip: 'Edit',
+      
+      // Alerts
+      deleteConfirm: 'Are you sure you want to delete this collateral?',
+      noCollateralAlert: 'Please add at least one collateral',
+      submitError: 'Failed to submit. Please try again.'
     },
 
   footer: {

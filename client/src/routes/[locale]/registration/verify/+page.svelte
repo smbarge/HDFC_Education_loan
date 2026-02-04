@@ -5,6 +5,10 @@
   import { i18n } from '$lib/i18n';
   import Header from '$lib/components/landingpage/Header.svelte';
   import ProgressSteps from '$lib/components/registeration/ProgressSteps.svelte';
+  import { customVerifyApplicantAndSendOtp } from '$lib/api/authApi';
+  import { customVerifyOtp } from '$lib/api/authApi';
+  import { validateOtp } from '$lib/validation/resistration/verifyOtp';
+
 
   // ✅ Get locale and translations reactively
   $: locale = $page.params.locale || 'en';
@@ -18,7 +22,7 @@
 
   onMount(() => {
     if (typeof window !== 'undefined') {
-      const data = window.__registrationData;
+     const data = JSON.parse(sessionStorage.getItem('registration'));
       if (!data) {
         goto(`/${locale}/registration`);
         return;
@@ -27,47 +31,88 @@
     }
   });
 
-  function validateOTP() {
-    if (!otp) {
-      error = t.errors.otpRequired;
+    function validateOTP() {
+    const err = validateOtp(otp, t);
+    if (err) {
+      error = err;
       return false;
     }
-    if (otp.length !== 6) {
-      error = t.errors.otpLength;
-      return false;
-    }
-    if (!/^[0-9]+$/.test(otp)) {
-      error = t.errors.otpDigits;
-      return false;
-    }
-
     error = '';
     return true;
-  }
-
-  function handleVerify() {
-    if (validateOTP()) {
-      if (typeof window !== 'undefined') {
-        window.__registrationData.otpVerified = true;
-      }
-      goto(`/${locale}/registration/create-account`);
     }
+
+
+    async function handleVerify() {
+      if (!validateOTP()) return;
+
+      const data = JSON.parse(sessionStorage.getItem('registration'));
+      if (!data?.uid) {
+        error = 'Session expired. Please resend OTP.';
+        return;
+      }
+
+      try {
+        const res = await customVerifyOtp({
+          uid: data.uid,
+          otp
+        });
+
+        if (res.error !== 0) {
+          error = res.errorMsg || t.errors.invalidOtp;
+          return;
+        }
+        
+        sessionStorage.setItem(
+          'registration',
+          JSON.stringify({ ...data, otpVerified: true })
+        );
+
+        goto(`/${locale}/registration/create-account`);
+      } catch (e) {
+        error = t.errors.serverError || 'Something went wrong';
+      }
+    }
+
+
+
+  async function handleResend() {
+  resendDisabled = true;
+  countdown = 30;
+
+  const data = JSON.parse(sessionStorage.getItem('registration'));
+  if (!data?.mobile || !data?.name) {
+    error = 'Session expired. Please go back and retry.';
+    return;
   }
 
-  function handleResend() {
-    resendDisabled = true;
-    countdown = 30;
-    
-    const interval = setInterval(() => {
-      countdown--;
-      if (countdown <= 0) {
-        clearInterval(interval);
-        resendDisabled = false;
-      }
-    }, 1000);
-    
-    console.log('OTP resent');
+  const res = await customVerifyApplicantAndSendOtp({
+    mobile: data.mobile,
+    name: data.name
+  });
+
+  if (res.error !== 0) {
+    error = res.errorMsg || 'Failed to resend OTP';
+    resendDisabled = false;
+    return;
   }
+
+  // ✅ IMPORTANT: update UID
+  sessionStorage.setItem(
+    'registration',
+    JSON.stringify({
+      ...data,
+      uid: res.mobileVerificationId
+    })
+  );
+
+  const interval = setInterval(() => {
+    countdown--;
+    if (countdown <= 0) {
+      clearInterval(interval);
+      resendDisabled = false;
+    }
+  }, 1000);
+}
 
   function goBack() {
     goto(`/${locale}/registration`);

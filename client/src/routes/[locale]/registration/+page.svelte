@@ -4,6 +4,10 @@
   import { i18n } from '$lib/i18n';
   import Header from '$lib/components/landingpage/Header.svelte';
   import ProgressSteps from '$lib/components/registeration/ProgressSteps.svelte';
+  import registrationStartValidation from '$lib/validation/resistration/resister';
+
+  import { customVerifyApplicantAndSendOtp } from '$lib/api/authApi';
+
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
@@ -18,54 +22,76 @@
     mobile: ''
   };
 
+  let serverError = '';
+  let validationResult = null;
+
+  function validateField(fieldName) {
+    serverError = '';
+    validationResult = registrationStartValidation(formData, t);
+    
+    if (validationResult.hasErrors(fieldName)) {
+      errors[fieldName] = validationResult.getErrors(fieldName)[0];
+    } else {
+      errors[fieldName] = '';
+    }
+    
+    // Force reactivity
+    errors = { ...errors };
+  }
+
   function validateName() {
-    if (!formData.name) {
-      errors.name = t.errors.nameRequired;
-      return false;
-    }
-    if (formData.name.length < 3) {
-      errors.name = t.errors.nameMinLength;
-      return false;
-    }
-    errors.name = '';
-    return true;
+    validateField('name');
   }
 
   function validateMobile() {
-    if (!formData.mobile) {
-      errors.mobile = t.errors.mobileRequired;
-      return false;
-    }
-    if (!/^[0-9]+$/.test(formData.mobile)) {
-      errors.mobile = t.errors.mobileDigits;
-      return false;
-    }
-    if (!/^[6-9]/.test(formData.mobile)) {
-      errors.mobile = t.errors.mobileStart;
-      return false;
-    }
-    if (formData.mobile.length !== 10) {
-      errors.mobile = t.errors.mobileLength;
-      return false;
-    }
-    errors.mobile = '';
-    return true;
+    validateField('mobile');
   }
 
-  function handleSubmit() {
-    const isNameValid = validateName();
-    const isMobileValid = validateMobile();
 
-    if (isNameValid && isMobileValid) {
-      if (typeof window !== 'undefined') {
-        window.__registrationData = {
-          name: formData.name,
-          mobile: formData.mobile
-        };
+  function validateAllFields() {
+    validationResult = registrationStartValidation(formData, t);
+
+    errors = { name: '', mobile: '' };
+
+    ['name', 'mobile'].forEach(field => {
+      if (validationResult.hasErrors(field)) {
+        errors[field] = validationResult.getErrors(field)[0];
       }
-      goto(`/${locale}/registration/verify`); 
-    }
+    });
+
+    return !validationResult.hasErrors();
   }
+
+
+
+
+
+  async function handleSubmit() {
+    // Replace the old validation logic with this:
+    if (!validateAllFields()) return;
+
+    const res = await customVerifyApplicantAndSendOtp({
+      mobile: formData.mobile,
+      name: formData.name
+    });
+
+    if (res.error !== 0) {
+      serverError = res.errorMsg;// replace with toast later
+      return;
+    }
+
+    sessionStorage.setItem(
+      'registration',
+      JSON.stringify({
+        name: formData.name,
+        mobile: formData.mobile,
+        uid: res.mobileVerificationId
+      })
+    );
+
+    goto(`/${locale}/registration/verify`);
+  }
+
 
   function goHome() {
     goto(`/${locale}`);
@@ -107,6 +133,12 @@
       </p>
 
       <form on:submit|preventDefault={handleSubmit} class="space-y-6">
+        
+      {#if serverError}
+        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+          {serverError}
+        </div>
+      {/if}
         
         <div>
           <label for="name" class="block text-sm font-medium text-gray-700 mb-2">

@@ -432,11 +432,13 @@ export const mr = {
       step1: 'ओळख पूर्व-तपासणी',
       step2: 'वैयक्तिक तपशील',
       step3: 'शैक्षणिक माहिती',
-      step4: 'कौटुंबिक तपशील',
-      step5: 'कागदपत्रे',
-      step6: 'पुनरावलोकन आणि सबमिट करा'
+      step4: 'जामीनदार तपशील',
+      step5: 'तारण तपशील',
+      step6: 'दस्तऐवज अपलोड'
     },
-    applicationStart: {
+
+
+  applicationStart: {
   // Page Title
   pageTitle: "तुमचा अर्ज सुरू करा",
   pageSubtitle: "कृपया कर्ज अर्ज प्रक्रिया सुरू करण्यासाठी तुमची मूलभूत माहिती प्रदान करा",
@@ -810,7 +812,192 @@ export const mr = {
   proceedButton: "पुढील टप्प्याकडे जा",
   processing: "प्रक्रिया सुरू आहे..."
 },
-    
+
+  guarantorDetails: {
+    pageTitle: "जामीनदार तपशील",
+    backButton: "मागे",
+
+    tabApplicant: "अर्जदार",
+    tabGuarantor: "जामीनदार",
+
+    section1Title: "जामीनदाराची वैयक्तिक माहिती :",
+
+    guarantorCommunityLabel: "जामीनदाराचा समुदाय निवडा",
+    guarantorCommunityRequired: "समुदाय आवश्यक आहे",
+
+    guarantorFullNameLabel: "जामीनदाराचे पूर्ण नाव (आधार कार्डानुसार नाव)",
+    guarantorFullNamePlaceholder: "पूर्ण नाव प्रविष्ट करा...",
+    guarantorFullNameRequired: "पूर्ण नाव आवश्यक आहे",
+    guarantorFullNameMinLength: "पूर्ण नाव किमान ३ अक्षरे असावे",
+
+    guarantorDOBLabel: "जन्मतारीख",
+    guarantorDOBRequired: "जन्मतारीख आवश्यक आहे",
+
+    guarantorGenderLabel: "लिंग",
+    guarantorGenderPlaceholder: "लिंग निवडा",
+    guarantorGenderRequired: "लिंग आवश्यक आहे",
+    genderOptions: {
+      male: "पुरुष",
+      female: "महिला",
+      other: "इतर"
+    },
+
+    guarantorAadharLabel: "आधार क्रमांक",
+    guarantorAadharPlaceholder: "आधार क्रमांक प्रविष्ट करा...",
+    guarantorAadharInvalid: "आधार क्रमांक १२ अंकी असावा",
+
+    guarantorPANLabel: "पॅन कार्ड क्रमांक",
+    guarantorPANPlaceholder: "पॅन कार्ड क्रमांक प्रविष्ट करा...",
+    guarantorPANInvalid: "अवैध पॅन क्रमांक (ABCDE1234F)",
+
+    guarantorMobileLabel: "मोबाईल क्रमांक",
+    guarantorMobilePlaceholder: "मोबाईल क्रमांक प्रविष्ट करा...",
+    guarantorMobileRequired: "मोबाईल क्रमांक आवश्यक आहे",
+    guarantorMobileInvalid: "अवैध मोबाईल क्रमांक (६-९ ने सुरू होणारा १० अंकी)",
+
+    guarantorEmailLabel: "ईमेल आयडी",
+    guarantorEmailPlaceholder: "ईमेल प्रविष्ट करा...",
+    guarantorEmailInvalid: "अवैध ईमेल पत्ता",
+
+    section2Title: "सध्याचा पत्ता",
+
+    currentStreetAddressLabel: "सध्याचा रस्त्याचा पत्ता",
+    currentStreetAddressPlaceholder: "रस्त्याचा पत्ता प्रविष्ट करा...",
+    currentStreetAddressRequired: "रस्त्याचा पत्ता आवश्यक आहे",
+
+    currentDistrictLabel: "जिल्हा",
+    currentDistrictPlaceholder: "जिल्हा निवडा",
+    currentDistrictRequired: "जिल्हा आवश्यक आहे",
+
+    currentTalukaLabel: "तालुका",
+    currentTalukaPlaceholder: "तालुका निवडा",
+    currentTalukaRequired: "तालुका आवश्यक आहे",
+
+    currentPlaceLabel: "ठिकाण",
+    currentPlacePlaceholder: "शहर प्रविष्ट करा...",
+    currentPlaceRequired: "ठिकाण आवश्यक आहे",
+
+    currentAreaLabel: "परिसर",
+    currentAreaPlaceholder: "परिसर निवडा",
+    currentAreaRequired: "परिसर आवश्यक आहे",
+
+    currentPinCodeLabel: "पिन कोड",
+    currentPinCodePlaceholder: "पिन कोड प्रविष्ट करा...",
+    currentPinCodeRequired: "पिन कोड आवश्यक आहे",
+    currentPinCodeInvalid: "पिन कोड ६ अंकी असावा",
+
+    sameAddressLabel: "सध्याचा पत्ता कायम पत्त्यासारखाच आहे का?",
+
+    section3Title: "कायमचा पत्ता",
+
+    permanentStreetAddressLabel: "कायमचा रस्त्याचा पत्ता",
+    permanentStreetAddressPlaceholder: "रस्त्याचा पत्ता प्रविष्ट करा...",
+    permanentStreetAddressRequired: "रस्त्याचा पत्ता आवश्यक आहे",
+
+    permanentDistrictLabel: "जिल्हा",
+    permanentDistrictRequired: "जिल्हा आवश्यक आहे",
+
+    permanentTalukaLabel: "तालुका",
+    permanentTalukaRequired: "तालुका आवश्यक आहे",
+
+    permanentPlaceLabel: "ठिकाण",
+    permanentPlacePlaceholder: "ठिकाण प्रविष्ट करा...",
+    permanentPlaceRequired: "ठिकाण आवश्यक आहे",
+
+    permanentAreaLabel: "परिसर",
+    permanentAreaRequired: "परिसर आवश्यक आहे",
+
+    permanentPinCodeLabel: "पिन कोड",
+    permanentPinCodeRequired: "पिन कोड आवश्यक आहे",
+    permanentPinCodeInvalid: "पिन कोड ६ अंकी असावा",
+
+    section4Title: "जीवन व शिक्षण तपशील",
+
+    maritalStatusLabel: "वैवाहिक स्थिती निवडा",
+    maritalStatusPlaceholder: "स्थिती निवडा",
+    maritalStatusRequired: "वैवाहिक स्थिती आवश्यक आहे",
+
+    educationalQualificationLabel: "शैक्षणिक पात्रता",
+    educationalQualificationRequired: "शैक्षणिक पात्रता आवश्यक आहे",
+
+    section5Title: "पालकाचा व्यवसाय",
+
+    guardianOccupationLabel: "पालकाचा व्यवसाय निवडा",
+    guardianOccupationPlaceholder: "व्यवसाय निवडा",
+    guardianOccupationRequired: "व्यवसाय आवश्यक आहे",
+
+    annualIncomeLabel: "वार्षिक उत्पन्न",
+    annualIncomePlaceholder: "कुटुंबाचे वार्षिक उत्पन्न प्रविष्ट करा...",
+    annualIncomeRequired: "वार्षिक उत्पन्न आवश्यक आहे",
+    annualIncomeInvalid: "वैध वार्षिक उत्पन्न प्रविष्ट करा",
+
+    previousSuretyLabel: "जामीनदाराने यापूर्वी कोणासाठी जामीन दिला आहे का?",
+    previousSuretySubtitle2: "(होय असल्यास, तपशील द्या)",
+    previousSuretyRequired: "कृपया पर्याय निवडा",
+    previousSuretyYes: "होय",
+    previousSuretyNo: "नाही",
+
+    suretyDetailsPlaceholder: "तपशील येथे प्रविष्ट करा...",
+    suretyDetailsRequired: "कृपया तपशील द्या",
+
+    cancelButton: "रद्द करा",
+    proceedButton: "पुढे जा",
+    processing: "प्रक्रिया सुरू आहे..."
+  },  
+
+  collateralDetails: {
+  // Page Header
+  pageTitle: 'कर्जासाठी अर्जदाराची तारण माहिती',
+
+  // Add Collateral Buttons
+  addPropertyButton: 'तारण मालमत्ता जोडा',
+  addFDButton: 'तारण एफडी जोडा',
+  addLICButton: 'तारण एलआयसी जोडा',
+  addGovtPropertyButton: 'शासकीय तारण मालमत्ता जोडा',
+
+  // Empty State
+  noCollateralTitle: 'अजून कोणतीही तारण जोडलेली नाही',
+  noCollateralSubtitle: 'तारण जोडण्यासाठी वरील बटणे क्लिक करा',
+
+  // Action Buttons
+  cancelButton: 'रद्द करा',
+  proceedButton: 'पुढे जा',
+  processingButton: 'प्रक्रिया सुरू आहे...',
+
+  // Collateral Card Labels
+  propertyCollateral: 'मालमत्ता तारण',
+  fdCollateral: 'एफडी तारण',
+  licCollateral: 'एलआयसी तारण',
+  govtEmployee: 'शासकीय कर्मचारी',
+
+  // Card Field Labels
+  type: 'प्रकार',
+  surveyNo: 'सर्वे नंबर',
+  village: 'गाव',
+  value: 'मूल्य',
+  bank: 'बँक',
+  branch: 'शाखा',
+  amount: 'रक्कम',
+  maturity: 'परिपक्वता',
+  policy: 'पॉलिसी',
+  receiptNo: 'पावती क्रमांक',
+  name: 'नाव',
+  relation: 'नाते',
+  property: 'मालमत्ता',
+  mobile: 'मोबाईल',
+  dept: 'विभाग',
+  designation: 'पदनाम',
+  employeeID: 'कर्मचारी आयडी',
+
+  // Tooltips
+  deleteTooltip: 'हटवा',
+  editTooltip: 'संपादित करा',
+
+  // Alerts
+  deleteConfirm: 'आपण ही तारण माहिती हटवू इच्छिता का?',
+  noCollateralAlert: 'कृपया किमान एक तारण जोडा',
+  submitError: 'सबमिट करण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.'
+},  
   footer: {
     about: {
       title: "एमएएमएफडीसी बद्दल",

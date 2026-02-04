@@ -430,15 +430,16 @@ export const hi = {
 
     readyToStart: 'अपनी शिक्षा ऋण यात्रा शुरू करने के लिए तैयार हैं?'
   },
+
    stepper: {
       step1: 'पहचान पूर्व-नापासणी',
       step2: 'व्यक्तिगत विवरण',
       step3: 'शैक्षणिक जानकारी',
-      step4: 'पारिवारिक विवरण',
-      step5: 'दस्तावेज़',
-      step6: 'समीक्षा और जमा करें'
+      step4: 'जमानतदार विवरण',
+      step5: 'जमानत विवरण',
+      step6: 'दस्तावेज़ अपलोड'
     },
-    applicationStart: {
+  applicationStart: {
   // Page Title
   pageTitle: "अपना आवेदन शुरू करें",
   pageSubtitle: "कृपया ऋण आवेदन प्रक्रिया शुरू करने के लिए अपनी बुनियादी जानकारी प्रदान करें",
@@ -514,7 +515,7 @@ export const hi = {
   // Helper Text
   mandatoryFields: "* चिह्नित सभी फ़ील्ड अनिवार्य हैं",
   dataSecure: "आपका डेटा सुरक्षित और संरक्षित है"
-},
+  },
 
   personalDetails: {
     pageTitle: "छात्र के व्यक्तिगत विवरण",
@@ -811,8 +812,195 @@ export const hi = {
   cancelButton: "रद्द करें",
   proceedButton: "अगले चरण पर जाएं",
   processing: "प्रक्रिया जारी है..."
-},
+  },
 
+
+  guarantorDetails: {
+  pageTitle: "जमानतदार विवरण",
+  backButton: "वापस",
+
+  tabApplicant: "आवेदक",
+  tabGuarantor: "जमानतदार",
+
+  section1Title: "जमानतदार की व्यक्तिगत जानकारी :",
+
+  guarantorCommunityLabel: "जमानतदार का समुदाय चुनें",
+  guarantorCommunityRequired: "समुदाय आवश्यक है",
+
+  guarantorFullNameLabel: "जमानतदार का पूरा नाम (आधार कार्ड के अनुसार)",
+  guarantorFullNamePlaceholder: "पूरा नाम दर्ज करें...",
+  guarantorFullNameRequired: "पूरा नाम आवश्यक है",
+  guarantorFullNameMinLength: "पूरा नाम कम से कम 3 अक्षरों का होना चाहिए",
+
+  guarantorDOBLabel: "जन्म तिथि",
+  guarantorDOBRequired: "जन्म तिथि आवश्यक है",
+
+  guarantorGenderLabel: "लिंग",
+  guarantorGenderPlaceholder: "लिंग चुनें",
+  guarantorGenderRequired: "लिंग आवश्यक है",
+  genderOptions: {
+    male: "पुरुष",
+    female: "महिला",
+    other: "अन्य"
+  },
+
+  guarantorAadharLabel: "आधार नंबर",
+  guarantorAadharPlaceholder: "आधार नंबर दर्ज करें...",
+  guarantorAadharInvalid: "आधार नंबर 12 अंकों का होना चाहिए",
+
+  guarantorPANLabel: "पैन कार्ड नंबर",
+  guarantorPANPlaceholder: "पैन कार्ड नंबर दर्ज करें...",
+  guarantorPANInvalid: "अमान्य पैन प्रारूप (ABCDE1234F)",
+
+  guarantorMobileLabel: "मोबाइल नंबर",
+  guarantorMobilePlaceholder: "मोबाइल नंबर दर्ज करें...",
+  guarantorMobileRequired: "मोबाइल नंबर आवश्यक है",
+  guarantorMobileInvalid: "अमान्य मोबाइल नंबर (6-9 से शुरू होने वाला 10 अंकों का)",
+
+  guarantorEmailLabel: "ईमेल आईडी",
+  guarantorEmailPlaceholder: "ईमेल दर्ज करें...",
+  guarantorEmailInvalid: "अमान्य ईमेल पता",
+
+  section2Title: "वर्तमान पता",
+
+  currentStreetAddressLabel: "वर्तमान सड़क का पता",
+  currentStreetAddressPlaceholder: "सड़क का पता दर्ज करें...",
+  currentStreetAddressRequired: "सड़क का पता आवश्यक है",
+
+  currentDistrictLabel: "जिला",
+  currentDistrictPlaceholder: "जिला चुनें",
+  currentDistrictRequired: "जिला आवश्यक है",
+
+  currentTalukaLabel: "तालुका",
+  currentTalukaPlaceholder: "तालुका चुनें",
+  currentTalukaRequired: "तालुका आवश्यक है",
+
+  currentPlaceLabel: "स्थान",
+  currentPlacePlaceholder: "शहर दर्ज करें...",
+  currentPlaceRequired: "स्थान आवश्यक है",
+
+  currentAreaLabel: "क्षेत्र",
+  currentAreaPlaceholder: "क्षेत्र चुनें",
+  currentAreaRequired: "क्षेत्र आवश्यक है",
+
+  currentPinCodeLabel: "पिन कोड",
+  currentPinCodePlaceholder: "पिन कोड दर्ज करें...",
+  currentPinCodeRequired: "पिन कोड आवश्यक है",
+  currentPinCodeInvalid: "पिन कोड 6 अंकों का होना चाहिए",
+
+  sameAddressLabel: "क्या वर्तमान पता स्थायी पते के समान है?",
+
+  section3Title: "स्थायी पता",
+
+  permanentStreetAddressLabel: "स्थायी सड़क का पता",
+  permanentStreetAddressPlaceholder: "सड़क का पता दर्ज करें...",
+  permanentStreetAddressRequired: "सड़क का पता आवश्यक है",
+
+  permanentDistrictLabel: "जिला",
+  permanentDistrictRequired: "जिला आवश्यक है",
+
+  permanentTalukaLabel: "तालुका",
+  permanentTalukaRequired: "तालुका आवश्यक है",
+
+  permanentPlaceLabel: "स्थान",
+  permanentPlacePlaceholder: "स्थान दर्ज करें...",
+  permanentPlaceRequired: "स्थान आवश्यक है",
+
+  permanentAreaLabel: "क्षेत्र",
+  permanentAreaRequired: "क्षेत्र आवश्यक है",
+
+  permanentPinCodeLabel: "पिन कोड",
+  permanentPinCodeRequired: "पिन कोड आवश्यक है",
+  permanentPinCodeInvalid: "पिन कोड 6 अंकों का होना चाहिए",
+
+  section4Title: "जीवन और शिक्षा विवरण",
+
+  maritalStatusLabel: "वैवाहिक स्थिति चुनें",
+  maritalStatusPlaceholder: "स्थिति चुनें",
+  maritalStatusRequired: "वैवाहिक स्थिति आवश्यक है",
+
+  educationalQualificationLabel: "शैक्षणिक योग्यता",
+  educationalQualificationRequired: "शैक्षणिक योग्यता आवश्यक है",
+
+  section5Title: "अभिभावक का व्यवसाय",
+
+  guardianOccupationLabel: "अभिभावक का व्यवसाय चुनें",
+  guardianOccupationPlaceholder: "व्यवसाय चुनें",
+  guardianOccupationRequired: "व्यवसाय आवश्यक है",
+
+  annualIncomeLabel: "वार्षिक आय",
+  annualIncomePlaceholder: "परिवार की वार्षिक आय दर्ज करें...",
+  annualIncomeRequired: "वार्षिक आय आवश्यक है",
+  annualIncomeInvalid: "मान्य वार्षिक आय दर्ज करें",
+
+  previousSuretyLabel: "क्या जमानतदार ने पहले किसी के लिए जमानत दी है?",
+  previousSuretySubtitle2: "(यदि हाँ, तो विवरण दें)",
+  previousSuretyRequired: "कृपया एक विकल्प चुनें",
+  previousSuretyYes: "हाँ",
+  previousSuretyNo: "नहीं",
+
+  suretyDetailsPlaceholder: "विवरण यहाँ दर्ज करें...",
+  suretyDetailsRequired: "कृपया विवरण प्रदान करें",
+
+  cancelButton: "रद्द करें",
+  proceedButton: "आगे बढ़ें",
+  processing: "प्रक्रिया जारी है..."
+  },
+
+  collateralDetails: {
+  // Page Header
+  pageTitle: 'ऋण हेतु आवेदक की जमानत विवरण',
+
+  // Add Collateral Buttons
+  addPropertyButton: 'जमानत संपत्ति जोड़ें',
+  addFDButton: 'जमानत एफडी जोड़ें',
+  addLICButton: 'जमानत एलआईसी जोड़ें',
+  addGovtPropertyButton: 'सरकारी जमानत संपत्ति जोड़ें',
+
+  // Empty State
+  noCollateralTitle: 'अभी तक कोई जमानत नहीं जोड़ी गई है',
+  noCollateralSubtitle: 'जमानत जोड़ने के लिए ऊपर दिए गए बटन पर क्लिक करें',
+
+  // Action Buttons
+  cancelButton: 'रद्द करें',
+  proceedButton: 'आगे बढ़ें',
+  processingButton: 'प्रक्रिया जारी है...',
+
+  // Collateral Card Labels
+  propertyCollateral: 'संपत्ति जमानत',
+  fdCollateral: 'एफडी जमानत',
+  licCollateral: 'एलआईसी जमानत',
+  govtEmployee: 'सरकारी कर्मचारी',
+
+  // Card Field Labels
+  type: 'प्रकार',
+  surveyNo: 'सर्वे नंबर',
+  village: 'गांव',
+  value: 'मूल्य',
+  bank: 'बैंक',
+  branch: 'शाखा',
+  amount: 'राशि',
+  maturity: 'परिपक्वता',
+  policy: 'पॉलिसी',
+  receiptNo: 'रसीद संख्या',
+  name: 'नाम',
+  relation: 'संबंध',
+  property: 'संपत्ति',
+  mobile: 'मोबाइल',
+  dept: 'विभाग',
+  designation: 'पद',
+  employeeID: 'कर्मचारी आईडी',
+
+  // Tooltips
+  deleteTooltip: 'हटाएं',
+  editTooltip: 'संपादित करें',
+
+  // Alerts
+  deleteConfirm: 'क्या आप वाकई इस जमानत को हटाना चाहते हैं?',
+  noCollateralAlert: 'कृपया कम से कम एक जमानत जोड़ें',
+  submitError: 'सबमिट करने में विफल। कृपया पुनः प्रयास करें।'
+  },
+  
   footer: {
     about: {
       title: "एमएएमएफडीसी के बारे में",

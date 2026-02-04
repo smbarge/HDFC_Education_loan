@@ -4,6 +4,9 @@
   import Header from '$lib/components/landingpage/Header.svelte';
   import loginValidation from '$lib/validation/login.js';
 
+  import { customLoginApplicant } from '$lib/api/authApi.js';
+
+
 
   export let data;
   $: t = data.t;
@@ -35,15 +38,40 @@
   return !result.hasErrors();
 }
 
+  async function handleLogin() {
+    const isValid = runValidation();
+    if (!isValid) return;
 
-  function handleLogin() {
-  const isValid = runValidation();
+    try {
+      const response = await customLoginApplicant({
+        mobile: formData.username,   // username = mobile number
+        password: formData.password
+      });
 
-  if (isValid) {
-    console.log('Login successful');
-    goto(`/${locale}/dashboard`);
+      if (response.error !== 0) {
+        errors.password = response.errorMsg || 'Invalid credentials';
+        return;
+      }
+
+      // ✅ Save session (simple & safe)
+      sessionStorage.setItem(
+        'authUser',
+        JSON.stringify(response.user)
+      );
+
+      sessionStorage.setItem(
+        'accessToken',
+        response.token
+      );
+
+      goto(`/${locale}/dashboard`);
+
+    } catch (err) {
+      console.error(err);
+      errors.password = 'Server error. Please try again.';
+    }
   }
-}
+
 
 
   function goHome() {
@@ -72,15 +100,15 @@
     <div class="grid lg:grid-cols-2 gap-8 lg:gap-12 items-stretch">
       
       <div class="relative h-full min-h-[500px] lg:min-h-[600px]">
-        <div class="relative rounded-2xl overflow-hidden shadow-2xl h-full bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600">
+      <div class="relative rounded-2xl overflow-hidden shadow-2xl w-[600px] h-[550px] sm:w-[600px] sm:h-[650px] bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600">
         
           <img
             src ='/create-account.jpg'
             alt="Student education"
-            class="absolute inset-0 w-full h-full object-cover"
+            class="absolute inset-0 w-full h-full object-cover object-center"
           />
          
-          <div class="absolute inset-0 bg-gradient-to-t from-purple-300/60 via-purple-500/20 to-transparent"></div>
+          <div class="absolute inset-0 pointer-events-none bg-gradient-to-t from-purple-300/60 via-purple-500/20 to-transparent"></div>
         
           <div class="absolute inset-x-0 bottom-0 p-6 sm:p-8 text-balck z-10">
             <h2 class="text-2xl sm:text-3xl font-bold mb-3">

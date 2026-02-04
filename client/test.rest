@@ -1,0 +1,36 @@
+### Check if user exists
+GET http://localhost:5173/api/auth?action=checkUser&mobile=9999999999
+Accept: application/json
+
+### Send OTP
+POST http://localhost:5173/api/sendOTP
+Content-Type: application/json
+
+{
+  "mobileNumber": "9999999999",
+  "name": "Akshata"
+}
+
+
+### Register user
+POST http://localhost:5173/api/auth
+Content-Type: application/json
+
+{
+  "action": "register",
+  "mobile": "9999999999",
+  "name": "Akshata Sangale",
+  "password": "Password@123",
+  "otp": "955191"
+}
+
+
+### Login user
+POST http://localhost:5173/api/auth
+Content-Type: application/json
+
+{
+  "action": "login",
+  "mobile": "8767096290",
+  "password": "Admin@123"
+}
