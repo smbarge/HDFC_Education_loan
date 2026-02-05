@@ -1,4 +1,3 @@
-// src/routes/api/verifyOTP/+server.js
 import { json } from '@sveltejs/kit';
 import pool from '$lib/db';
 
@@ -12,7 +11,6 @@ export async function POST({ request }) {
         
         console.log("Verifying OTP - UID:", uid, "OTP:", otp_code);
 
-        // Validate input
         if (!uid || !otp_code) {
             await client.query('ROLLBACK');
             return json(
@@ -21,14 +19,11 @@ export async function POST({ request }) {
             );
         }
 
-        // Query the OTP record
-        // Note: uid is UUID type in your table
         const result = await client.query(
             'SELECT * FROM otp WHERE uid = $1::uuid AND otp_code = $2 FOR UPDATE',
             [uid, otp_code]
         );
 
-        // OTP not found
         if (result.rows.length === 0) {
             await client.query('ROLLBACK');
             return json(
@@ -39,7 +34,6 @@ export async function POST({ request }) {
 
         const otpRecord = result.rows[0];
 
-        // Check if OTP expired
         if (new Date(otpRecord.expires_at) < new Date()) {
             await client.query('ROLLBACK');
             return json(
@@ -48,7 +42,6 @@ export async function POST({ request }) {
             );
         }
 
-        // Check if already verified
         if (otpRecord.verified) {
             await client.query('ROLLBACK');
             return json(
@@ -57,7 +50,6 @@ export async function POST({ request }) {
             );
         }
 
-        // Mark OTP as verified
         await client.query(
             'UPDATE otp SET verified = TRUE, verified_at = NOW() WHERE uid = $1::uuid',
             [uid]

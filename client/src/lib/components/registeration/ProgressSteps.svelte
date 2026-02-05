@@ -1,6 +1,6 @@
 <script>
   export let currentStep = 1;
-  export let t;  // ✅ Receives translation object directly
+  export let t; 
 </script>
 
 <div class="bg-white border-b border-gray-200 mt-4">

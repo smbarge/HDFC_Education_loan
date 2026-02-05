@@ -93,7 +93,7 @@
 {#if show}
   <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-      <!-- Header -->
+
       <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
         <h3 class="text-xl font-bold text-gray-900">
           Add Government Employee Guarantor / शासकीय हमीदार जोडा
@@ -109,7 +109,7 @@
       </div>
 
       <div class="p-6 space-y-6">
-        <!-- Guarantor Personal Details -->
+   
         <div>
           <h4 class="font-semibold text-gray-900 mb-4 flex items-center gap-2">
             Guarantor Personal Details / हमीदाराचे वैयक्तिक तपशील
@@ -201,7 +201,6 @@
           </div>
         </div>
 
-        <!-- Employment Details -->
         <div>
           <h4 class="font-semibold text-gray-900 mb-4 flex items-center gap-2">
             Employment Details / रोजगार तपशील
@@ -272,16 +271,15 @@
           </div>
         </div>
 
-        <!-- Required Documents Checklist -->
         <div>
-  <h4 class="font-semibold text-gray-900 mb-3">
-    Required Documents <span class="text-red-500">*</span>
-    <span class="block text-xs text-gray-500">आवश्यक कागदपत्रे (सर्व अनिवार्य)</span>
-  </h4>
+      <h4 class="font-semibold text-gray-900 mb-3">
+        Required Documents <span class="text-red-500">*</span>
+        <span class="block text-xs text-gray-500">आवश्यक कागदपत्रे (सर्व अनिवार्य)</span>
+      </h4>
 
-  <div class="space-y-2 bg-gray-50 p-4 rounded-lg">
+      <div class="space-y-2 bg-gray-50 p-4 rounded-lg">
 
-    <!-- Salary Certificate -->
+    
     <label
       class="flex items-start gap-3 p-2 rounded cursor-pointer
              hover:bg-white border"
@@ -302,7 +300,7 @@
       </div>
     </label>
 
-    <!-- Identity Card -->
+    
     <label
       class="flex items-start gap-3 p-2 rounded cursor-pointer
              hover:bg-white border"
@@ -323,57 +321,54 @@
       </div>
     </label>
 
-    <!-- Form 24(B) -->
-    <label
-      class="flex items-start gap-3 p-2 rounded cursor-pointer
-             hover:bg-white border"
-      class:border-red-500={errors.isPermanent}
-    >
-      <input
-        type="checkbox"
-        bind:checked={formData.isPermanent}
-        class="w-4 h-4 mt-1 accent-blue-600"
-      />
-      <div class="text-sm">
-        <p class="font-medium text-gray-900">
-          Form – 24 (B) <span class="text-red-500">*</span>
-        </p>
-      </div>
-    </label>
+   
+          <label
+            class="flex items-start gap-3 p-2 rounded cursor-pointer
+                  hover:bg-white border"
+            class:border-red-500={errors.isPermanent}
+          >
+            <input
+              type="checkbox"
+              bind:checked={formData.isPermanent}
+              class="w-4 h-4 mt-1 accent-blue-600"
+            />
+            <div class="text-sm">
+              <p class="font-medium text-gray-900">
+                Form – 24 (B) <span class="text-red-500">*</span>
+              </p>
+            </div>
+          </label>
 
-    <!-- Permanent Employee -->
-    <label
-      class="flex items-start gap-3 p-2 rounded cursor-pointer
-             hover:bg-white border"
-      class:border-red-500={errors.isPermanent}
-    >
-      <input
-        type="checkbox"
-        bind:checked={formData.isPermanent}
-        class="w-4 h-4 mt-1 accent-blue-600"
-      />
-      <div class="text-sm">
-        <p class="font-medium text-gray-900">
-          Permanent Government Employee <span class="text-red-500">*</span>
-        </p>
-        <p class="text-xs text-gray-500">
-          कायमस्वरूपी शासकीय कर्मचारी
-        </p>
-      </div>
-    </label>
+   
+            <label
+              class="flex items-start gap-3 p-2 rounded cursor-pointer
+                    hover:bg-white border"
+              class:border-red-500={errors.isPermanent}
+            >
+              <input
+                type="checkbox"
+                bind:checked={formData.isPermanent}
+                class="w-4 h-4 mt-1 accent-blue-600"
+              />
+              <div class="text-sm">
+                <p class="font-medium text-gray-900">
+                  Permanent Government Employee <span class="text-red-500">*</span>
+                </p>
+                <p class="text-xs text-gray-500">
+                  कायमस्वरूपी शासकीय कर्मचारी
+                </p>
+              </div>
+            </label>
 
-    {#if errors.isPermanent}
-      <p class="text-xs text-red-600 pl-7">
-        {errors.isPermanent}
-      </p>
-    {/if}
+            {#if errors.isPermanent}
+              <p class="text-xs text-red-600 pl-7">
+                {errors.isPermanent}
+              </p>
+            {/if}
 
-  </div>
-</div>
+          </div>
+        </div>
 
-
-
-        <!-- Action Buttons -->
         <div class="flex justify-end gap-3 pt-4 border-t">
           <button
             on:click={handleCancel}

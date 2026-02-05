@@ -5,7 +5,6 @@
   import Header from '$lib/components/landingpage/Header.svelte';
   import ProgressSteps from '$lib/components/registeration/ProgressSteps.svelte';
 
-  //Get locale and translations reactively
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
 

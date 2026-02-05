@@ -11,7 +11,6 @@ export function normalizeLocale(locale: string): Locale {
   return isValidLocale(locale) ? locale : 'en';
 }
 
-//  SAFETY CHECK ADDED
 export function switchLocale(locale: Locale | undefined) {
   if (!locale) return;           
   goto(`/${locale}`);

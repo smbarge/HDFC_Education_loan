@@ -1,18 +1,15 @@
-// src/routes/api/sendOTP/+server.js
 import { json } from '@sveltejs/kit';
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
 import pool from '$lib/db';
 
-// Function to get the current time in IST
 function getISTTime() {
     const now = new Date();
-    const istOffset = 5 * 60 + 30; // IST is UTC+5:30 in minutes
+    const istOffset = 5 * 60 + 30; 
     const istTime = new Date(now.getTime() + istOffset * 60 * 1000);
     return istTime;
 }
 
-// Function to send SMS via your gateway
 async function sendTemplatedSMS({ to, var1, var2 }) {
     const apiUrl = "https://push3.aclgateway.com/servlet/com.aclwireless.pushconnectivity.listeners.TextListener";
     const appId = "mitmamfdc";
@@ -49,7 +46,6 @@ export async function POST({ request }) {
     try {
         const { mobileNumber, id, name } = await request.json();
 
-        // Validate input
         if (!mobileNumber) {
             return json(
                 { error: -1, errorMsg: "Mobile number is required" },
@@ -57,7 +53,6 @@ export async function POST({ request }) {
             );
         }
 
-        // Generate unique ID and OTP
         const uid = uuidv4();
         const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -65,11 +60,9 @@ export async function POST({ request }) {
         console.log("Generated OTP:", otpCode);
         console.log("UID:", uid);
 
-        // Get current IST time
         const createdAt = getISTTime();
         const expiresAt = new Date(createdAt.getTime() + 10 * 60 * 1000); // 10 minutes expiry
 
-        // Send OTP via SMS
         const smsResult = await sendTemplatedSMS({
             to: mobileNumber,
             var1: otpCode,
@@ -84,10 +77,7 @@ export async function POST({ request }) {
             //     { status: 500 }
             // );
         }
-
-        // Insert OTP record into database
-        // Note: Your table has id as integer with DEFAULT nextval('otp_id_seq'::regclass)
-        // So we let the database auto-generate the id
+        
         await pool.query(
             `INSERT INTO otp (uid, otp_code, mobile, created_at, expires_at, verified)
              VALUES ($1::uuid, $2, $3, $4, $5, false)`,

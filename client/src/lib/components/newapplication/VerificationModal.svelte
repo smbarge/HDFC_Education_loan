@@ -2,8 +2,8 @@
   import { createEventDispatcher } from 'svelte';
   
   export let isOpen = false;
-  export let verificationType = 'email'; // 'email' or 'mobile'
-  export let contactInfo = ''; // email address or mobile number
+  export let verificationType = 'email'; 
+  export let contactInfo = ''; 
   
   const dispatch = createEventDispatcher();
   
@@ -12,7 +12,6 @@
   let resendTimer = 0;
   let timerInterval;
   
-  // Start resend timer (30 seconds)
   function startResendTimer() {
     resendTimer = 30;
     timerInterval = setInterval(() => {
@@ -23,17 +22,14 @@
     }, 1000);
   }
   
-  // Auto-start timer when modal opens
   $: if (isOpen) {
     startResendTimer();
     otpDigits = ['', '', '', '', '', ''];
   }
   
-  // Handle OTP input
   function handleOtpInput(index, event) {
     const value = event.target.value;
     
-    // Only allow single digit
     if (value.length > 1) {
       event.target.value = value.slice(-1);
       otpDigits[index] = value.slice(-1);
@@ -41,14 +37,12 @@
       otpDigits[index] = value;
     }
     
-    // Auto-focus next input
     if (value && index < 5) {
       const nextInput = document.getElementById(`otp-${index + 1}`);
       if (nextInput) nextInput.focus();
     }
   }
   
-  // Handle backspace
   function handleKeyDown(index, event) {
     if (event.key === 'Backspace' && !otpDigits[index] && index > 0) {
       const prevInput = document.getElementById(`otp-${index - 1}`);
@@ -56,7 +50,6 @@
     }
   }
   
-  // Handle paste
   function handlePaste(event) {
     event.preventDefault();
     const pastedData = event.clipboardData.getData('text').slice(0, 6);
@@ -68,19 +61,16 @@
       }
     });
     
-    // Focus last filled input or first empty
     const lastIndex = Math.min(digits.length - 1, 5);
     const input = document.getElementById(`otp-${lastIndex}`);
     if (input) input.focus();
   }
   
-  // Resend OTP
   async function handleResend() {
     if (resendTimer > 0) return;
     
     isResending = true;
     try {
-      // TODO: Call API to resend OTP
       await new Promise(resolve => setTimeout(resolve, 1000));
       startResendTimer();
     } catch (error) {
@@ -90,7 +80,6 @@
     }
   }
   
-  // Submit OTP
   function handleSubmit() {
     const otp = otpDigits.join('');
     if (otp.length === 6) {
@@ -98,13 +87,11 @@
     }
   }
   
-  // Cancel
   function handleCancel() {
     if (timerInterval) clearInterval(timerInterval);
     dispatch('cancel');
   }
   
-  // Close modal
   function closeModal() {
     if (timerInterval) clearInterval(timerInterval);
     dispatch('close');
@@ -112,19 +99,17 @@
 </script>
 
 {#if isOpen}
-  <!-- Backdrop -->
+
   <div 
     class="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity"
     on:click={closeModal}
   ></div>
   
-  <!-- Modal -->
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <div 
       class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 relative"
       on:click|stopPropagation
     >
-      <!-- Close button -->
       <button
         on:click={closeModal}
         class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
@@ -134,14 +119,12 @@
         </svg>
       </button>
       
-      <!-- Header -->
       <div class="text-center mb-6">
         <h2 class="text-2xl font-bold text-gray-900 mb-2">
           Enter your verification code
         </h2>
       </div>
       
-      <!-- Illustration -->
       <div class="flex justify-center mb-6">
         <svg class="w-32 h-32" viewBox="0 0 200 200" fill="none">
           <circle cx="100" cy="100" r="80" fill="#E9D5FF"/>
@@ -155,7 +138,6 @@
         </svg>
       </div>
       
-      <!-- Info text -->
       <div class="text-center mb-6">
         <p class="text-gray-700 font-medium mb-1">Verification code</p>
         <p class="text-sm text-gray-600 mb-3">
@@ -166,7 +148,6 @@
         </p>
       </div>
       
-      <!-- OTP Input -->
       <div class="flex justify-center gap-2 sm:gap-3 mb-6">
         {#each otpDigits as digit, index}
           <input
@@ -183,7 +164,6 @@
         {/each}
       </div>
       
-      <!-- Resend -->
       <div class="text-center mb-6">
         <p class="text-sm text-gray-600">
           If you don't receive a code?
@@ -201,7 +181,6 @@
         </p>
       </div>
       
-      <!-- Action Buttons -->
       <div class="flex gap-3">
         <button
           on:click={handleCancel}

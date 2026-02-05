@@ -5,18 +5,15 @@
   import { onMount } from 'svelte';
   import DashboardHeader from '$lib/components/dashboard/DashboardHeader.svelte';
 
-  // ✅ Get locale and translations reactively
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
 
-  // User and application state
   let userState = {
-    hasApplication: true, // Set to false for new users
-    applicationStatus: 'pending', // 'pending', 'approved', 'rejected', 'in-progress'
-    isNewUser: false
+    hasApplication: true, 
+    applicationStatus: 'pending', 
   };
 
-  // Dashboard data
+ 
   let dashboardData = {
     user: {
       name: 'Rahul Kumar',
@@ -26,7 +23,7 @@
     application: {
       id: 'MAMFDC2026001234',
       type: 'Education Loan Application',
-      status: 'pending', // 'pending', 'approved', 'rejected', 'in-progress'
+      status: 'pending', 
       submittedDate: '15/01/2026',
       lastUpdated: '28/01/2026',
       progress: 65,

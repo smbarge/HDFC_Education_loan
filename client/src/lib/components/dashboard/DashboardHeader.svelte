@@ -3,23 +3,16 @@
   import { page } from '$app/stores';
   import { i18n } from '$lib/i18n';
   
-  // ✅ Get current locale and translations reactively
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
   
-  // ✅ Get current path without locale
   $: currentPath = $page.url.pathname.replace(`/${locale}`, '') || '';
   
-  // ✅ Function to change language while preserving current page
   function changeLanguage(newLocale) {
     goto(`/${newLocale}${currentPath}`);
   }
 
   function handleLogout() {
-    // Clear session/token
-    // localStorage.removeItem('authToken');
-    // sessionStorage.clear();
-    
     // Redirect to login
     goto(`/${locale}/login`);
   }
@@ -33,7 +26,6 @@
   <div class="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
     <div class="flex justify-between items-center py-3 sm:py-4 gap-2 sm:gap-4">
       
-      <!-- Logo and Title Section - Clickable -->
       <button 
         on:click={goHome}
         class="flex items-center gap-2 sm:gap-3 md:gap-4 flex-1 min-w-0 hover:opacity-80 transition-opacity"
@@ -47,7 +39,6 @@
           />
         </div>
 
-        <!-- Title and Subtitle -->
         <div class="leading-tight min-w-0 flex-1 text-left">
           <h1 class="text-xs sm:text-sm md:text-base lg:text-lg font-semibold text-gray-900 truncate">
             {t.header.title}
@@ -59,10 +50,8 @@
         </div>
       </button>
 
-      <!-- Right Section: Language Switcher + Logout -->
       <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
         
-        <!-- Language Switcher -->
         <div class="flex items-center gap-1 sm:gap-2">
           <button
             on:click={() => changeLanguage('en')}
@@ -101,10 +90,8 @@
           </button>
         </div>
 
-        <!-- Vertical Divider -->
         <div class="hidden sm:block h-8 w-px bg-gray-300"></div>
 
-        <!-- Logout Button -->
         <button
           on:click={handleLogout}
           class="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 rounded-md text-[10px] sm:text-xs md:text-sm font-medium transition-colors"

@@ -13,10 +13,8 @@
   let isSubmitting = false;
   let errors = {};
   
-  // Tab selection: 'applicant' or 'guarantor'
   let selectedTab = 'guarantor';
   
-  // Form data structure
   let formData = {
     guarantorCommunity: '',
     guarantorFullName: '',
@@ -219,7 +217,6 @@
   <div class="w-full px-2 sm:px-4 md:px-6 lg:px-8 pb-12 overflow-x-hidden">
     <div class="max-w-[1400px] mx-auto">
     
-    <!-- Page Header -->
     <div class="mb-6 flex items-center justify-between">
       <div class="flex-1 min-w-0">
         <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
@@ -253,7 +250,6 @@
         </div>
       </div>
 
-      <!-- Select community of the Guarantor -->
       <div class="mb-6">
         <label class="block text-sm font-medium text-gray-700 mb-3">
           {t.guarantorDetails?.guarantorCommunityLabel}
@@ -280,7 +276,6 @@
       </div>
 
       <div class="grid md:grid-cols-3 gap-4">
-        <!-- Guarantor's Full Name -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {t.guarantorDetails?.guarantorFullNameLabel}<span class="text-red-500">*</span>
@@ -303,7 +298,6 @@
           {/if}
         </div>
 
-        <!-- Date of Birth -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {t.guarantorDetails?.guarantorDOBLabel} <span class="text-red-500">*</span>
@@ -326,7 +320,6 @@
           {/if}
         </div>
 
-        <!-- Gender -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {t.guarantorDetails?.guarantorGenderLabel} <span class="text-red-500">*</span>
@@ -347,7 +340,6 @@
       </div>
 
       <div class="grid md:grid-cols-2 gap-4 mt-4">
-        <!-- Aadhar Number -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {t.guarantorDetails?.guarantorAadharLabel}
@@ -371,7 +363,6 @@
           {/if}
         </div>
 
-        <!-- Pan card number -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
            {t.guarantorDetails?.guarantorPANLabel}
@@ -396,7 +387,6 @@
           {/if}
         </div>
 
-        <!-- Mobile Number -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {t.guarantorDetails?.guarantorMobileLabel} <span class="text-red-500">*</span>
@@ -420,7 +410,6 @@
           {/if}
         </div>
 
-        <!-- Email ID -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {t.guarantorDetails?.guarantorEmailLabel}
@@ -888,7 +877,6 @@
       </div>
     </section>
 
-    <!-- Action Buttons -->
     <div class="flex flex-col sm:flex-row justify-center gap-3 mt-6">
       <button
         on:click={handleBack}

@@ -96,7 +96,7 @@
 {#if show}
   <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-      <!-- Header -->
+
       <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
         <h3 class="text-xl font-bold text-gray-900">
           Add Collateral Property / तारण मालमत्ता जोडा
@@ -112,7 +112,8 @@
       </div>
 
       <div class="p-6 space-y-6">
-        <!-- Property Type Selection -->
+
+        
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             Please select the property type: <span class="text-red-500">*</span>
@@ -148,8 +149,6 @@
             </div>
         </div>
 
-
-        <!-- Document Type Selection -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             Please select the document type: <span class="text-red-500">*</span>
@@ -186,15 +185,13 @@
           </div>
         </div>
 
-
-        <!-- Property Address Section -->
         <div>
           <h4 class="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b">
             Property Address / मालमत्तेचा पत्ता
           </h4>
           
           <div class="space-y-4">
-            <!-- Survey No -->
+
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 Survey No / सर्वे नंबर <span class="text-red-500">*</span>
@@ -210,7 +207,7 @@
               {/if}
             </div>
 
-            <!-- District and Taluka -->
+          
             <div class="grid md:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -247,7 +244,7 @@
               </div>
             </div>
 
-            <!-- Village and PIN Code -->
+            
             <div class="grid md:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -283,7 +280,7 @@
           </div>
         </div>
 
-        <!-- Property Value and Area -->
+       
         <div>
           <h4 class="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b">
             Property Value and Area / मालमत्तेची किंमत आणि क्षेत्र मध्ये
@@ -346,7 +343,7 @@
           </div>
         </div>
 
-        <!-- Action Buttons -->
+       
         <div class="flex justify-end gap-3 pt-4 border-t">
           <button
             on:click={handleCancel}

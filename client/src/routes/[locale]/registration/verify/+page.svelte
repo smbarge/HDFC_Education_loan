@@ -10,7 +10,6 @@
   import { validateOtp } from '$lib/validation/resistration/verifyOtp';
 
 
-  // ✅ Get locale and translations reactively
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
 
@@ -124,10 +123,8 @@
 </script>
 
 <div class="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50">
-  <!-- Header -->
   <Header />
   
-  <!-- Back to Home Button -->
   <div class="max-w-6xl mx-auto px-4 pt-6">
     <button
       on:click={goHome}
@@ -140,13 +137,10 @@
     </button>
   </div>
 
-  <!-- Progress Steps -->
   <ProgressSteps currentStep={2} {t} />
 
-  <!-- Main Content -->
   <div class="max-w-xl mx-auto px-4 py-12">
     <div class="bg-white rounded-2xl shadow-sm p-8 border border-gray-100">
-      <!-- Badge -->
       <div class="flex justify-left mb-6">
         <div class="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 rounded-full">
           <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -156,7 +150,6 @@
         </div>
       </div>
 
-      <!-- Title -->
       <h1 class="text-3xl font-bold text-gray-900 mb-2 text-left">
         {t.step2.title}
       </h1>
@@ -167,10 +160,8 @@
         +91 {maskedPhone}
       </p>
 
-      <!-- Form -->
       <form on:submit|preventDefault={handleVerify} class="space-y-6">
         
-        <!-- OTP Input -->
         <div>
           <label for="otp" class="block text-sm font-medium text-gray-700 mb-2">
             {t.step2.enterOtp} <span class="text-red-500">*</span>
@@ -196,7 +187,6 @@
           {/if}
         </div>
 
-        <!-- Resend OTP -->
         <div class="text-center">
           <p class="text-sm text-gray-600">
             {t.step2.didntReceive}
@@ -215,7 +205,6 @@
           </p>
         </div>
 
-        <!-- Timer Info -->
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div class="flex items-start gap-3">
             <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -232,7 +221,6 @@
           </div>
         </div>
 
-        <!-- Verify Button -->
         <button
           type="submit"
           class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 shadow-lg shadow-purple-600/20"
@@ -244,7 +232,6 @@
         </button>
       </form>
 
-      <!-- Back Link -->
       <div class="mt-6 text-center">
         <button 
           on:click={goBack}

@@ -1,4 +1,3 @@
-// src/routes/api/auth/+server.js
 import { json } from '@sveltejs/kit';
 import pool from '$lib/db.js';
 import bcrypt from 'bcryptjs';
@@ -7,7 +6,6 @@ import { env } from '$env/dynamic/private';
 
 const JWT_SECRET = env.JWT_SECRET || 'your-secret-key-2024';
 
-// Helper function to generate unique user ID
 async function generateId() {
     const result = await pool.query(
         'SELECT MAX(id) as max_id FROM user1'

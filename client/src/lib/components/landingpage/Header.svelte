@@ -3,17 +3,12 @@
   import { goto } from '$app/navigation';
   import { i18n } from '$lib/i18n';
   
-  // ✅ Get current locale and translations reactively
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
   
-  // ✅ Get current path without locale
   $: currentPath = $page.url.pathname.replace(`/${locale}`, '') || '';
   
-  // ✅ Function to change language while preserving current page
   function changeLanguage(newLocale) {
-    // Build new URL: /newLocale + currentPath
-    // Example: /en/login → /mr/login
     goto(`/${newLocale}${currentPath}`);
   }
 </script>

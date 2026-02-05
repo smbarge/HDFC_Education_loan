@@ -13,7 +13,6 @@
   let isSubmitting = false;
   let errors = {};
   
-  // Verification states
   let showVerificationModal = false;
   let verificationType = 'email';
   let verificationContact = '';
@@ -22,7 +21,6 @@
   let isMobileEditable = true;
   let isEmailEditable = true;
   
-  // Form data structure - ready for backend integration
   let formData = {
     // Personal Details
     mobileNumber: '',
@@ -62,7 +60,6 @@
     suretyDetails: ''
   };
 
-  // District options
   const districts = [
     { value: 'AHMEDNAGAR', label: 'AHMEDNAGAR - अहमदनगर' },
     { value: 'PUNE', label: 'PUNE - पुणे' },
@@ -70,7 +67,6 @@
     { value: 'NAGPUR', label: 'NAGPUR - नागपूर' }
   ];
 
-  // Marital Status options
   const maritalStatusOptions = [
     { value: 'Single', label: { en: 'Single', hi: 'अविवाहित', mr: 'अविवाहित' } },
     { value: 'Married', label: { en: 'Married', hi: 'विवाहित', mr: 'विवाहित' } },
@@ -78,20 +74,17 @@
     { value: 'Widowed', label: { en: 'Widowed', hi: 'विधवा', mr: 'विधुर' } }
   ];
 
-  // Relationship options
   const relationshipOptions = [
     { value: 'Father', label: { en: 'Father', hi: 'पिता', mr: 'वडील' } },
     { value: 'Mother', label: { en: 'Mother', hi: 'माता', mr: 'आई' } },
     { value: 'Guardian', label: { en: 'Guardian', hi: 'अभिभावक', mr: 'पालक' } }
   ];
 
-  // Handle mobile edit
   function handleMobileEdit() {
     isMobileEditable = true;
     isMobileVerified = false;
   }
 
-  // Handle mobile verification
   async function handleMobileVerify() {
     if (!formData.mobileNumber) {
       errors.mobileNumber = 'Please enter mobile number first';
@@ -111,7 +104,6 @@
     }
   }
 
-  // Handle email verification
   async function handleEmailVerify() {
     if (!formData.emailId) {
       errors.emailId = 'Please enter email address first';
@@ -131,7 +123,6 @@
     }
   }
 
-  // Handle OTP verification success
   async function handleVerificationSuccess(event) {
     const { otp, type } = event.detail;
     
@@ -151,12 +142,10 @@
     }
   }
 
-  // Handle modal close/cancel
   function handleModalClose() {
     showVerificationModal = false;
   }
 
-  // Watch for "same as current address" checkbox
   $: if (formData.sameAsCurrentAddress) {
     formData.permanentStreetAddress = formData.currentStreetAddress;
     formData.permanentDistrict = formData.currentDistrict;
@@ -166,7 +155,6 @@
     formData.permanentPinCode = formData.currentPinCode;
   }
 
-  // Form validation
   function validateForm() {
     errors = {};
     
@@ -262,7 +250,6 @@
     return Object.keys(errors).length === 0;
   }
 
-  // Handle form submission
   async function handleProceed() {
     if (!validateForm()) {
       const firstErrorElement = document.querySelector('.error-message');
@@ -305,7 +292,6 @@
   <div class="w-full px-2 sm:px-4 md:px-6 lg:px-8 pb-12 overflow-x-hidden">
     <div class="max-w-[1400px] mx-auto">
     
-    <!-- Page Header -->
     <div class="mb-6 flex items-center justify-between">
       <div>
         <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
@@ -323,7 +309,7 @@
       </button>
     </div>
 
-    <!-- 1. Applicant Personal Details -->
+    <!-- Applicant Personal Details -->
     <section class="mb-6 bg-white rounded-xl shadow-md p-4 sm:p-6">
     <div class="flex items-center gap-3 mb-4">
       <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -467,7 +453,7 @@
     </section>
 
 
-    <!-- 2. Current Address -->
+    <!-- Current Address -->
     <section class="mb-6 bg-white rounded-xl shadow-md p-4 sm:p-6">
       <div class="flex items-center gap-3 mb-4">
         <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -610,7 +596,7 @@
       </label>
     </div>
 
-    <!-- 3. Permanent Address -->
+    <!-- Permanent Address -->
     <section class="mb-6 bg-white rounded-xl shadow-md p-4 sm:p-6">
       <div class="flex items-center gap-3 mb-4">
         <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -736,7 +722,7 @@
       </div>
     </section>
 
-    <!-- 4. Life & Education Details -->
+    <!-- Life & Education Details -->
     <section class="mb-6 bg-white rounded-xl shadow-md p-4 sm:p-6">
       <div class="flex items-center gap-3 mb-4">
         <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -789,7 +775,7 @@
       </div>
     </section>
 
-    <!-- 5. Parent/Guardian Information -->
+    <!-- Parent/Guardian Information -->
     <section class="mb-6 bg-white rounded-xl shadow-md p-4 sm:p-6">
       <div class="flex items-center gap-3 mb-4">
         <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -874,7 +860,7 @@
       </div>
     </section>
 
-    <!-- 6. Surety Declaration -->
+    <!-- Surety Declaration -->
     <section class="mb-6 bg-white rounded-xl shadow-md p-4 sm:p-6">
       <div class="flex items-center gap-3 mb-4">
         <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -890,7 +876,6 @@
       </div>
 
       <div class="space-y-4">
-        <!-- Previous Surety -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-3">
             {t.personalDetails?.suretyQuestion || 'Has the applicant / parent previously provided surety?'} <span class="text-red-500">*</span>
@@ -926,7 +911,6 @@
       </div>
     </section>
 
-    <!-- Action Buttons -->
     <div class="flex flex-col sm:flex-row justify-center gap-3 mt-6">
       <button
         on:click={handleCancel}

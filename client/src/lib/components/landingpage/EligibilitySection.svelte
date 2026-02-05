@@ -3,7 +3,6 @@
   import { i18n } from '$lib/i18n';
   import { onMount } from 'svelte';
 
-  // ✅ Get locale and translations reactively from URL
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale] || i18n['en'];
 

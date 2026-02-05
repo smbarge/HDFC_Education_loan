@@ -326,7 +326,6 @@
       </div>
 
       <div class="grid md:grid-cols-2 gap-4">
-        <!-- Student Name -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {t.academicInfo?.studentNameLabel}<span class="text-red-500">*</span>
@@ -342,7 +341,6 @@
           {/if}
         </div>
 
-        <!-- Course Name -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {t.academicInfo?.courseNameLabel}<span class="text-red-500">*</span>
@@ -359,7 +357,6 @@
           {/if}
         </div>
 
-        <!-- Course Type -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
              {t.academicInfo?.courseTypeLabel} <span class="text-red-500">*</span>
@@ -379,7 +376,6 @@
           {/if}
         </div>
 
-        <!-- Stream/Specialization -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {t.academicInfo?.streamLabel} <span class="text-red-500">*</span>
@@ -398,7 +394,6 @@
           {/if}
         </div>
 
-        <!-- Course Duration -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
            {t.academicInfo?.courseDurationLabel}<span class="text-red-500">*</span>
@@ -414,7 +409,6 @@
           {/if}
         </div>
 
-        <!-- Mode of Study -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {t.academicInfo?.modeOfStudyLabel}<span class="text-red-500">*</span>
@@ -453,7 +447,6 @@
 
       <div class="space-y-4">
         <div class="grid md:grid-cols-2 gap-4">
-          <!-- Institute Name -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
               {t.academicInfo?.instituteNameLabel}<span class="text-red-500">*</span>
@@ -469,7 +462,6 @@
             {/if}
           </div>
 
-          <!-- University Name -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
              {t.academicInfo?.universityNameLabel} <span class="text-red-500">*</span>
@@ -486,7 +478,6 @@
           </div>
         </div>
 
-        <!-- Institute Address -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
              {t.academicInfo?.instituteAddressLabel} <span class="text-red-500">*</span>
@@ -503,7 +494,6 @@
         </div>
 
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <!-- District -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
               {t.academicInfo?.districtLabel} <span class="text-red-500">*</span>
@@ -523,7 +513,6 @@
             {/if}
           </div>
 
-          <!-- Taluka -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
               {t.academicInfo?.talukaLabel}<span class="text-red-500">*</span>
@@ -540,7 +529,6 @@
             {/if}
           </div>
 
-          <!-- Place -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
               {t.academicInfo?.placeLabel} <span class="text-red-500">*</span>
@@ -556,7 +544,6 @@
             {/if}
           </div>
 
-          <!-- Pin Code -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
               {t.academicInfo?.pinCodeLabel}<span class="text-red-500">*</span>
@@ -593,7 +580,6 @@
       </div>
 
       <div class="grid md:grid-cols-2 gap-4">
-        <!-- Admission Status -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {t.academicInfo?.admissionStatusLabel}<span class="text-red-500">*</span>
@@ -612,7 +598,6 @@
           {/if}
         </div>
 
-        <!-- Admission Year -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {t.academicInfo?.admissionYearLabel}<span class="text-red-500">*</span>
@@ -629,7 +614,6 @@
           {/if}
         </div>
 
-        <!-- Total Course Fee -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {t.academicInfo?.totalCourseFeeLabel}<span class="text-red-500">*</span>
@@ -646,7 +630,6 @@
           {/if}
         </div>
 
-        <!-- Fee Paid (If Any) -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
           {t.academicInfo?.feePaidLabel}</label>
@@ -661,7 +644,6 @@
           {/if}
         </div>
 
-        <!-- Remaining Fee Amount -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {t.academicInfo?.remainingFeeLabel}<span class="text-red-500">*</span>
@@ -695,7 +677,6 @@
       </div>
 
       <div class="grid md:grid-cols-2 gap-4">
-        <!-- Loan Required Amount -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {t.academicInfo?.loanRequiredLabel} <span class="text-red-500">*</span>
@@ -712,7 +693,6 @@
           {/if}
         </div>
 
-        <!-- Purpose Of Loan -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {t.academicInfo?.purposeOfLoanLabel} <span class="text-red-500">*</span>
@@ -731,7 +711,6 @@
           {/if}
         </div>
 
-        <!-- GST Number (Optional) -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {t.academicInfo?.gstNumberLabel}
@@ -767,7 +746,6 @@
       </div>
 
       <div class="grid md:grid-cols-2 gap-4">
-        <!-- Nationalized Bank Name -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {t.academicInfo?.bankNameLabel} <span class="text-red-500">*</span>
@@ -783,7 +761,6 @@
           {/if}
         </div>
 
-        <!-- IFSC Code -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {t.academicInfo?.ifscCodeLabel} <span class="text-red-500">*</span>
@@ -801,7 +778,6 @@
           {/if}
         </div>
 
-        <!-- Branch Name -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {t.academicInfo?.branchNameLabel} <span class="text-red-500">*</span>
@@ -817,7 +793,6 @@
           {/if}
         </div>
 
-        <!-- Account Number -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
            {t.academicInfo?.accountNumberLabel} <span class="text-red-500">*</span>
@@ -835,7 +810,6 @@
           {/if}
         </div>
 
-        <!-- Bank Address -->
         <div class="md:col-span-2">
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {t.academicInfo?.bankAddressLabel} <span class="text-red-500">*</span>
@@ -854,7 +828,6 @@
       </div>
     </section>
 
-    <!-- Action Buttons -->
     <div class="flex flex-col sm:flex-row justify-center gap-3 mt-6">
       <button
         on:click={handleCancel}

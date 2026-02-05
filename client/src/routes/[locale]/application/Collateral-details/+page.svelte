@@ -5,7 +5,6 @@
   import ApplicationStepper from '$lib/components/newapplication/ApplicationStepper.svelte';
   import DashboardHeader from '$lib/components/dashboard/DashboardHeader.svelte';
   
-  // Import all modal components
   import PropertyCollateralModal from '$lib/components/collateral/PropertyCollateralModal.svelte';
   import FDCollateralModal from '$lib/components/collateral/FDCollateralModal.svelte';
   import LICCollateralModal from '$lib/components/collateral/LICCollateralModal.svelte';
@@ -17,16 +16,13 @@
   let currentStep = 5;
   let isSubmitting = false;
   
-  // Collateral items array
   let collateralItems = [];
   
-  // Modal states
   let showPropertyModal = false;
   let showFDModal = false;
   let showLICModal = false;
   let showGovtEmployeeModal = false;
 
-  // Functions to open modals
   function openPropertyModal() {
     showPropertyModal = true;
   }
@@ -43,7 +39,6 @@
     showGovtEmployeeModal = true;
   }
 
-  // Functions to close modals
   function closePropertyModal() {
     showPropertyModal = false;
   }
@@ -60,7 +55,6 @@
     showGovtEmployeeModal = false;
   }
 
-  // Save functions
   function savePropertyCollateral(data) {
     collateralItems = [...collateralItems, data];
     showPropertyModal = false;
@@ -81,20 +75,16 @@
     showGovtEmployeeModal = false;
   }
 
-  // Delete collateral
   function deleteCollateral(id) {
     if (confirm('Are you sure you want to delete this collateral?')) {
       collateralItems = collateralItems.filter(item => item.id !== id);
     }
   }
 
-  // Edit collateral
   function editCollateral(item) {
-    // Remove the item and reopen the appropriate modal with the data
     collateralItems = collateralItems.filter(i => i.id !== item.id);
     
     if (item.type === 'property') {
-      // TODO: Populate form and open modal
       showPropertyModal = true;
     } else if (item.type === 'fd') {
       showFDModal = true;
@@ -146,7 +136,6 @@
   <div class="w-full px-2 sm:px-4 md:px-6 lg:px-8 pb-12 overflow-x-hidden">
     <div class="max-w-[1400px] mx-auto">
     
-    <!-- Page Header -->
     <div class="mb-5 flex items-center gap-3">
      
       <div class="flex-1">
@@ -156,10 +145,8 @@
       </div>
     </div>
 
-    <!-- Add Collateral Buttons -->
     <div class="mb-6 bg-gray-100 rounded-xl p-4 sm:p-6">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        <!-- Property Collateral -->
         <button
           on:click={openPropertyModal}
           class="flex items-center justify-center gap-3 px-4 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all shadow-md text-sm"
@@ -218,7 +205,6 @@
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         {#each collateralItems as item (item.id)}
           <div class="bg-white rounded-xl shadow-md p-4 relative hover:shadow-lg transition-shadow">
-            <!-- Delete Button -->
             <button
               on:click={() => deleteCollateral(item.id)}
               class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center bg-red-100 hover:bg-red-200 text-red-600 rounded-full transition-colors"
@@ -229,7 +215,6 @@
               </svg>
             </button>
 
-            <!-- Edit Button -->
             <button
               on:click={() => editCollateral(item)}
               class="absolute top-3 right-12 w-8 h-8 flex items-center justify-center bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-full transition-colors"
@@ -240,7 +225,6 @@
               </svg>
             </button>
 
-            <!-- Content -->
             <div class="pr-20">
               {#if item.type === 'property'}
                 <div class="flex items-center gap-2 mb-2">
@@ -344,6 +328,7 @@
 </div>
 
 <!-- Modals -->
+ 
 <PropertyCollateralModal 
   show={showPropertyModal} 
   onSave={savePropertyCollateral} 
