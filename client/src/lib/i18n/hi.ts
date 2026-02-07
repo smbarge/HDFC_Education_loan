@@ -630,7 +630,7 @@ export const hi = {
     suretyDetailsPlaceholder: "पिछली जमानत का विवरण दें...",
     suretyDetailsRequired: "जमानत विवरण आवश्यक है",
 
-    cancelButton: "रद्द करें",
+    cancelButton: "वापस जाएँ",
     proceedButton: "अगले चरण पर जाएँ",
     processing: "प्रक्रिया जारी है...",
 
@@ -809,7 +809,7 @@ export const hi = {
   bankAddressPlaceholder: "बैंक का पता दर्ज करें...",
   bankAddressRequired: "बैंक का पता आवश्यक है",
 
-  cancelButton: "रद्द करें",
+  cancelButton: "वापस जाएँ",
   proceedButton: "अगले चरण पर जाएं",
   processing: "प्रक्रिया जारी है..."
   },
@@ -942,7 +942,7 @@ export const hi = {
   suretyDetailsPlaceholder: "विवरण यहाँ दर्ज करें...",
   suretyDetailsRequired: "कृपया विवरण प्रदान करें",
 
-  cancelButton: "रद्द करें",
+  cancelButton: "वापस जाएँ",
   proceedButton: "आगे बढ़ें",
   processing: "प्रक्रिया जारी है..."
   },
@@ -962,7 +962,7 @@ export const hi = {
   noCollateralSubtitle: 'जमानत जोड़ने के लिए ऊपर दिए गए बटन पर क्लिक करें',
 
   // Action Buttons
-  cancelButton: 'रद्द करें',
+  cancelButton: 'वापस जाएँ',
   proceedButton: 'आगे बढ़ें',
   processingButton: 'प्रक्रिया जारी है...',
 
@@ -1000,6 +1000,247 @@ export const hi = {
   noCollateralAlert: 'कृपया कम से कम एक जमानत जोड़ें',
   submitError: 'सबमिट करने में विफल। कृपया पुनः प्रयास करें।'
   },
+
+  uploadDocuments: {
+  // Page Header
+  pageTitle: "दस्तावेज़ अपलोड करें",
+  pageSubtitle: "कृपया सभी आवश्यक दस्तावेज़ अपलोड करें",
+  backButton: "वापस",
+  backToHome: "होम पर वापस जाएँ",
+
+  // Section Headers
+  applicantDocuments: "आवेदक के लिए आवश्यक दस्तावेज़",
+  coApplicantDocuments: "सह-आवेदक (माता/पिता/अभिभावक) के लिए आवश्यक दस्तावेज़",
+  guarantorDocuments: "जमानतदार के लिए आवश्यक दस्तावेज़",
+  collateralDocuments: "जमानत/सुरक्षा के लिए आवश्यक दस्तावेज़",
+
+  
+  ApplicantDocument: {
+  // Main Header
+  title: "आवेदक के दस्तावेज़",
+  
+  // Table Headers
+  documentName: "दस्तावेज़ का नाम",
+  uploadView: "अपलोड / देखें",
+  delete: "हटाएँ",
+  
+  // Section Headings
+  sectionA: "A. व्यक्तिगत एवं पहचान संबंधी दस्तावेज़",
+  sectionB: "B. शैक्षणिक दस्तावेज़",
+  sectionC: "C. निवास एवं समुदाय संबंधी दस्तावेज़",
+  sectionD: "D. परिवार एवं आय संबंधी दस्तावेज़",
+  sectionE: "E. बैंक संबंधी दस्तावेज़",
+  
+  // Personal & Identity Documents
+  aadharCard: "आधार कार्ड",
+  panCard: "पैन कार्ड",
+  photo: "पासपोर्ट साइज फोटो",
+  signature: "आवेदक के हस्ताक्षर",
+  
+  // Educational Documents
+  admissionLetter: "शैक्षणिक संस्था से प्रवेश / ऑफर पत्र",
+  bonafide: "बोनाफाइड प्रमाण पत्र",
+  feeStructure: "फीस संरचना / फीस रसीद",
+  markSheets: "पिछले वर्ष की मार्कशीट / प्रमाण पत्र",
+  entranceExam: "प्रवेश परीक्षा स्कोर कार्ड (यदि लागू हो)",
+  
+  // Residence & Community Documents
+  domicile: "अधिवास प्रमाण पत्र (महाराष्ट्र)",
+  minorityCert: "अल्पसंख्यक समुदाय प्रमाण पत्र",
+  casteCert: "जाति प्रमाण पत्र (यदि लागू हो)",
+  
+  // Family & Income Documents
+  incomeCert: "आय प्रमाण पत्र (सक्षम प्राधिकारी द्वारा जारी)",
+  parentAadhar: "माता-पिता / अभिभावक का आधार कार्ड",
+  rationCard: "राशन कार्ड (यदि उपलब्ध हो)",
+  
+  // Bank Documents
+  passbook: "आवेदक की बैंक पासबुक (पहला पृष्ठ)",
+  cancelledCheque: "रद्द किया गया चेक",
+  
+  // Status & Actions
+  required: "अनिवार्य",
+  optional: "वैकल्पिक",
+  uploaded: "अपलोड किया गया",
+  notUploaded: "अपलोड नहीं किया गया",
+  upload: "अपलोड करें",
+  view: "देखें",
+  deleteDoc: "हटाएँ",
+  choose: "फ़ाइल चुनें",
+  noFileChosen: "कोई फ़ाइल चयनित नहीं है"
+  },
+
+  CoApplicantDocument: {
+  // Header
+  sectionTitle: "सह-आवेदक के दस्तावेज़",
+  
+  // Table Headers
+  documentsName: "दस्तावेज़ का नाम",
+  uploadView: "अपलोड / देखें",
+  delete: "हटाएं",
+  
+  // Document Names
+  aadharCard: "आधार कार्ड",
+  incomeCertificate: "आय प्रमाण पत्र (सक्षम प्राधिकारी द्वारा जारी)",
+  rationCard: "राशन कार्ड (शिद्ध पत्रिका)",
+  
+  // Buttons
+  upload: "अपलोड करें",
+  view: "देखें",
+  deleteBtn: "हटाएं"
+  },
+
+  GuarantorDocument: {
+    // Header
+    sectionTitle: "गारंटर के दस्तावेज़",
+    guarantorInformation: "गारंटर की जानकारी",
+    name: "नाम",
+    mobile: "मोबाइल",
+    
+    // Table Headers
+    documentsName: "दस्तावेज़ का नाम",
+    uploadView: "अपलोड / देखें",
+    delete: "हटाएं",
+    
+    // Document Names
+    aadharCard: "आधार कार्ड",
+    guarantorAffidavit: "गारंटर शपथ पत्र",
+    incomeCertificate: "आय प्रमाण पत्र",
+    addressProof: "पते का प्रमाण",
+    
+    // Buttons
+    upload: "अपलोड करें",
+    view: "देखें",
+    deleteBtn: "हटाएं",
+    
+    // No Guarantor Message
+    noGuarantorFound: "गारंटर की जानकारी नहीं मिली। कृपया गारंटर विवरण चरण पूरा करें।"
+  },
+
+  CollateralDocuments: {
+    // Header
+    sectionTitle: "संपार्श्विक दस्तावेज़",
+    
+    // Collateral Type Labels
+    propertyCollateral: "संपत्ति संपार्श्विक",
+    govtEmployeeCollateral: "सरकारी कर्मचारी संपार्श्विक",
+    licCollateral: "एल.आई.सी. पॉलिसी संपार्श्विक",
+    fdCollateral: "सावधि जमा संपार्श्विक",
+    
+    // Info Labels
+    surveyNo: "सर्वे नंबर",
+    village: "गांव",
+    bank: "बैंक",
+    branch: "शाखा",
+    policy: "पॉलिसी",
+    receiptNo: "रसीद नंबर",
+    name: "नाम",
+    employeeID: "कर्मचारी आईडी",
+    
+    // Table Headers
+    documentsName: "दस्तावेज़ का नाम",
+    uploadView: "अपलोड / देखें",
+    delete: "हटाएं",
+    
+    // Property Documents
+    propertyAadharCard: "आधार कार्ड",
+    propertyOwnership: "संपत्ति स्वामित्व प्रमाण",
+    extract712: "७/१२, ६ड, ८अ उद्धरण (मूल)",
+    prCard: "संपत्ति पंजीकरण दस्तावेज़ / पी.आर. कार्ड",
+    valuationCert: "संपत्ति मूल्यांकन प्रमाण पत्र",
+    form24A: "फॉर्म-२४ (अ)",
+    
+    // Government Employee Documents
+    govtAadharCard: "आधार कार्ड",
+    govtIdCard: "सरकारी कर्मचारी पहचान पत्र",
+    salaryCert: "वेतन प्रमाण पत्र (मूल)",
+    officeCert: "कार्यालय प्रमाण पत्र",
+    retirementProof: "सेवानिवृत्ति प्रमाण",
+    form24B: "फॉर्म-२४ (ब)",
+    
+    // LIC Documents
+    licPhotoWithSign: "क्रॉस हस्ताक्षर के साथ पासपोर्ट साइज़ फोटो",
+    licAadharCard: "आधार कार्ड",
+    licPolicyOriginal: "मूल एल.आई.सी. पॉलिसी",
+    premiumReceipts: "एल.आई.सी. प्रीमियम भुगतान रसीदें",
+    policyBond: "पॉलिसी बांड प्रति",
+    policyStatus: "पॉलिसी स्थिति प्रमाण पत्र",
+    
+    // FD Documents
+    fdPhotoWithSign: "क्रॉस हस्ताक्षर के साथ पासपोर्ट साइज़ फोटो",
+    aadharCardXerox: "आधार कार्ड फोटोकॉपी",
+    fdReceipt: "मूल सावधि जमा रसीद",
+    bankConfirmation: "एफडी के लिए बैंक पुष्टि पत्र",
+    fdStatement: "एफडी खाता विवरण",
+    
+    // Notes
+    photoNote: "आवेदन पर गारंटर की पासपोर्ट साइज़ रंगीन फोटो पर क्रॉस हस्ताक्षर अनिवार्य है",
+    note: "नोट",
+    
+    // Buttons
+    upload: "अपलोड करें",
+    view: "देखें",
+    deleteBtn: "हटाएं",
+    
+    // No Collateral Message
+    noCollateralAdded: "कोई संपार्श्विक नहीं जोड़ा गया। कृपया पिछले चरण से संपार्श्विक जोड़ें।",
+
+    validationMessages: {
+      documentRequired: "दस्तावेज़ आवश्यक है",
+      fileSizeError: "फ़ाइल का आकार 5MB से कम होना चाहिए",
+      fileTypeError: "अमान्य फ़ाइल प्रकार। केवल PDF, JPG, JPEG, PNG फ़ाइलें स्वीकार की जाती हैं",
+      imageOnlyError: "इस दस्तावेज़ के लिए केवल JPG, JPEG, PNG छवि फ़ाइलें स्वीकार की जाती हैं",
+      uploadSuccess: "फ़ाइल सफलतापूर्वक अपलोड की गई",
+      deleteConfirm: "क्या आप वाकई इस दस्तावेज़ को हटाना चाहते हैं?",
+      allDocumentsRequired: "कृपया सभी आवश्यक दस्तावेज़ अपलोड करें",
+      missingDocuments: "दस्तावेज़ गुम"
+    }
+  },
+
+  // Upload Actions
+  uploadButton: "अपलोड करें",
+  viewButton: "देखें",
+  deleteButton: "हटाएँ",
+  uploadedStatus: "अपलोड हो गया",
+  pendingStatus: "लंबित",
+
+  // File Upload Messages
+  selectFile: "फ़ाइल चुनें",
+  dragDrop: "या ड्रैग और ड्रॉप करें",
+  fileFormat: "PDF, JPG, PNG (अधिकतम 5MB)",
+  fileUploaded: "फ़ाइल सफलतापूर्वक अपलोड हुई",
+  fileError: "फ़ाइल अपलोड करने में त्रुटि। कृपया पुनः प्रयास करें।",
+
+  // Delete Confirmation
+  deleteConfirm: "क्या आप वाकई यह दस्तावेज़ हटाना चाहते हैं?",
+
+  // Section Notes
+  foreignEducationNote: "विदेशी शिक्षा के छात्रों के लिए आवश्यक दस्तावेज़ (उपरोक्त के अतिरिक्त)",
+  propertyOwnerNote: "A) संपत्ति मालिक जमानतदार:",
+  govtEmployeeNote: "B) सरकारी कर्मचारी जमानतदार:",
+  licPolicyNote: "C) LIC पॉलिसी धारक जमानतदार:",
+  fdHolderNote: "D) फिक्स्ड डिपॉजिट (FD) धारक जमानतदार:",
+
+  // Additional Notes
+  licPolicyCondition: "पॉलिसी राशि ऋण राशि से कम से कम दोगुनी होनी चाहिए",
+  licPremiumCondition: "पूरी पॉलिसी अवधि में कम से कम आधे प्रीमियम का भुगतान होना चाहिए",
+  crossSignatureNote: "आवेदन पर जमानतदार के पासपोर्ट साइज रंगीन फोटो पर क्रॉस सिग्नेचर अनिवार्य है",
+
+  // Buttons
+  cancelButton: "वापस",
+  submitButton: "दस्तावेज़ जमा करें",
+  processingButton: "प्रक्रिया जारी है...",
+
+  // Error Messages
+  submitError: "दस्तावेज़ जमा करने में विफल। कृपया पुनः प्रयास करें।",
+  uploadError: "दस्तावेज़ अपलोड करने में त्रुटि। कृपया पुनः प्रयास करें।",
+
+  // Helper Text
+  mandatoryDocuments: "सभी अनिवार्य दस्तावेज़ अपलोड करना आवश्यक है",
+  originalRequired: "(मूल आवश्यक)",
+  optional: "(वैकल्पिक)",
+  ifAvailable: "(यदि उपलब्ध हो)"
+},
   
   footer: {
     about: {

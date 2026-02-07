@@ -53,7 +53,7 @@
         return;
       }
 
-      // ✅ Save session (simple & safe)
+      //Save session (simple & safe)
       sessionStorage.setItem(
         'authUser',
         JSON.stringify(response.user)
@@ -62,6 +62,7 @@
       sessionStorage.setItem(
         'accessToken',
         response.token
+        
       );
 
       goto(`/${locale}/dashboard`);
@@ -99,8 +100,8 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <div class="grid lg:grid-cols-2 gap-8 lg:gap-12 items-stretch">
       
-      <div class="relative h-full min-h-[500px] lg:min-h-[600px]">
-      <div class="relative rounded-2xl overflow-hidden shadow-2xl w-[600px] h-[550px] sm:w-[600px] sm:h-[650px] bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600">
+      <div class="hidden lg:block relative h-full min-h-[500px] lg:min-h-[600px]">
+      <div class="relative rounded-2xl overflow-hidden shadow-2xl w-full max-w-[600px] h-[550px] sm:h-[650px] bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600">
         
           <img
             src ='/create-account.jpg'

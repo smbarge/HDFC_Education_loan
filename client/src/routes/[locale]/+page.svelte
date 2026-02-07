@@ -9,7 +9,6 @@
   import DocumentsSection from '$lib/components/landingpage/DocumentsSection.svelte';
   import Footer from '$lib/components/landingpage/Footer.svelte';
 
-  // ✅ Get locale and translations reactively from URL
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
 </script>

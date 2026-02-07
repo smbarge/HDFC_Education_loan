@@ -115,7 +115,7 @@
 
   <ProgressSteps currentStep={1} {t} />
 
-  <!-- ✅ Centered Container -->
+  <!--Centered Container -->
   <div class="max-w-2xl mx-auto px-4 py-12">
     <div class="bg-white rounded-2xl shadow-sm p-8 border border-gray-100">
       <div class="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 rounded-full mb-6">

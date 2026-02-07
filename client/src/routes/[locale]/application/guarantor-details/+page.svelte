@@ -4,10 +4,36 @@
   import { i18n } from '$lib/i18n';
   import ApplicationStepper from '$lib/components/newapplication/ApplicationStepper.svelte';
   import DashboardHeader from '$lib/components/dashboard/DashboardHeader.svelte';
+  import { onMount } from 'svelte';
+  import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
 
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
+
+
+  let userData = null;
+  let showProfileModal = false;
+
+
+
+  onMount(() => {
+  if (typeof window !== 'undefined') {
+    const authUser = sessionStorage.getItem('authUser');
+
+    if (!authUser) {
+      goto(`/${locale}/login`);
+    }
+    else {
+       const user = JSON.parse(authUser);
+        userData = {
+          name: user.name || "Guest User",
+          phone: user.mobile || "",
+          username: user.username || ""
+        };
+    }
+  }
+});
 
   let currentStep = 4;
   let isSubmitting = false;
@@ -175,34 +201,94 @@
     return Object.keys(errors).length === 0;
   }
 
-  async function handleProceed() {
-    if (!validateForm()) {
-      const firstErrorElement = document.querySelector('.error-message');
-      if (firstErrorElement) {
-        firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-      return;
-    }
+  // async function handleProceed() {
+  //   if (!validateForm()) {
+  //     const firstErrorElement = document.querySelector('.error-message');
+  //     if (firstErrorElement) {
+  //       firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  //     }
+  //     return;
+  //   }
 
-    isSubmitting = true;
+  //   isSubmitting = true;
 
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      goto(`/${locale}/application/Collateral-details`);
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      alert('Failed to submit form. Please try again.');
-    } finally {
-      isSubmitting = false;
+  //   try {
+  //     await new Promise(resolve => setTimeout(resolve, 1000));
+  //     goto(`/${locale}/application/Collateral-details`);
+  //   } catch (error) {
+  //     console.error('Error submitting form:', error);
+  //     alert('Failed to submit form. Please try again.');
+  //   } finally {
+  //     isSubmitting = false;
+  //   }
+  // }
+
+//   async function handleProceed() {
+//   if (!validateForm()) {
+//     const firstErrorElement = document.querySelector('.error-message');
+//     if (firstErrorElement) {
+//       firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+//     }
+//     return;
+//   }
+
+//   isSubmitting = true;
+
+//   try {
+//     // Save guarantor data to session storage
+//     const guarantorData = {
+//       type: 'guarantor', 
+//       ...formData
+//     };
+//     sessionStorage.setItem('guarantorData', JSON.stringify(guarantorData));
+    
+//     await new Promise(resolve => setTimeout(resolve, 1000));
+//     goto(`/${locale}/application/Collateral-details`);
+//   } catch (error) {
+//     console.error('Error submitting form:', error);
+//     alert('Failed to submit form. Please try again.');
+//   } finally {
+//     isSubmitting = false;
+//   }
+// }
+
+
+async function handleProceed() {
+  if (!validateForm()) {
+    const firstErrorElement = document.querySelector('.error-message');
+    if (firstErrorElement) {
+      firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+    return;
   }
 
+  isSubmitting = true;
+
+  try {
+    // Save guarantor data to session storage WITH DISPLAY INFO
+    const guarantorData = {
+      type: 'guarantor',
+      ...formData,
+      displayName: `${formData.guarantorFullName} - ${formData.guarantorMobile}` // For error messages
+    };
+    sessionStorage.setItem('guarantorData', JSON.stringify(guarantorData));
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    goto(`/${locale}/application/Collateral-details`);
+  } catch (error) {
+    console.error('Error submitting form:', error);
+    alert('Failed to submit form. Please try again.');
+  } finally {
+    isSubmitting = false;
+  }
+}
+
   function handleBack() {
-    goto(`/${locale}/application/academic-info`);
+    goto(`/${locale}/dashboard`);
   }
 
   function handleCancel() {
-    goto(`/${locale}/dashboard`);
+    goto(`/${locale}/application/acadamic-info`);
   }
 </script>
 
@@ -211,7 +297,24 @@
 </svelte:head>
 
 <div class="min-h-screen bg-gradient-to-br from-purple-50 via-purple-50 to-purple-100">
-  <DashboardHeader {t} {locale} />
+  <DashboardHeader
+        {t}
+        {locale}
+        {userData}
+        on:openProfile={() => showProfileModal = true}
+      />
+
+      <ProfileModal
+        {userData}
+        {locale}
+        bind:showProfileModal
+        on:close={() => showProfileModal = false}
+        on:logout={() => {
+          sessionStorage.removeItem('authUser');
+          goto(`/${locale}/login`);
+        }}
+      />
+
   <ApplicationStepper {currentStep} {locale} />
 
   <div class="w-full px-2 sm:px-4 md:px-6 lg:px-8 pb-12 overflow-x-hidden">
@@ -230,7 +333,7 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
         </svg>
-        <span class="hidden sm:inline">{t.guarantorDetails?.backButton || 'Back'}</span>
+        <span class="hidden sm:inline">{t.applicationStart?.backToHome || 'Back to Home'}</span>
       </button>
     </div>
 
@@ -878,31 +981,40 @@
     </section>
 
     <div class="flex flex-col sm:flex-row justify-center gap-3 mt-6">
-      <button
-        on:click={handleBack}
-        class="inline-flex items-center justify-center gap-2 px-6 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors text-sm"
-      >
-        <span>{t.guarantorDetails?.cancelButton}</span>
-      </button>
-      <button
-        on:click={handleProceed}
-        disabled={isSubmitting}
-        class="inline-flex items-center justify-center gap-2 px-8 py-2.5 bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold rounded-lg transition-all shadow-md text-sm"
-      >
-        {#if isSubmitting}
-          <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          <span>{t.guarantorDetails?.processing}</span>
-        {:else}
-          <span>{t.guarantorDetails?.proceedButton}</span>
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-          </svg>
-        {/if}
-      </button>
-    </div>
+          <button
+            on:click={handleCancel}
+            class="inline-flex items-center justify-center gap-2 px-6 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors text-sm"
+          >
+            <!-- Left Arrow (Back) -->
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+            </svg>
+            <span>{t.guarantorDetails?.cancelButton}</span>
+          </button>
+
+          <!-- Proceed Button -->
+          <button
+            on:click={handleProceed}
+            disabled={isSubmitting}
+            class="inline-flex items-center justify-center gap-2 px-8 py-2.5 bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold rounded-lg transition-all shadow-md text-sm"
+          >
+            {#if isSubmitting}
+              <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              <span>{t.guarantorDetails?.processing}</span>
+            {:else}
+              <span>{t.guarantorDetails?.proceedButton}</span>
+              <!-- Right Arrow (Next) -->
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            {/if}
+          </button>
+      </div>
+
 
     </div>
   </div>

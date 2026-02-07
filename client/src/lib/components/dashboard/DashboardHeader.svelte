@@ -1,10 +1,13 @@
 <script>
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import { i18n } from '$lib/i18n';
+  import { createEventDispatcher } from 'svelte';
   
-  $: locale = $page.params.locale || 'en';
-  $: t = i18n[locale];
+  export let t;
+  export let locale;
+  export let userData;
+  
+  const dispatch = createEventDispatcher();
   
   $: currentPath = $page.url.pathname.replace(`/${locale}`, '') || '';
   
@@ -12,13 +15,12 @@
     goto(`/${newLocale}${currentPath}`);
   }
 
-  function handleLogout() {
-    // Redirect to login
-    goto(`/${locale}/login`);
-  }
-
   function goHome() {
     goto(`/${locale}/dashboard`);
+  }
+
+  function openProfile() {
+    dispatch('openProfile');
   }
 </script>
 
@@ -52,6 +54,7 @@
 
       <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
         
+        <!-- Language Switcher -->
         <div class="flex items-center gap-1 sm:gap-2">
           <button
             on:click={() => changeLanguage('en')}
@@ -92,15 +95,19 @@
 
         <div class="hidden sm:block h-8 w-px bg-gray-300"></div>
 
+        <!-- Profile Button -->
         <button
-          on:click={handleLogout}
-          class="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 rounded-md text-[10px] sm:text-xs md:text-sm font-medium transition-colors"
-          aria-label="Logout"
+          on:click={openProfile}
+          class="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg transition-all duration-200 group"
+          aria-label="Open Profile"
         >
-          <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+          <div class="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-white text-xs sm:text-sm font-bold shadow-sm group-hover:shadow-md transition-shadow">
+            {userData?.name ? userData.name.charAt(0).toUpperCase() : 'U'}
+          </div>
+          <span class="hidden md:inline text-sm font-medium">Profile</span>
+          <svg class="w-4 h-4 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
           </svg>
-          <span class="hidden sm:inline">{t.dashboard.logout}</span>
         </button>
       </div>
 

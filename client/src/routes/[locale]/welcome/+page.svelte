@@ -1,103 +1,109 @@
 <script>
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import { i18n } from '$lib/i18n';
   import { onMount } from 'svelte';
+  import { i18n } from '$lib/i18n';
   import DashboardHeader from '$lib/components/dashboard/DashboardHeader.svelte';
+  import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
+  import ApplicationStepper from '$lib/components/newapplication/ApplicationStepper.svelte';
+
+  let userData = {
+    name: "Guest User",
+    phone: "",
+    username: ""
+  };
+
+  let showProfileModal = false;
+  let hasApplication = false;
+  let applicationData = null;
+
+  // Dummy Application Data - Change these values to test different states
+  const dummyApplicationData = {
+    // Set to null to show welcome screen, or use one of the examples below
+    
+    // Example 1: In-Progress Application (incomplete)
+    id: 'APP2024001234',
+    status: 'in-progress', // 'in-progress', 'pending', 'approved', 'rejected'
+    currentStep: 4, // Current step (1-6)
+    loanAmount: '350000',
+    purpose: 'Engineering Degree',
+    submittedDate: '06/02/2024',
+    applicantName: 'Akshata Sangale',
+    course: 'B.Tech Computer Science',
+    institution: 'Pune Institute of Technology'
+    
+    // Example 2: Pending Application (under review)
+    // id: 'APP2024001235',
+    // status: 'pending',
+    // currentStep: 6,
+    // loanAmount: '450000',
+    // purpose: 'MBA Program',
+    // submittedDate: '25/01/2024',
+    // applicantName: 'Rahul Patil',
+    // course: 'MBA Finance',
+    // institution: 'Symbiosis Institute'
+    
+    // Example 3: Approved Application
+    // id: 'APP2024001236',
+    // status: 'approved',
+    // currentStep: 6,
+    // loanAmount: '500000',
+    // purpose: 'Medical Education',
+    // submittedDate: '15/01/2024',
+    // approvedDate: '05/02/2024',
+    // applicantName: 'Priya Sharma',
+    // course: 'MBBS',
+    // institution: 'Government Medical College'
+    
+    // Example 4: Rejected Application
+    // id: 'APP2024001237',
+    // status: 'rejected',
+    // currentStep: 6,
+    // loanAmount: '300000',
+    // purpose: 'Hotel Management',
+    // submittedDate: '10/01/2024',
+    // rejectedDate: '02/02/2024',
+    // rejectedReason: 'Incomplete documentation',
+    // applicantName: 'Amit Desai',
+    // course: 'BHM',
+    // institution: 'IHM Mumbai'
+  };
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
 
-  let userState = {
-    hasApplication: true, 
-    applicationStatus: 'pending', 
-  };
-
- 
-  let dashboardData = {
-    user: {
-      name: 'Rahul Kumar',
-      email: 'rahul.kumar@example.com',
-      phone: '+91 98765 43210'
-    },
-    application: {
-      id: 'MAMFDC2026001234',
-      type: 'Education Loan Application',
-      status: 'pending', 
-      submittedDate: '15/01/2026',
-      lastUpdated: '28/01/2026',
-      progress: 65,
-      nextAction: 'Upload Income Certificate',
-      reviewDate: '05/02/2026',
-      approvalDate: null,
-      rejectionReason: null
-    },
-    loanDetails: {
-      requestedAmount: '₹5,00,000',
-      approvedAmount: '₹4,50,000',
-      interestRate: '4.5% p.a.',
-      loanTenure: '10 years',
-      monthlyEMI: '₹4,674'
-    },
-    documents: {
-      pending: 2,
-      verified: 5,
-      total: 7,
-      pendingList: ['Income Certificate', 'Fee Structure']
-    },
-    recentActivities: [
-      {
-        id: 1,
-        type: 'Document Uploaded',
-        description: 'Aadhar card uploaded successfully',
-        timestamp: '28/01/2026, 10:30 AM',
-        icon: '📤',
-        status: 'success'
-      },
-      {
-        id: 2,
-        type: 'Document Verified',
-        description: 'Educational certificates verified',
-        timestamp: '27/01/2026, 03:15 PM',
-        icon: '✅',
-        status: 'success'
-      },
-      {
-        id: 3,
-        type: 'Status Updated',
-        description: 'Application status changed to Under Review',
-        timestamp: '26/01/2026, 11:45 AM',
-        icon: '🔄',
-        status: 'info'
-      },
-      {
-        id: 4,
-        type: 'Application Submitted',
-        description: 'Your application has been submitted for review',
-        timestamp: '15/01/2026, 09:20 AM',
-        icon: '📄',
-        status: 'success'
-      }
-    ],
-    support: {
-      email: 'support@mamfdc.gov.in',
-      emailResponse: 'Response within 24 hours',
-      liveChat: 'Available now',
-      phone: '1800-123-4567',
-      phoneHours: 'Mon-Sat, 9 AM - 6 PM'
-    }
-  };
-
   onMount(() => {
-    // Check if user has application
-    checkUserStatus();
+    if (typeof window !== 'undefined') {
+      const authUser = sessionStorage.getItem('authUser');
+      
+      if (!authUser) {
+        goto(`/${locale}/login`);
+        return;
+      }
+
+      const user = JSON.parse(authUser);
+      userData = {
+        name: user.name || "Guest User",
+        phone: user.mobile || "",
+        username: user.username || ""
+      };
+
+      // Load dummy application data
+      loadDummyApplicationData();
+    }
   });
 
-  function checkUserStatus() {
-    // This would normally fetch from backend
-    // For demo, we'll use the state defined above
-    userState.hasApplication = dashboardData.application.id ? true : false;
-    userState.applicationStatus = dashboardData.application.status;
+  function loadDummyApplicationData() {
+    // Toggle this to test with/without application
+    const showApplicationTracking = true; // Set to false to show welcome screen
+    
+    if (showApplicationTracking && dummyApplicationData) {
+      applicationData = dummyApplicationData;
+      hasApplication = true;
+    } else {
+      applicationData = null;
+      hasApplication = false;
+    }
   }
 
   function startNewApplication() {
@@ -105,557 +111,531 @@
   }
 
   function continueApplication() {
-    goto(`/${locale}/application/continue`);
+    const currentStep = applicationData?.currentStep || 1;
+    const routes = [
+      'start',
+      'personal-details',
+      'academic-info',
+      'guarantor-details',
+      'collateral-details',
+      'upload-documents'
+    ];
+    goto(`/${locale}/application/${routes[currentStep - 1]}`);
   }
 
-  function uploadDocuments() {
-    goto(`/${locale}/application/documents`);
+  function viewApplication() {
+    // Navigate to view application page
+    alert(`Viewing application: ${applicationData?.id}`);
+    // goto(`/${locale}/application/view/${applicationData?.id}`);
   }
 
-  function viewProfile() {
-    goto(`/${locale}/profile`);
+  function viewEligibility() {
+    goto(`/${locale}/eligibility`);
+  }
+
+  function viewDocuments() {
+    goto(`/${locale}/documents-list`);
+  }
+
+  function contactSupport() {
+    alert('Contact Support: Call 1800-XXX-XXXX or email support@mamfdc.gov.in');
+  }
+
+  function openProfileModal() {
+    showProfileModal = true;
+  }
+
+  function closeProfileModal() {
+    showProfileModal = false;
+  }
+
+  function handleLogout() {
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('authUser');
+      sessionStorage.removeItem('accessToken');
+      localStorage.removeItem('applicationData');
+    }
+    
+    showProfileModal = false;
+    showSuccessToast();
+    
+    setTimeout(() => {
+      goto(`/${locale}/login`);
+    }, 1000);
+  }
+
+  function handleChangePassword() {
+    showProfileModal = false;
+    goto(`/${locale}/change-password`);
+  }
+
+  function showSuccessToast() {
+    const toast = document.createElement('div');
+    toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-[100] flex items-center gap-2 animate-slide-in';
+    toast.innerHTML = `
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span>Logout Successful!</span>
+    `;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.remove();
+    }, 3000);
   }
 
   function getStatusColor(status) {
-    const colors = {
-      'pending': 'bg-yellow-100 text-yellow-800 border-yellow-300',
-      'in-progress': 'bg-blue-100 text-blue-800 border-blue-300',
-      'approved': 'bg-green-100 text-green-800 border-green-300',
-      'rejected': 'bg-red-100 text-red-800 border-red-300'
-    };
-    return colors[status] || 'bg-gray-100 text-gray-800 border-gray-300';
-  }
-
-  function getStatusIcon(status) {
-    const icons = {
-      'pending': '⏳',
-      'in-progress': '🔄',
-      'approved': '✅',
-      'rejected': '❌'
-    };
-    return icons[status] || '📄';
+    switch (status) {
+      case 'approved':
+        return 'bg-green-100 text-green-800 border-green-300';
+      case 'rejected':
+        return 'bg-red-100 text-red-800 border-red-300';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+      case 'in-progress':
+        return 'bg-blue-100 text-blue-800 border-blue-300';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-300';
+    }
   }
 
   function getStatusText(status) {
-    const statusMap = {
-      'pending': t.dashboard.statusPending || 'Under Review',
-      'in-progress': t.dashboard.statusInProgress || 'In Progress',
-      'approved': t.dashboard.statusApproved || 'Approved',
-      'rejected': t.dashboard.statusRejected || 'Rejected'
-    };
-    return statusMap[status] || status;
+    switch (status) {
+      case 'approved':
+        return 'Approved / मंजूर';
+      case 'rejected':
+        return 'Rejected / नाकारले';
+      case 'pending':
+        return 'Pending / प्रलंबित';
+      case 'in-progress':
+        return 'In Progress / प्रगतीपथावर';
+      default:
+        return 'Unknown';
+    }
+  }
+
+  function getStatusIcon(status) {
+    switch (status) {
+      case 'approved':
+        return 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z';
+      case 'rejected':
+        return 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z';
+      case 'pending':
+        return 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z';
+      default:
+        return 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z';
+    }
   }
 </script>
 
-<div class="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50">
-  <!-- Header Component -->
-  <DashboardHeader {t} {locale} />
+<svelte:head>
+  <style>
+    @keyframes slide-in {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    .animate-slide-in {
+      animation: slide-in 0.3s ease-out;
+    }
+  </style>
+</svelte:head>
 
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="min-h-screen bg-gradient-to-br from-purple-50 via-purple-50 to-purple-100">
+  
+  <DashboardHeader {t} {locale} {userData} on:openProfile={openProfileModal} />
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
     
-    <!-- Welcome Section -->
-    <section class="bg-white rounded-xl shadow-sm p-6 sm:p-8 mb-8">
-      <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-        {t.dashboard.welcome}
-      </h2>
-      <p class="text-gray-600">
-        {t.dashboard.welcomeMessage}
-      </p>
-    </section>
-
-    {#if !userState.hasApplication}
-      <!-- ✅ NEW USER VIEW - No Application Yet -->
-      <div class="max-w-4xl mx-auto">
-        <!-- Welcome Card for New Users -->
-        <section class="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-xl shadow-lg p-8 sm:p-12 mb-8 text-white text-center">
-          <div class="text-6xl mb-6">🎓</div>
-          <h3 class="text-3xl font-bold mb-4">{t.dashboard.welcomeNewUser || 'Welcome to MAMFDC!'}</h3>
-          <p class="text-lg mb-8 opacity-90">
-            {t.dashboard.newUserMessage || 'Start your education loan application journey today. Get financial support for your educational dreams.'}
-          </p>
-          <button
-            on:click={startNewApplication}
-            class="px-8 py-4 bg-white text-purple-600 font-bold text-lg rounded-lg hover:bg-gray-100 transition-all duration-200 transform hover:scale-105 shadow-lg"
-          >
-            🚀 {t.dashboard.startApplication || 'Start New Application'}
-          </button>
-        </section>
-
-        <!-- Benefits Grid for New Users -->
-        <div class="grid md:grid-cols-3 gap-6 mb-8">
-          <div class="bg-white rounded-xl shadow-sm p-6 text-center">
-            <div class="text-4xl mb-4">💰</div>
-            <h4 class="text-lg font-bold text-gray-900 mb-2">
-              {t.dashboard.benefitAmount || 'Up to ₹5 Lakhs'}
-            </h4>
-            <p class="text-sm text-gray-600">
-              {t.dashboard.benefitAmountDesc || 'Get education loan up to ₹5,00,000'}
-            </p>
+    {#if hasApplication && applicationData}
+      <!-- APPLICATION TRACKING SECTION -->
+      <section class="mb-8">
+        <div class="bg-white rounded-2xl shadow-md overflow-hidden border border-purple-100">
+          <!-- Header with Status -->
+          <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-6 text-white">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h2 class="text-2xl font-bold mb-2">Your Loan Application</h2>
+                <p class="text-purple-100 text-sm">Application ID: {applicationData.id || 'N/A'}</p>
+                <p class="text-purple-100 text-xs mt-1">Applicant: {applicationData.applicantName || userData.name}</p>
+              </div>
+              <div class="flex flex-col items-end gap-2">
+                <span class={`px-4 py-2 rounded-full border-2 font-semibold text-sm flex items-center gap-2 ${getStatusColor(applicationData.status)}`}>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={getStatusIcon(applicationData.status)}/>
+                  </svg>
+                  {getStatusText(applicationData.status)}
+                </span>
+              </div>
+            </div>
           </div>
 
-          <div class="bg-white rounded-xl shadow-sm p-6 text-center">
-            <div class="text-4xl mb-4">📉</div>
-            <h4 class="text-lg font-bold text-gray-900 mb-2">
-              {t.dashboard.benefitRate || 'Low Interest'}
-            </h4>
-            <p class="text-sm text-gray-600">
-              {t.dashboard.benefitRateDesc || 'Starting from 3% per annum with government subsidy'}
-            </p>
+          <!-- Application Stepper -->
+          <div class="p-6 bg-gray-50 border-b border-gray-200">
+            <ApplicationStepper currentStep={applicationData.currentStep || 1} {locale} />
           </div>
 
-          <div class="bg-white rounded-xl shadow-sm p-6 text-center">
-            <div class="text-4xl mb-4">⚡</div>
-            <h4 class="text-lg font-bold text-gray-900 mb-2">
-              {t.dashboard.benefitProcess || 'Quick Processing'}
-            </h4>
-            <p class="text-sm text-gray-600">
-              {t.dashboard.benefitProcessDesc || 'Get approval within 15-20 working days'}
-            </p>
+          <!-- Application Details -->
+          <div class="p-6">
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+              <!-- Loan Details -->
+              <div class="bg-purple-50 rounded-lg p-4">
+                <h3 class="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  Loan Details / कर्ज तपशील
+                </h3>
+                <div class="space-y-2 text-sm">
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Amount:</span>
+                    <span class="font-bold text-purple-700">₹{applicationData.loanAmount || 'N/A'}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Purpose:</span>
+                    <span class="font-medium">{applicationData.purpose || 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Course Details -->
+              <div class="bg-blue-50 rounded-lg p-4">
+                <h3 class="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                  </svg>
+                  Education Details / शिक्षण तपशील
+                </h3>
+                <div class="space-y-2 text-sm">
+                  <div>
+                    <span class="text-gray-600 block">Course:</span>
+                    <span class="font-medium">{applicationData.course || 'N/A'}</span>
+                  </div>
+                  <div>
+                    <span class="text-gray-600 block">Institution:</span>
+                    <span class="font-medium text-xs">{applicationData.institution || 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Timeline -->
+              <div class="bg-green-50 rounded-lg p-4">
+                <h3 class="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  Timeline / वेळापत्रक
+                </h3>
+                <div class="space-y-2 text-sm">
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Submitted:</span>
+                    <span class="font-medium">{applicationData.submittedDate || 'N/A'}</span>
+                  </div>
+                  {#if applicationData.approvedDate}
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">Approved:</span>
+                      <span class="font-medium text-green-700">{applicationData.approvedDate}</span>
+                    </div>
+                  {/if}
+                  {#if applicationData.rejectedDate}
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">Rejected:</span>
+                      <span class="font-medium text-red-700">{applicationData.rejectedDate}</span>
+                    </div>
+                  {/if}
+                </div>
+              </div>
+            </div>
+
+            <!-- Status Messages -->
+            <div class="mb-6 p-4 rounded-lg {applicationData.status === 'approved' ? 'bg-green-50 border border-green-200' : applicationData.status === 'rejected' ? 'bg-red-50 border border-red-200' : applicationData.status === 'pending' ? 'bg-yellow-50 border border-yellow-200' : 'bg-blue-50 border border-blue-200'}">
+              {#if applicationData.status === 'in-progress'}
+                <div class="flex items-start gap-3">
+                  <svg class="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  <div>
+                    <h4 class="font-semibold text-blue-900 mb-1">Application Incomplete / अर्ज अपूर्ण</h4>
+                    <p class="text-sm text-blue-800">You're currently on step {applicationData.currentStep} of 6. Please complete all steps to submit your application.</p>
+                  </div>
+                </div>
+              {:else if applicationData.status === 'pending'}
+                <div class="flex items-start gap-3">
+                  <svg class="w-6 h-6 text-yellow-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  <div>
+                    <h4 class="font-semibold text-yellow-900 mb-1">Under Review / पुनरावलोकनाधीन</h4>
+                    <p class="text-sm text-yellow-800">Your application is being reviewed by our team. This process usually takes 15-20 working days. We'll notify you once a decision is made.</p>
+                  </div>
+                </div>
+              {:else if applicationData.status === 'approved'}
+                <div class="flex items-start gap-3">
+                  <svg class="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  <div>
+                    <h4 class="font-semibold text-green-900 mb-1">Congratulations! Application Approved / अभिनंदन! अर्ज मंजूर</h4>
+                    <p class="text-sm text-green-800">Your loan application has been approved! The loan amount of ₹{applicationData.loanAmount} will be disbursed to {applicationData.institution} shortly.</p>
+                  </div>
+                </div>
+              {:else if applicationData.status === 'rejected'}
+                <div class="flex items-start gap-3">
+                  <svg class="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  <div>
+                    <h4 class="font-semibold text-red-900 mb-1">Application Rejected / अर्ज नाकारला</h4>
+                    <p class="text-sm text-red-800 mb-2">Unfortunately, your application has been rejected. Reason: {applicationData.rejectedReason || 'Not specified'}</p>
+                    <p class="text-sm text-red-700">Please contact our support team for more information or to reapply.</p>
+                  </div>
+                </div>
+              {/if}
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap gap-3">
+              {#if applicationData.status === 'in-progress'}
+                <button
+                  on:click={continueApplication}
+                  class="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-all shadow-md text-sm"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                  </svg>
+                  Continue Application
+                </button>
+              {:else}
+                <button
+                  on:click={viewApplication}
+                  class="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-all shadow-md text-sm"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                  </svg>
+                  View Full Application
+                </button>
+              {/if}
+
+              <button
+                on:click={contactSupport}
+                class="inline-flex items-center gap-2 px-6 py-3 bg-white border-2 border-purple-600 text-purple-600 font-semibold rounded-lg hover:bg-purple-50 transition-all text-sm"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                </svg>
+                Contact Support
+              </button>
+
+              {#if applicationData.status === 'approved'}
+                <button
+                  class="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-all shadow-md text-sm"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                  </svg>
+                  Download Approval Letter
+                </button>
+              {/if}
+            </div>
           </div>
         </div>
-
-        <!-- Help Section for New Users -->
-        <section class="bg-white rounded-xl shadow-sm p-6">
-          <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <span>❓</span>
-            {t.dashboard.needHelp}
-          </h3>
-          <div class="grid sm:grid-cols-2 gap-4">
-            <div class="flex gap-3 p-4 bg-gray-50 rounded-lg">
-              <span class="text-2xl">📞</span>
-              <div>
-                <h4 class="text-sm font-semibold text-gray-900 mb-1">{t.dashboard.callSupport}</h4>
-                <p class="text-sm text-purple-600 font-semibold">{dashboardData.support.phone}</p>
-              </div>
-            </div>
-            <div class="flex gap-3 p-4 bg-gray-50 rounded-lg">
-              <span class="text-2xl">📧</span>
-              <div>
-                <h4 class="text-sm font-semibold text-gray-900 mb-1">{t.dashboard.emailSupport}</h4>
-                <p class="text-sm text-purple-600 font-semibold">{dashboardData.support.email}</p>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
+      </section>
 
     {:else}
-      <!-- EXISTING USER VIEW - Has Application -->
-      
-      <!-- Application Status Banner -->
-      <section class="bg-white rounded-xl shadow-lg border-2 {getStatusColor(dashboardData.application.status)} p-6 sm:p-8 mb-8">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div class="flex items-center gap-4">
-            <span class="text-5xl">{getStatusIcon(dashboardData.application.status)}</span>
-            <div>
-              <h3 class="text-sm text-gray-600 mb-1">
-                {t.dashboard.applicationStatus}
-              </h3>
-              <p class="text-3xl font-bold text-gray-900">{getStatusText(dashboardData.application.status)}</p>
-            </div>
-          </div>
+      <!-- NO APPLICATION - WELCOME SECTION -->
+      <section class="max-w-7xl mx-auto text-center mb-12">
+        <div class="bg-white rounded-2xl shadow-md p-10 sm:p-12 overflow-hidden relative border border-purple-100">
+          <div class="absolute top-0 right-0 w-48 h-48 bg-purple-100 opacity-30 rounded-full -mr-24 -mt-24"></div>
+          <div class="absolute bottom-0 left-0 w-40 h-40 bg-purple-200 opacity-20 rounded-full -ml-20 -mb-20"></div>
           
-          {#if dashboardData.application.status === 'pending' || dashboardData.application.status === 'in-progress'}
-            <div class="text-left sm:text-right">
-              <p class="text-sm text-gray-600 mb-1">{t.dashboard.overallProgress}</p>
-              <p class="text-4xl font-bold text-gray-900">{dashboardData.application.progress}%</p>
+          <div class="relative z-10">
+            <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"/>
+              </svg>
             </div>
-          {/if}
-        </div>
-
-        <!-- Status-specific messages -->
-        {#if dashboardData.application.status === 'approved'}
-          <div class="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
-            <p class="text-green-800 font-semibold mb-2">
-              🎉 {t.dashboard.congratulations || 'Congratulations! Your loan has been approved.'}
-            </p>
-            <p class="text-sm text-green-700">
-              {t.dashboard.approvedAmount || 'Approved Amount'}: <span class="font-bold">{dashboardData.loanDetails.approvedAmount}</span>
-            </p>
-          </div>
-        {:else if dashboardData.application.status === 'rejected'}
-          <div class="mt-6 p-4 bg-red-50 rounded-lg border border-red-200">
-            <p class="text-red-800 font-semibold mb-2">
-              {t.dashboard.applicationRejected || 'We regret to inform you that your application has been rejected.'}
-            </p>
-            <p class="text-sm text-red-700">
-              {t.dashboard.reason || 'Reason'}: {dashboardData.application.rejectionReason || 'Incomplete documentation'}
+            <h1 class="text-3xl sm:text-4xl font-bold mb-3 text-gray-900">
+              Welcome {userData.name}!
+            </h1>
+            <p class="text-base sm:text-lg mb-6 text-gray-600 leading-relaxed max-w-2xl mx-auto">
+              Start your education loan application journey today. Get financial support for your educational dreams.
             </p>
             <button
               on:click={startNewApplication}
-              class="mt-3 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg text-sm transition-colors"
+              class="inline-flex items-center gap-2 px-8 py-3.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-base rounded-lg transition-all duration-200 transform hover:scale-105 shadow-md"
             >
-              {t.dashboard.applyAgain || 'Apply Again'}
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+              <span>Start New Application</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+              </svg>
             </button>
           </div>
-        {:else if dashboardData.application.status === 'pending'}
-          <div class="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-            <p class="text-yellow-800 text-sm">
-              ⏰ {t.dashboard.underReview || 'Your application is under review. Expected review completion by'}: 
-              <span class="font-bold">{dashboardData.application.reviewDate}</span>
-            </p>
-          </div>
-        {/if}
+        </div>
       </section>
+    {/if}
 
-      <!-- Document Verification Alert -->
-      {#if dashboardData.documents.pending > 0 && (dashboardData.application.status === 'pending' || dashboardData.application.status === 'in-progress')}
-        <section class="bg-yellow-50 border-2 border-yellow-400 rounded-xl p-6 mb-8 flex flex-col sm:flex-row items-start gap-4">
-          <div class="text-4xl flex-shrink-0">⚠️</div>
-          <div class="flex-1">
-            <h3 class="text-lg font-bold text-yellow-900 mb-2">
-              {t.dashboard.documentVerificationPending}
-            </h3>
-            <p class="text-yellow-800 text-sm mb-2">
-              {t.dashboard.pendingDocuments || 'Pending documents'}: <span class="font-semibold">{dashboardData.documents.pendingList.join(', ')}</span>
-            </p>
-            <p class="text-yellow-800 text-sm font-semibold">
-              🕒 {t.dashboard.uploadBy || 'Upload by'}: {dashboardData.application.reviewDate}
-            </p>
+    <!-- Benefits Section -->
+    <section class="mb-12">
+      <h2 class="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-8">
+        Why Choose MAMFDC?
+      </h2>
+      
+      <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <div class="bg-white rounded-xl shadow-md p-6 sm:p-8 text-center transform transition-all duration-300 hover:-translate-y-2 hover:shadow-lg">
+          <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
           </div>
-          <button
-            on:click={uploadDocuments}
-            class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors duration-200 whitespace-nowrap"
-          >
-            {t.dashboard.uploadDocuments} →
-          </button>
-        </section>
-      {/if}
-
-      <!-- Main Grid -->
-      <div class="grid lg:grid-cols-3 gap-8">
-        <!-- Left Column -->
-        <div class="lg:col-span-2 space-y-8">
-          
-          <!-- Application Details Card -->
-          <section class="bg-white rounded-xl shadow-sm p-6">
-            <h3 class="text-xl font-bold text-gray-900 mb-6">
-              {t.dashboard.yourApplication}
-            </h3>
-            
-            <div class="flex items-center gap-4 mb-4">
-              <span class="text-4xl">🎓</span>
-              <div>
-                <h4 class="text-lg font-semibold text-gray-900">{dashboardData.application.type}</h4>
-                <p class="text-sm text-gray-600">
-                  {t.dashboard.applicationId}: {dashboardData.application.id}
-                </p>
-              </div>
-            </div>
-
-            <div class="flex flex-wrap gap-3 mb-6">
-              <span class="px-3 py-1.5 {getStatusColor(dashboardData.application.status)} rounded-lg text-sm font-semibold border-2">
-                {getStatusIcon(dashboardData.application.status)} {getStatusText(dashboardData.application.status)}
-              </span>
-              <span class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm">
-                {t.dashboard.submitted || 'Submitted'}: {dashboardData.application.submittedDate}
-              </span>
-              <span class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm">
-                {t.dashboard.lastUpdated}: {dashboardData.application.lastUpdated}
-              </span>
-            </div>
-
-            {#if dashboardData.application.status === 'in-progress'}
-              <div class="mb-6">
-                <div class="flex justify-between text-sm text-gray-600 mb-2">
-                  <span>{t.dashboard.progress}</span>
-                  <span class="font-semibold text-gray-900">{dashboardData.application.progress}%</span>
-                </div>
-                <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div 
-                    class="h-full bg-purple-600 rounded-full transition-all duration-300"
-                    style="width: {dashboardData.application.progress}%"
-                  ></div>
-                </div>
-              </div>
-
-              <div class="flex gap-3 p-4 bg-blue-50 rounded-lg mb-6">
-                <span class="text-xl flex-shrink-0">ℹ️</span>
-                <div>
-                  <p class="text-sm text-gray-600 mb-1">{t.dashboard.nextAction}:</p>
-                  <p class="text-sm font-semibold text-blue-900">{dashboardData.application.nextAction}</p>
-                </div>
-              </div>
-            {/if}
-
-            <div class="flex gap-3">
-              {#if dashboardData.application.status === 'in-progress'}
-                <button
-                  on:click={continueApplication}
-                  class="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors duration-200"
-                >
-                  {t.dashboard.continue} →
-                </button>
-              {/if}
-              <button class="flex-1 py-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold border-2 border-gray-200 hover:border-purple-600 hover:text-purple-600 rounded-lg transition-all duration-200">
-                👁️ {t.dashboard.viewDetails}
-              </button>
-            </div>
-          </section>
-
-          <!-- Quick Actions -->
-          {#if dashboardData.application.status !== 'approved'}
-            <section class="bg-white rounded-xl shadow-sm p-6">
-              <h3 class="text-xl font-bold text-gray-900 mb-6">
-                {t.dashboard.quickActions}
-              </h3>
-              
-              <div class="grid sm:grid-cols-2 gap-4">
-                {#if dashboardData.application.status === 'in-progress'}
-                  <button
-                    on:click={continueApplication}
-                    class="p-5 bg-gray-50 hover:bg-purple-50 border-2 border-gray-200 hover:border-purple-600 rounded-xl transition-all duration-200 hover:-translate-y-1 text-left"
-                  >
-                    <span class="text-3xl block mb-3">▶️</span>
-                    <h4 class="text-sm font-semibold text-gray-900 mb-1">
-                      {t.dashboard.continueApplication}
-                    </h4>
-                    <p class="text-xs text-gray-600">
-                      {t.dashboard.resumeIncomplete}
-                    </p>
-                  </button>
-                {/if}
-
-                {#if dashboardData.documents.pending > 0}
-                  <button
-                    on:click={uploadDocuments}
-                    class="p-5 bg-gray-50 hover:bg-purple-50 border-2 border-gray-200 hover:border-purple-600 rounded-xl transition-all duration-200 hover:-translate-y-1 text-left"
-                  >
-                    <span class="text-3xl block mb-3">📤</span>
-                    <h4 class="text-sm font-semibold text-gray-900 mb-1">
-                      {t.dashboard.uploadDocuments}
-                    </h4>
-                    <p class="text-xs text-gray-600">
-                      {dashboardData.documents.pending} {t.dashboard.documentsRemaining || 'documents remaining'}
-                    </p>
-                  </button>
-                {/if}
-
-                <button
-                  on:click={viewProfile}
-                  class="p-5 bg-gray-50 hover:bg-purple-50 border-2 border-gray-200 hover:border-purple-600 rounded-xl transition-all duration-200 hover:-translate-y-1 text-left"
-                >
-                  <span class="text-3xl block mb-3">👤</span>
-                  <h4 class="text-sm font-semibold text-gray-900 mb-1">
-                    {t.dashboard.viewProfile}
-                  </h4>
-                  <p class="text-xs text-gray-600">
-                    {t.dashboard.manageAccount}
-                  </p>
-                </button>
-
-                <button class="p-5 bg-gray-50 hover:bg-purple-50 border-2 border-gray-200 hover:border-purple-600 rounded-xl transition-all duration-200 hover:-translate-y-1 text-left">
-                  <span class="text-3xl block mb-3">📄</span>
-                  <h4 class="text-sm font-semibold text-gray-900 mb-1">
-                    {t.dashboard.trackStatus || 'Track Status'}
-                  </h4>
-                  <p class="text-xs text-gray-600">
-                    {t.dashboard.checkApplicationStatus || 'Check your application status'}
-                  </p>
-                </button>
-              </div>
-            </section>
-          {/if}
-
-          <!-- Recent Activity -->
-          <section class="bg-white rounded-xl shadow-sm p-6">
-            <div class="flex justify-between items-center mb-6">
-              <h3 class="text-xl font-bold text-gray-900">
-                {t.dashboard.recentActivity}
-              </h3>
-              <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs">
-                {t.dashboard.last7Days}
-              </span>
-            </div>
-
-            <div class="space-y-6">
-              {#each dashboardData.recentActivities as activity}
-                <div class="flex gap-4 pb-6 border-b border-gray-200 last:border-0 last:pb-0">
-                  <span class="text-2xl flex-shrink-0">{activity.icon}</span>
-                  <div class="flex-1">
-                    <h4 class="text-sm font-semibold text-gray-900 mb-1">{activity.type}</h4>
-                    <p class="text-sm text-gray-600 mb-2">{activity.description}</p>
-                    <span class="text-xs text-gray-500">🕒 {activity.timestamp}</span>
-                  </div>
-                </div>
-              {/each}
-            </div>
-          </section>
-
-          <!-- Important Notice -->
-          {#if dashboardData.application.status === 'pending' || dashboardData.application.status === 'in-progress'}
-            <section class="bg-blue-50 border-2 border-blue-200 rounded-xl p-5">
-              <h3 class="text-base font-bold text-blue-900 mb-2 flex items-center gap-2">
-                <span>ℹ️</span>
-                {t.dashboard.importantNotice}
-              </h3>
-              <p class="text-sm text-blue-800">
-                {t.dashboard.noticeMessage}
-              </p>
-            </section>
-          {/if}
+          <h3 class="text-xl font-bold text-gray-900 mb-3">Up to ₹5 Lakhs</h3>
+          <p class="text-gray-600 leading-relaxed text-sm">Get education loan up to ₹5,00,000 for your studies</p>
         </div>
 
-        <!-- Right Column -->
-        <div class="space-y-8">
-          
-          <!-- Loan Summary -->
-          <section class="bg-white rounded-xl shadow-sm p-6">
-            <h3 class="flex items-center gap-2 text-xl font-bold text-gray-900 mb-6">
-              <span>📋</span>
-              {t.dashboard.loanSummary}
-            </h3>
+        <div class="bg-white rounded-xl shadow-md p-6 sm:p-8 text-center transform transition-all duration-300 hover:-translate-y-2 hover:shadow-lg">
+          <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-3">Low Interest Rate</h3>
+          <p class="text-gray-600 leading-relaxed text-sm">Starting from 3% per annum with government subsidy</p>
+        </div>
 
-            <div class="space-y-5 mb-5">
-              <div class="flex items-center gap-3">
-                <span class="text-2xl">💰</span>
-                <div>
-                  <p class="text-xs text-gray-600 mb-1">
-                    {t.dashboard.requestedAmount}
-                  </p>
-                  <p class="text-base font-bold text-gray-900">{dashboardData.loanDetails.requestedAmount}</p>
-                </div>
-              </div>
-
-              {#if dashboardData.application.status === 'approved'}
-                <div class="flex items-center gap-3">
-                  <span class="text-2xl">✅</span>
-                  <div>
-                    <p class="text-xs text-gray-600 mb-1">
-                      {t.dashboard.approvedAmount}
-                    </p>
-                    <p class="text-base font-bold text-green-600">{dashboardData.loanDetails.approvedAmount}</p>
-                  </div>
-                </div>
-              {/if}
-
-              <div class="flex items-center gap-3">
-                <span class="text-2xl">📊</span>
-                <div>
-                  <p class="text-xs text-gray-600 mb-1">
-                    {t.dashboard.interestRate}
-                  </p>
-                  <p class="text-base font-bold text-gray-900">{dashboardData.loanDetails.interestRate}</p>
-                </div>
-              </div>
-
-              <div class="flex items-center gap-3">
-                <span class="text-2xl">📅</span>
-                <div>
-                  <p class="text-xs text-gray-600 mb-1">
-                    {t.dashboard.loanTenure}
-                  </p>
-                  <p class="text-base font-bold text-gray-900">{dashboardData.loanDetails.loanTenure}</p>
-                </div>
-              </div>
-
-              <div class="flex items-center gap-3">
-                <span class="text-2xl">💳</span>
-                <div>
-                  <p class="text-xs text-gray-600 mb-1">
-                    {t.dashboard.monthlyEMI}
-                  </p>
-                  <p class="text-base font-bold text-gray-900">{dashboardData.loanDetails.monthlyEMI}</p>
-                </div>
-              </div>
-            </div>
-
-            <div class="flex gap-2 p-4 bg-blue-50 rounded-lg">
-              <span class="text-lg flex-shrink-0">ℹ️</span>
-              <p class="text-xs text-blue-900 leading-relaxed">
-                {t.dashboard.emiNote || 'EMI calculation is approximate. Final amount may vary based on approval and disbursement.'}
-              </p>
-            </div>
-          </section>
-
-          <!-- Document Status -->
-          {#if dashboardData.application.status !== 'rejected'}
-            <section class="bg-white rounded-xl shadow-sm p-6">
-              <h3 class="flex items-center gap-2 text-xl font-bold text-gray-900 mb-6">
-                <span>📂</span>
-                {t.dashboard.documentStatus || 'Document Status'}
-              </h3>
-
-              <div class="space-y-4">
-                <div class="flex justify-between items-center">
-                  <span class="text-sm text-gray-600">{t.dashboard.verified || 'Verified'}</span>
-                  <span class="text-2xl font-bold text-green-600">{dashboardData.documents.verified}/{dashboardData.documents.total}</span>
-                </div>
-                <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div 
-                    class="h-full bg-green-500 rounded-full transition-all duration-300"
-                    style="width: {(dashboardData.documents.verified / dashboardData.documents.total) * 100}%"
-                  ></div>
-                </div>
-                
-                {#if dashboardData.documents.pending > 0}
-                  <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <p class="text-xs text-yellow-800">
-                      ⚠️ <span class="font-semibold">{dashboardData.documents.pending}</span> {t.dashboard.documentsRemaining}
-                    </p>
-                  </div>
-                {/if}
-              </div>
-            </section>
-          {/if}
-
-          <!-- Help & Support -->
-          <!-- <section class="bg-white rounded-xl shadow-sm p-6">
-            <h3 class="flex items-center gap-2 text-xl font-bold text-gray-900 mb-6">
-              <span>❓</span>
-              {t.dashboard.needHelp}
-            </h3>
-
-            <div class="space-y-4">
-              <div class="flex gap-3 p-4 bg-gray-50 rounded-lg">
-                <span class="text-2xl flex-shrink-0">📧</span>
-                <div>
-                  <h4 class="text-sm font-semibold text-gray-900 mb-1">
-                    {t.dashboard.emailSupport}
-                  </h4>
-                  <p class="text-xs text-gray-600 mb-2">{dashboardData.support.emailResponse}</p>
-                  <a href="mailto:{dashboardData.support.email}" class="text-sm text-purple-600 hover:text-purple-700 font-semibold hover:underline">
-                    {dashboardData.support.email}
-                  </a>
-                </div>
-              </div>
-
-              <div class="flex gap-3 p-4 bg-gray-50 rounded-lg">
-                <span class="text-2xl flex-shrink-0">💬</span>
-                <div class="flex-1">
-                  <h4 class="text-sm font-semibold text-gray-900 mb-1">
-                    {t.dashboard.liveChat}
-                  </h4>
-                  <p class="text-xs text-gray-600 mb-3">{dashboardData.support.liveChat}</p>
-                  <button class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-lg transition-colors duration-200">
-                    {t.dashboard.startChat}
-                  </button>
-                </div>
-              </div>
-
-              <div class="flex gap-3 p-4 bg-gray-50 rounded-lg">
-                <span class="text-2xl flex-shrink-0">📞</span>
-                <div>
-                  <h4 class="text-sm font-semibold text-gray-900 mb-1">
-                    {t.dashboard.callSupport}
-                  </h4>
-                  <p class="text-xs text-gray-600 mb-2">{dashboardData.support.phoneHours}</p>
-                  <a href="tel:{dashboardData.support.phone}" class="text-sm text-purple-600 hover:text-purple-700 font-semibold hover:underline">
-                    {dashboardData.support.phone}
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            <button class="w-full mt-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-colors duration-200">
-              📖 {t.dashboard.viewFAQs}
-            </button>
-          </section> -->
-
-
-
+        <div class="bg-white rounded-xl shadow-md p-6 sm:p-8 text-center transform transition-all duration-300 hover:-translate-y-2 hover:shadow-lg">
+          <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-3">Quick Processing</h3>
+          <p class="text-gray-600 leading-relaxed text-sm">Get approval within 15-20 working days</p>
         </div>
       </div>
-    {/if}
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="mb-12 bg-white rounded-2xl shadow-md p-6 sm:p-10">
+      <h2 class="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-10">How It Works</h2>
+      
+      <div class="max-w-4xl mx-auto">
+        {#each [
+          { num: 1, title: 'Fill Application Form', desc: 'Complete the online application form with your personal and educational details. It takes only 10-15 minutes.', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
+          { num: 2, title: 'Upload Documents', desc: 'Submit required documents like Aadhar card, educational certificates, and income proof digitally.', icon: 'M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12' },
+          { num: 3, title: 'Verification Process', desc: 'Our team will verify your documents and eligibility. This usually takes 15-20 working days.', icon: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' },
+          { num: 4, title: 'Get Approval', desc: 'Once approved, the loan amount will be disbursed directly to your educational institution.', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' }
+        ] as step, i}
+          <div class="flex flex-col sm:flex-row gap-6 mb-8 {i < 3 ? 'pb-8 border-b border-gray-200' : ''}">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-purple-500 text-white rounded-lg flex items-center justify-center text-lg font-bold">{step.num}</div>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={step.icon}/>
+                </svg>
+                {step.title}
+              </h3>
+              <p class="text-gray-600 leading-relaxed text-sm">{step.desc}</p>
+            </div>
+          </div>
+        {/each}
+      </div>
+    </section>
+
+    <!-- Quick Info Cards -->
+    <section class="mb-12">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+        <button
+          on:click={viewEligibility}
+          class="bg-white rounded-xl shadow-md p-6 text-left hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+        >
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900 mb-2">Check Eligibility</h3>
+              <p class="text-sm text-gray-600 mb-3">See if you qualify for the education loan program</p>
+              <span class="text-purple-600 font-semibold text-sm flex items-center gap-1">
+                Learn More
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </span>
+            </div>
+          </div>
+        </button>
+
+        <button
+          on:click={viewDocuments}
+          class="bg-white rounded-xl shadow-md p-6 text-left hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+        >
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900 mb-2">Required Documents</h3>
+              <p class="text-sm text-gray-600 mb-3">View the list of documents needed for application</p>
+              <span class="text-purple-600 font-semibold text-sm flex items-center gap-1">
+                View List
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </span>
+            </div>
+          </div>
+        </button>
+
+        <button
+          on:click={contactSupport}
+          class="bg-white rounded-xl shadow-md p-6 text-left hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+        >
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900 mb-2">Need Help?</h3>
+              <p class="text-sm text-gray-600 mb-3">Our support team is here to assist you</p>
+              <span class="text-purple-600 font-semibold text-sm flex items-center gap-1">
+                Contact Us
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </span>
+            </div>
+          </div>
+        </button>
+      </div>
+    </section>
   </div>
 </div>
+
+<ProfileModal 
+  bind:showProfileModal={showProfileModal}
+  {userData}
+  {locale}
+  on:close={closeProfileModal}
+  on:logout={handleLogout}
+  on:changePassword={handleChangePassword}
+/>

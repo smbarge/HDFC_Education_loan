@@ -87,7 +87,7 @@
       //     action: 'register',
       //     mobile: data.mobile,
       //     name: data.name || data.mobile,
-      //     password: formData.password, // ✅ Use formData.password
+      //     password: formData.password, 
       //     otp: data.otp
       //   })
       // });

@@ -95,7 +95,7 @@
     return;
   }
 
-  // ✅ IMPORTANT: update UID
+  // IMPORTANT: update UID
   sessionStorage.setItem(
     'registration',
     JSON.stringify({

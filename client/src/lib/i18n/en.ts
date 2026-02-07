@@ -598,7 +598,7 @@ export const en = {
       suretyDetailsRequired: "Please provide surety details",
       
       // Buttons
-      cancelButton: "Cancel",
+      cancelButton: "Back",
       proceedButton: "Proceed to Next Step",
       processing: "Processing...",
       
@@ -790,7 +790,7 @@ export const en = {
       bankAddressRequired: "Bank address is required",
       
       // Buttons
-      cancelButton: "Cancel",
+      cancelButton: "Back",
       proceedButton: "Proceed to Next Step",
       processing: "Processing..."
   },
@@ -933,7 +933,7 @@ export const en = {
       suretyDetailsRequired: "Please provide details",
       
       // Buttons
-      cancelButton: "Cancel",
+      cancelButton: "Back",
       proceedButton: "Proceed",
       processing: "Processing..."
     },
@@ -956,7 +956,7 @@ export const en = {
       noCollateralSubtitle: 'Click the buttons above to add collateral',
       
       // Action Buttons
-      cancelButton: 'Cancel',
+      cancelButton: 'Back',
       proceedButton: 'Proceed',
       processingButton: 'Processing...',
       
@@ -993,7 +993,250 @@ export const en = {
       deleteConfirm: 'Are you sure you want to delete this collateral?',
       noCollateralAlert: 'Please add at least one collateral',
       submitError: 'Failed to submit. Please try again.'
+    }, 
+    
+    uploadDocuments: {
+    // Page Header
+    pageTitle: "Upload Documents",
+    pageSubtitle: "Please upload all required documents",
+    backButton: "Back",
+    backToHome: "Back to Home",
+
+    // Section Headers
+    applicantDocuments: "Required Documents for Applicant",
+    coApplicantDocuments: "Required Documents for Co-Applicant (Parent/Guardian)",
+    guarantorDocuments: "Required Documents for Guarantor",
+    collateralDocuments: "Required Documents for Collateral",
+
+    ApplicantDocument :{
+     // Main Header
+      title: "APPLICANT DOCUMENTS",
+      
+      // Table Headers
+      documentName: "DOCUMENTS NAME",
+      uploadView: "UPLOAD / VIEW",
+      delete: "DELETE",
+      
+      // Section Headings
+      sectionA: "A. Personal & Identity Documents",
+      sectionB: "B. Educational Documents",
+      sectionC: "C. Residence & Community Documents",
+      sectionD: "D. Family & Income Documents",
+      sectionE: "E. Bank Documents",
+      
+      // Personal & Identity Documents
+      aadharCard: "Aadhaar Card",
+      panCard: "PAN Card",
+      photo: "Passport Size Photograph",
+      signature: "Applicant Signature",
+      
+      // Educational Documents
+      admissionLetter: "Admission / Offer Letter from Educational Institute",
+      bonafide: "Bonafide Certificate",
+      feeStructure: "Fee Structure / Fee Receipt",
+      markSheets: "Previous Year Mark Sheets / Certificates",
+      entranceExam: "Entrance Exam Score Card (if applicable)",
+      
+      // Residence & Community Documents
+      domicile: "Domicile Certificate (Maharashtra)",
+      minorityCert: "Minority Community Certificate",
+      casteCert: "Caste Certificate (if applicable)",
+      
+      // Family & Income Documents
+      incomeCert: "Income Certificate (Competent Authority)",
+      parentAadhar: "Parent / Guardian Aadhaar Card",
+      rationCard: "Ration Card (if available)",
+      
+      // Bank Documents
+      passbook: "Applicant Bank Passbook (First Page)",
+      cancelledCheque: "Cancelled Cheque",
+      
+      // Status & Actions
+      required: "Required",
+      optional: "Optional",
+      uploaded: "Uploaded",
+      notUploaded: "Not Uploaded",
+      upload: "Upload",
+      view: "View",
+      deleteDoc: "Delete",
+      choose: "Choose File",
+      noFileChosen: "No file chosen"
     },
+
+    CoApplicantDocument: {
+            // Header
+            sectionTitle: "CO-APPLICANT DOCUMENTS",
+            
+            // Table Headers
+            documentsName: "DOCUMENTS NAME",
+            uploadView: "UPLOAD / VIEW",
+            delete: "DELETE",
+            
+            // Document Names
+            aadharCard: "Aadhaar Card",
+            incomeCertificate: "Income Certificate (Issued by Competent Authority)",
+            rationCard: "Ration Card (Shidh Patrika)",
+            
+            // Buttons
+            upload: "Upload",
+            view: "View",
+            deleteBtn: "Delete"
+      },
+
+    GuarantorDocument: {
+        // Header
+        sectionTitle: "GUARANTOR DOCUMENTS",
+        guarantorInformation: "Guarantor Information",
+        name: "Name",
+        mobile: "Mobile",
+        
+        // Table Headers
+        documentsName: "DOCUMENTS NAME",
+        uploadView: "UPLOAD / VIEW",
+        delete: "DELETE",
+        
+        // Document Names
+        aadharCard: "Aadhaar Card",
+        guarantorAffidavit: "Guarantor Affidavit",
+        incomeCertificate: "Income Certificate",
+        addressProof: "Address Proof",
+        
+        // Buttons
+        upload: "Upload",
+        view: "View",
+        deleteBtn: "Delete",
+        
+        // No Guarantor Message
+        noGuarantorFound: "No guarantor information found. Please complete the guarantor details step."
+      },
+
+    CollateralDocuments: {
+      // Header
+      sectionTitle: "COLLATERAL DOCUMENT",
+      
+      // Collateral Type Labels
+      propertyCollateral: "Property Collateral",
+      govtEmployeeCollateral: "Government Employee Collateral",
+      licCollateral: "LIC Policy Collateral",
+      fdCollateral: "Fixed Deposit Collateral",
+      
+      // Info Labels
+      surveyNo: "Survey No",
+      village: "Village",
+      bank: "Bank",
+      branch: "Branch",
+      policy: "Policy",
+      receiptNo: "Receipt No",
+      name: "Name",
+      employeeID: "Employee ID",
+      
+      // Table Headers
+      documentsName: "DOCUMENTS NAME",
+      uploadView: "UPLOAD / VIEW",
+      delete: "DELETE",
+      
+      // Property Documents
+      propertyAadharCard: "Aadhaar Card",
+      propertyOwnership: "Property Ownership Proof",
+      extract712: "7/12, 6D, 8A Extract (Original)",
+      prCard: "Property Registration Document / PR Card",
+      valuationCert: "Property Valuation Certificate",
+      form24A: "Form-24 (A)",
+      
+      // Government Employee Documents
+      govtAadharCard: "Aadhaar Card",
+      govtIdCard: "Government Employee ID Card",
+      salaryCert: "Salary Certificate (Original)",
+      officeCert: "Office Certificate",
+      retirementProof: "Retirement Proof",
+      form24B: "Form-24 (B)",
+      
+      // LIC Documents
+      licPhotoWithSign: "Passport Size Photo with Cross Signature",
+      licAadharCard: "Aadhaar Card",
+      licPolicyOriginal: "Original LIC Policy",
+      premiumReceipts: "LIC Premium Payment Receipts",
+      policyBond: "Policy Bond Copy",
+      policyStatus: "Policy Status Certificate",
+      
+      // FD Documents
+      fdPhotoWithSign: "Passport Size Photo with Cross Signature",
+      aadharCardXerox: "Aadhaar Card Xerox",
+      fdReceipt: "Original Fixed Deposit Receipt",
+      bankConfirmation: "Bank Confirmation Letter for FD",
+      fdStatement: "FD Account Statement",
+      
+      // Notes
+      photoNote: "Cross signature on passport size colored photo of guarantor on application is mandatory",
+      note: "Note",
+      
+      // Buttons
+      upload: "Upload",
+      view: "View",
+      deleteBtn: "Delete",
+      
+      // No Collateral Message
+      noCollateralAdded: "No collateral added. Please add collateral from the previous step.",
+
+      validationMessages: {
+        documentRequired: "Document is required",
+        fileSizeError: "File size must be less than 5MB",
+        fileTypeError: "Invalid file type. Only PDF, JPG, JPEG, PNG files are allowed",
+        imageOnlyError: "Only JPG, JPEG, PNG image files are allowed for this document",
+        uploadSuccess: "File uploaded successfully",
+        deleteConfirm: "Are you sure you want to delete this document?",
+        allDocumentsRequired: "Please upload all required documents",
+        missingDocuments: "missing document(s)"
+      },
+    },
+
+    
+    
+    // Upload Actions
+    uploadButton: "Upload",
+    viewButton: "View",
+    deleteButton: "Delete",
+    uploadedStatus: "Uploaded",
+    pendingStatus: "Pending",
+
+    // File Upload Messages
+    selectFile: "Select File",
+    dragDrop: "or drag and drop",
+    fileFormat: "PDF, JPG, PNG up to 5MB",
+    fileUploaded: "File uploaded successfully",
+    fileError: "Error uploading file. Please try again.",
+
+    // Delete Confirmation
+    deleteConfirm: "Are you sure you want to delete this document?",
+
+    // Section Notes
+    foreignEducationNote: "Required Documents for Foreign Education Students (In addition to above documents)",
+    
+    propertyOwnerNote: "A) Property Owner Guarantor:",
+    govtEmployeeNote: "B) Government Employee Guarantor:",
+    licPolicyNote: "C) LIC Policy Holder Guarantor:",
+    fdHolderNote: "D) Fixed Deposit Holder (FD) Guarantor:",
+
+    // Additional Notes
+    licPolicyCondition: "Policy amount should be at least double the loan amount",
+    licPremiumCondition: "At least half of the premiums should be paid during the entire policy period",
+    crossSignatureNote: "Cross signature on passport size colored photo of guarantor on application is mandatory",
+
+    // Buttons
+    cancelButton: "Back",
+    submitButton: "Submit Documents",
+    processingButton: "Processing...",
+
+    // Error Messages
+    submitError: "Failed to submit documents. Please try again.",
+    uploadError: "Error uploading document. Please try again.",
+
+    // Helper Text
+    mandatoryDocuments: "All mandatory documents must be uploaded",
+    originalRequired: "(Original Required)",
+    optional: "(Optional)",
+    ifAvailable: "(if available)"
+  },
 
   footer: {
     about: {

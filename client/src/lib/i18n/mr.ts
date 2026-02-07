@@ -629,7 +629,7 @@ export const mr = {
     suretyDetailsPlaceholder: "मागील जामिनाचा तपशील द्या...",
     suretyDetailsRequired: "जामीन तपशील आवश्यक आहे",
 
-    cancelButton: "रद्द करा",
+    cancelButton: "मागे जा",
     proceedButton: "पुढील टप्प्यावर जा",
     processing: "प्रक्रिया सुरू आहे...",
 
@@ -808,7 +808,7 @@ export const mr = {
   bankAddressPlaceholder: "बँकेचा पत्ता प्रविष्ट करा...",
   bankAddressRequired: "बँकेचा पत्ता आवश्यक आहे",
 
-  cancelButton: "रद्द करा",
+  cancelButton: "मागे जा",
   proceedButton: "पुढील टप्प्याकडे जा",
   processing: "प्रक्रिया सुरू आहे..."
 },
@@ -940,7 +940,7 @@ export const mr = {
     suretyDetailsPlaceholder: "तपशील येथे प्रविष्ट करा...",
     suretyDetailsRequired: "कृपया तपशील द्या",
 
-    cancelButton: "रद्द करा",
+    cancelButton: "मागे जा",
     proceedButton: "पुढे जा",
     processing: "प्रक्रिया सुरू आहे..."
   },  
@@ -960,7 +960,7 @@ export const mr = {
   noCollateralSubtitle: 'तारण जोडण्यासाठी वरील बटणे क्लिक करा',
 
   // Action Buttons
-  cancelButton: 'रद्द करा',
+  cancelButton: 'मागे जा',
   proceedButton: 'पुढे जा',
   processingButton: 'प्रक्रिया सुरू आहे...',
 
@@ -998,6 +998,249 @@ export const mr = {
   noCollateralAlert: 'कृपया किमान एक तारण जोडा',
   submitError: 'सबमिट करण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.'
 },  
+
+uploadDocuments: {
+  // Page Header
+  pageTitle: "कागदपत्रे अपलोड करा",
+  pageSubtitle: "कृपया सर्व आवश्यक कागदपत्रे अपलोड करा",
+  backButton: "मागे",
+  backToHome: "होमला परत जा",
+
+  // Section Headers
+  applicantDocuments: "अर्जदारासाठी आवश्यक कागदपत्रे",
+  coApplicantDocuments: "सह-अर्जदार (पालक/संरक्षक) साठी आवश्यक कागदपत्रे",
+  guarantorDocuments: "जामीनदारासाठी आवश्यक कागदपत्रे",
+  collateralDocuments: "तारणासाठी आवश्यक कागदपत्रे",
+
+  ApplicantDocument: {
+  // Main Header
+  title: "अर्जदाराची कागदपत्रे",
+  
+  // Table Headers
+  documentName: "कागदपत्राचे नाव",
+  uploadView: "अपलोड / पहा",
+  delete: "हटवा",
+  
+  // Section Headings
+  sectionA: "A. वैयक्तिक व ओळख संबंधित कागदपत्रे",
+  sectionB: "B. शैक्षणिक कागदपत्रे",
+  sectionC: "C. रहिवास व समुदाय संबंधित कागदपत्रे",
+  sectionD: "D. कुटुंब व उत्पन्न संबंधित कागदपत्रे",
+  sectionE: "E. बँक संबंधित कागदपत्रे",
+  
+  // Personal & Identity Documents
+  aadharCard: "आधार कार्ड",
+  panCard: "पॅन कार्ड",
+  photo: "पासपोर्ट साईज फोटो",
+  signature: "अर्जदाराची सही",
+  
+  // Educational Documents
+  admissionLetter: "शैक्षणिक संस्थेचे प्रवेश / ऑफर पत्र",
+  bonafide: "बोनाफाईड प्रमाणपत्र",
+  feeStructure: "फी संरचना / फी पावती",
+  markSheets: "मागील वर्षाच्या गुणपत्रिका / प्रमाणपत्रे",
+  entranceExam: "प्रवेश परीक्षा गुणपत्रिका (लागू असल्यास)",
+  
+  // Residence & Community Documents
+  domicile: "अधिवास प्रमाणपत्र (महाराष्ट्र)",
+  minorityCert: "अल्पसंख्याक समुदाय प्रमाणपत्र",
+  casteCert: "जात प्रमाणपत्र (लागू असल्यास)",
+  
+  // Family & Income Documents
+  incomeCert: "उत्पन्न प्रमाणपत्र (सक्षम प्राधिकरणाकडून)",
+  parentAadhar: "पालक / संरक्षक यांचे आधार कार्ड",
+  rationCard: "रेशन कार्ड (उपलब्ध असल्यास)",
+  
+  // Bank Documents
+  passbook: "अर्जदाराची बँक पासबुक (पहिले पान)",
+  cancelledCheque: "रद्द केलेला धनादेश",
+  
+  // Status & Actions
+  required: "अनिवार्य",
+  optional: "पर्यायी",
+  uploaded: "अपलोड झाले",
+  notUploaded: "अपलोड झालेले नाही",
+  upload: "अपलोड करा",
+  view: "पहा",
+  deleteDoc: "हटवा",
+  choose: "फाईल निवडा",
+  noFileChosen: "कोणतीही फाईल निवडलेली नाही"
+},
+
+CoApplicantDocument: {
+  // Header
+  sectionTitle: "सहअर्जदार कागदपत्रे",
+  
+  // Table Headers
+  documentsName: "दस्तऐवजांची नावे",
+  uploadView: "अपलोड / पहा",
+  delete: "काढा",
+  
+  // Document Names
+  aadharCard: "आधार कार्ड",
+  incomeCertificate: "उत्पन्न प्रमाणपत्र (सक्षम अधिकाऱ्यांकडून जारी केलेले)",
+  rationCard: "शिधापत्रिका (रेशन कार्ड)",
+  
+  // Buttons
+  upload: "अपलोड करा",
+  view: "पहा",
+  deleteBtn: "काढा"
+},
+
+GuarantorDocument: {
+  // Header
+    sectionTitle: "जामीनदार कागदपत्रे",
+    guarantorInformation: "जामीनदार माहिती",
+    name: "नाव",
+    mobile: "मोबाईल",
+    
+    // Table Headers
+    documentsName: "दस्तऐवजांची नावे",
+    uploadView: "अपलोड / पहा",
+    delete: "काढा",
+    
+    // Document Names
+    aadharCard: "आधारकार्ड",
+    guarantorAffidavit: "जामीनदार प्रतिज्ञापत्र",
+    incomeCertificate: "उत्पन्न प्रमाणपत्र",
+    addressProof: "पत्ता पुरावा",
+    
+    // Buttons
+    upload: "अपलोड करा",
+    view: "पहा",
+    deleteBtn: "काढा",
+    
+    // No Guarantor Message
+    noGuarantorFound: "जामीनदाराची माहिती आढळली नाही. कृपया जामीनदार तपशील पूर्ण करा."
+  },
+
+  CollateralDocuments: {
+    // Header
+    sectionTitle: "तारण कागदपत्र",
+    
+    // Collateral Type Labels
+    propertyCollateral: "मालमत्ताधारक हमीदार",
+    govtEmployeeCollateral: "शासकीय हमीदार",
+    licCollateral: "विमाधारक (LIC) हमीदार",
+    fdCollateral: "मुदत ठेव (FD) हमीदार",
+    
+    // Info Labels
+    surveyNo: "सर्व्हे नंबर",
+    village: "गाव",
+    bank: "बँक",
+    branch: "शाखा",
+    policy: "पॉलिसी",
+    receiptNo: "पावती क्रमांक",
+    name: "नाव",
+    employeeID: "कर्मचारी आयडी",
+    
+    // Table Headers
+    documentsName: "दस्तऐवजांची नावे",
+    uploadView: "अपलोड / पहा",
+    delete: "काढा",
+    
+    // Property Documents
+    propertyAadharCard: "आधारकार्ड",
+    propertyOwnership: "मालकी हक्काचा पुरावा",
+    extract712: "७/१२, ६ड, ८अ उतारे (मूळ)",
+    prCard: "मालमत्ता नोंदणी दस्तऐवज / पी.आर. कार्ड",
+    valuationCert: "मालमत्ता मूल्यांकन प्रमाणपत्र",
+    form24A: "नमुना-२४ (अ)",
+    
+    // Government Employee Documents
+    govtAadharCard: "आधारकार्ड",
+    govtIdCard: "शासकीय ओळखपत्र",
+    salaryCert: "पगार प्रमाणपत्र (मूळ)",
+    officeCert: "कार्यालय प्रमाणपत्र",
+    retirementProof: "सेवानिवृत्तीचा पुरावा",
+    form24B: "नमुना-२४ (ब)",
+    
+    // LIC Documents
+    licPhotoWithSign: "पासपोर्ट साईज रंगीत फोटो",
+    licAadharCard: "आधारकार्ड",
+    licPolicyOriginal: "मूळ एल.आय.सी. पॉलिसी",
+    premiumReceipts: "एल.आय.सी. हप्ता भरणा पावत्या",
+    policyBond: "पॉलिसी बाँड प्रत",
+    policyStatus: "पॉलिसी स्थिती प्रमाणपत्र",
+    
+    // FD Documents
+    fdPhotoWithSign: "पासपोर्ट साईज रंगीत फोटो",
+    aadharCardXerox: "आधारकार्डची झेरॉक्स",
+    fdReceipt: "मूळ मुदत ठेव पावती",
+    bankConfirmation: "एफडीबाबत बँक प्रमाणपत्र",
+    fdStatement: "एफडी खात्याचा तपशील",
+    
+    // Notes
+    photoNote: "अर्जावरील जामीनदाराच्या पासपोर्ट साईज रंगीत फोटोवर जामीनदाराची क्रॉस स्वाक्षरी असणे आवश्यक",
+    note: "टीप",
+    
+    // Buttons
+    upload: "अपलोड करा",
+    view: "पहा",
+    deleteBtn: "काढा",
+    
+    // No Collateral Message
+    noCollateralAdded: "कोणतेही तारण जोडलेले नाही. कृपया मागील पायरीवरून तारण जोडा.",
+
+
+    validationMessages: {
+    documentRequired: "दस्तऐवज आवश्यक आहे",
+    fileSizeError: "फाइलचा आकार 5MB पेक्षा कमी असावा",
+    fileTypeError: "अवैध फाइल प्रकार. फक्त PDF, JPG, JPEG, PNG फाइल्स स्वीकारल्या जातात",
+    imageOnlyError: "या दस्तऐवजासाठी फक्त JPG, JPEG, PNG प्रतिमा फाइल्स स्वीकारल्या जातात",
+    uploadSuccess: "फाइल यशस्वीरित्या अपलोड झाली",
+    deleteConfirm: "तुम्हाला खात्री आहे की तुम्ही हे दस्तऐवज हटवू इच्छिता?",
+    allDocumentsRequired: "कृपया सर्व आवश्यक कागदपत्रे अपलोड करा",
+    missingDocuments: "कागदपत्रे गहाळ"
+    },
+  },
+
+
+  // Upload Actions
+  uploadButton: "अपलोड करा",
+  viewButton: "पहा",
+  deleteButton: "हटवा",
+  uploadedStatus: "अपलोड झाले",
+  pendingStatus: "प्रलंबित",
+
+  // File Upload Messages
+  selectFile: "फाईल निवडा",
+  dragDrop: "किंवा ड्रॅग आणि ड्रॉप करा",
+  fileFormat: "PDF, JPG, PNG (कमाल 5MB)",
+  fileUploaded: "फाईल यशस्वीरित्या अपलोड झाली",
+  fileError: "फाईल अपलोड करताना त्रुटी. कृपया पुन्हा प्रयत्न करा.",
+
+  // Delete Confirmation
+  deleteConfirm: "आपण हे कागदपत्र नक्की हटवू इच्छिता?",
+
+  // Section Notes
+  foreignEducationNote: "परदेशी शिक्षणासाठी आवश्यक कागदपत्रे (वरील कागदपत्रांव्यतिरिक्त)",
+  propertyOwnerNote: "A) मालमत्ता मालक जामीनदार:",
+  govtEmployeeNote: "B) शासकीय कर्मचारी जामीनदार:",
+  licPolicyNote: "C) LIC पॉलिसीधारक जामीनदार:",
+  fdHolderNote: "D) मुदत ठेव (FD) धारक जामीनदार:",
+
+  // Additional Notes
+  licPolicyCondition: "पॉलिसीची रक्कम कर्जाच्या रकमेच्या किमान दुप्पट असावी",
+  licPremiumCondition: "संपूर्ण पॉलिसी कालावधीत किमान अर्धे प्रीमियम भरलेले असावेत",
+  crossSignatureNote: "अर्जावर जामीनदाराच्या पासपोर्ट साईज रंगीत फोटोवर क्रॉस सही आवश्यक आहे",
+
+  // Buttons
+  cancelButton: "मागे",
+  submitButton: "कागदपत्रे सादर करा",
+  processingButton: "प्रक्रिया सुरू आहे...",
+
+  // Error Messages
+  submitError: "कागदपत्रे सादर करण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.",
+  uploadError: "कागदपत्र अपलोड करताना त्रुटी. कृपया पुन्हा प्रयत्न करा.",
+
+  // Helper Text
+  mandatoryDocuments: "सर्व अनिवार्य कागदपत्रे अपलोड करणे आवश्यक आहे",
+  originalRequired: "(मूळ आवश्यक)",
+  optional: "(पर्यायी)",
+  ifAvailable: "(उपलब्ध असल्यास)"
+},
+
   footer: {
     about: {
       title: "एमएएमएफडीसी बद्दल",

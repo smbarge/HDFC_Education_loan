@@ -4,10 +4,35 @@
   import { i18n } from '$lib/i18n';
   import ApplicationStepper from '$lib/components/newapplication/ApplicationStepper.svelte';
   import DashboardHeader from '$lib/components/dashboard/DashboardHeader.svelte';
-  import { json } from '@sveltejs/kit';
+  import { onMount } from 'svelte';
+  import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
+
+
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
+
+  let userData = null;
+  let showProfileModal = false;
+
+
+  onMount(() => {
+  if (typeof window !== 'undefined') {
+    const authUser = sessionStorage.getItem('authUser');
+
+    if (!authUser) {
+      goto(`/${locale}/login`);
+    }
+    else {
+       const user = JSON.parse(authUser);
+        userData = {
+          name: user.name || "Guest User",
+          phone: user.mobile || "",
+          username: user.username || ""
+        };
+    }
+  }
+});
 
   let currentStep = 3;
   let isSubmitting = false;
@@ -263,7 +288,7 @@
       // });
       
       await new Promise(resolve => setTimeout(resolve, 1000));
-      goto(`/${locale}/application/family-details`);
+      goto(`/${locale}/application/guarantor-details`);
     } catch (error) {
       console.error('Error submitting form:', error);
       alert('Failed to submit form. Please try again.');
@@ -273,11 +298,11 @@
   }
 
   function handleBack() {
-    goto(`/${locale}/application/personal-details`);
+    goto(`/${locale}/dashboard`);
   }
 
   function handleCancel() {
-    goto(`/${locale}/dashboard`);
+    goto(`/${locale}/application/personal-details`);
   }
 </script>
 
@@ -286,7 +311,26 @@
 </svelte:head>
 
 <div class="min-h-screen bg-gradient-to-br from-purple-50 via-purple-50 to-purple-100">
-  <DashboardHeader {t} {locale} />
+
+   <DashboardHeader
+        {t}
+        {locale}
+        {userData}
+        on:openProfile={() => showProfileModal = true}
+      />
+
+      <ProfileModal
+        {userData}
+        {locale}
+        bind:showProfileModal
+        on:close={() => showProfileModal = false}
+        on:logout={() => {
+          sessionStorage.removeItem('authUser');
+          goto(`/${locale}/login`);
+        }}
+      />
+
+
   <ApplicationStepper {currentStep} {locale} />
 
   <div class="w-full px-2 sm:px-4 md:px-6 lg:px-8 pb-12 overflow-x-hidden">
@@ -306,7 +350,7 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
         </svg>
-        <span class="hidden sm:inline">{t.academicInfo?.backButton || 'Back'}</span>
+        <span class="hidden sm:inline">{t.applicationStart?.backToHome || 'Back to Home'}</span>
       </button>
     </div>
 
@@ -828,13 +872,22 @@
       </div>
     </section>
 
-    <div class="flex flex-col sm:flex-row justify-center gap-3 mt-6">
+   <div class="flex flex-col sm:flex-row justify-center gap-3 mt-6">
+  
+      <!-- Cancel / Back -->
       <button
         on:click={handleCancel}
-        class="px-6 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors text-sm"
+        class="flex items-center justify-center gap-2 px-6 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors text-sm"
       >
+        <!-- Left Arrow -->
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
         {t.academicInfo?.cancelButton}
       </button>
+
+      <!-- Proceed -->
       <button
         on:click={handleProceed}
         disabled={isSubmitting}
@@ -843,17 +896,22 @@
         {#if isSubmitting}
           <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
           </svg>
           <span>{t.academicInfo?.processing}</span>
         {:else}
           <span>{t.academicInfo?.proceedButton}</span>
+          <!-- Right Arrow -->
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13 7l5 5m0 0l-5 5m5-5H6"/>
           </svg>
-        {/if}
-      </button>
+            {/if}
+          </button>
+
     </div>
+
 
     </div>
   </div>

@@ -9,9 +9,46 @@
   import FDCollateralModal from '$lib/components/collateral/FDCollateralModal.svelte';
   import LICCollateralModal from '$lib/components/collateral/LICCollateralModal.svelte';
   import GovtEmployeeGuarantorModal from '$lib/components/collateral/GovtEmployeeGuarantorModal.svelte';
+  import { onMount } from 'svelte';
+  import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
+
+
+  let userData = null;
+  let showProfileModal = false;
+
+
+
+  onMount(() => {
+  if (typeof window !== 'undefined') {
+    const authUser = sessionStorage.getItem('authUser');
+
+    if (!authUser) {
+      goto(`/${locale}/login`);
+    }
+    else {
+       const user = JSON.parse(authUser);
+        userData = {
+          name: user.name || "Guest User",
+          phone: user.mobile || "",
+          username: user.username || ""
+        };
+    }
+  }
+
+  const savedCollaterals = sessionStorage.getItem('collateralItems');
+    if (savedCollaterals) {
+      try {
+        collateralItems = JSON.parse(savedCollaterals);
+        console.log('Loaded existing collateral items:', collateralItems);
+      } catch (error) {
+        console.error('Error parsing collateral items:', error);
+        collateralItems = [];
+      }
+    }
+});
 
   let currentStep = 5;
   let isSubmitting = false;
@@ -96,33 +133,99 @@
   }
 
   function handleBack() {
+    goto(`/${locale}/dashboard`);
+  }
+
+  function handleCancel() {
     goto(`/${locale}/application/guarantor-details`);
   }
 
-  async function handleProceed() {
-    if (collateralItems.length === 0) {
-      alert('Please add at least one collateral');
-      return;
-    }
+  // async function handleProceed() {
+  //   if (collateralItems.length === 0) {
+  //     alert('Please add at least one collateral');
+  //     return;
+  //   }
 
-    isSubmitting = true;
-    try {
-      // TODO: API call to save collateral data
-      // const response = await fetch('/api/application/collateral-details', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ collaterals: collateralItems })
-      // });
+  //   isSubmitting = true;
+  //   try {
+  //     // TODO: API call to save collateral data
+  //     // const response = await fetch('/api/application/collateral-details', {
+  //     //   method: 'POST',
+  //     //   headers: { 'Content-Type': 'application/json' },
+  //     //   body: JSON.stringify({ collaterals: collateralItems })
+  //     // });
       
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      goto(`/${locale}/application/upload-documents`);
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Failed to submit. Please try again.');
-    } finally {
-      isSubmitting = false;
-    }
+  //     await new Promise(resolve => setTimeout(resolve, 1000));
+  //     goto(`/${locale}/application/upload-documents`);
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //     alert('Failed to submit. Please try again.');
+  //   } finally {
+  //     isSubmitting = false;
+  //   }
+  // }
+
+
+//   async function handleProceed() {
+//   if (collateralItems.length === 0) {
+//     alert('Please add at least one collateral');
+//     return;
+//   }
+
+//   isSubmitting = true;
+//   try {
+//     // Save collateral items to session storage
+//     sessionStorage.setItem('collateralItems', JSON.stringify(collateralItems));
+    
+//     await new Promise(resolve => setTimeout(resolve, 1000));
+//     goto(`/${locale}/application/upload-documents`);
+//   } catch (error) {
+//     console.error('Error:', error);
+//     alert('Failed to submit. Please try again.');
+//   } finally {
+//     isSubmitting = false;
+//   }
+// }
+
+
+
+
+async function handleProceed() {
+  if (collateralItems.length === 0) {
+    alert('Please add at least one collateral');
+    return;
   }
+
+  isSubmitting = true;
+  try {
+    // Save collateral items to session storage WITH DISPLAY INFO
+    const collateralDataToSave = collateralItems.map(item => ({
+      ...item,
+      // Add display name based on type for error messages
+      displayName: item.type === 'property' 
+        ? `${t.collateralDetails?.propertyCollateral} - ${item.village}`
+        : item.type === 'fd' 
+        ? `${t.collateralDetails?.fdCollateral} - ${item.bankName}`
+        : item.type === 'lic'
+        ? `${t.collateralDetails?.licCollateral} - ${item.policyName}`
+        : item.type === 'govt-employee'
+        ? `${t.collateralDetails?.govtEmployee} - ${item.fullName}`
+        : item.type
+    }));
+    
+    sessionStorage.setItem('collateralItems', JSON.stringify(collateralDataToSave));
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    goto(`/${locale}/application/upload-documents`);
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Failed to submit. Please try again.');
+  } finally {
+    isSubmitting = false;
+  }
+}
+
+
 </script>
 
 <svelte:head>
@@ -130,20 +233,48 @@
 </svelte:head>
 
 <div class="min-h-screen bg-gradient-to-br from-purple-50 via-purple-50 to-purple-100">
-  <DashboardHeader {t} {locale} />
+  <DashboardHeader
+        {t}
+        {locale}
+        {userData}
+        on:openProfile={() => showProfileModal = true}
+      />
+
+      <ProfileModal
+        {userData}
+        {locale}
+        bind:showProfileModal
+        on:close={() => showProfileModal = false}
+        on:logout={() => {
+          sessionStorage.removeItem('authUser');
+          goto(`/${locale}/login`);
+        }}
+      />
+
   <ApplicationStepper {currentStep} {locale} />
 
   <div class="w-full px-2 sm:px-4 md:px-6 lg:px-8 pb-12 overflow-x-hidden">
     <div class="max-w-[1400px] mx-auto">
     
-    <div class="mb-5 flex items-center gap-3">
-     
-      <div class="flex-1">
-        <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
-          {t.collateralDetails?.pageTitle}
-        </h2>
+      <div class="mb-5 flex items-center justify-between gap-3">
+                <div class="flex-1">
+          <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
+            {t.collateralDetails?.pageTitle}
+          </h2>
+        </div>
+
+        <button
+          on:click={handleBack}
+          class="flex items-center gap-2 px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm flex-shrink-0"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          <span class="hidden sm:inline">{t.applicationStart?.backToHome || 'Back to Home'}</span>
+        </button>
+
       </div>
-    </div>
+
 
     <div class="mb-6 bg-gray-100 rounded-xl p-4 sm:p-6">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -297,12 +428,17 @@
 
     <!-- Action Buttons -->
     <div class="flex flex-col sm:flex-row justify-center gap-3">
-       <button
-        on:click={handleBack}
-        class="inline-flex items-center justify-center gap-2 px-6 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors text-sm"
-      >
-        <span>{t.collateralDetails?.cancelButton}</span>
-      </button>
+        <button
+          on:click={handleCancel}
+          class="inline-flex items-center justify-center gap-2 px-6 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors text-sm"
+        >
+          <!-- Left Arrow -->
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+          </svg>
+          <span>{t.collateralDetails?.cancelButton}</span>
+        </button>
       <button
         on:click={handleProceed}
         disabled={isSubmitting}
@@ -324,7 +460,7 @@
     </div>
 
     </div>
-  </div>
+  </div>5678448993
 </div>
 
 <!-- Modals -->

@@ -3,7 +3,37 @@
   import { page } from '$app/stores';
   import { i18n } from '$lib/i18n';
   import DashboardHeader from '$lib/components/dashboard/DashboardHeader.svelte';
+  import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
+
+  import { onMount } from 'svelte';
+
+    let userData = {
+      name: "Guest User",
+      phone: "",
+      username: ""
+    };
+
+    onMount(() => {
+      if (typeof window !== 'undefined') {
+        const authUser = sessionStorage.getItem('authUser');
+        
+        if (!authUser) {
+          goto(`/${locale}/login`);
+          return;
+        }
+
+        const user = JSON.parse(authUser);
+        userData = {
+          name: user.name || "Guest User",
+          phone: user.mobile || "",
+          username: user.username || ""
+        };
+      }
+    });
   
+
+  // Modal state
+  let showProfileModal = false;
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
@@ -23,11 +53,76 @@
   function contactSupport() {
     // Scroll to support or open contact modal
   }
+
+  function openProfileModal() {
+    showProfileModal = true;
+  }
+
+  function closeProfileModal() {
+    showProfileModal = false;
+  }
+
+  function handleLogout() {
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('authUser');
+      sessionStorage.removeItem('accessToken');
+    }
+    
+    showProfileModal = false;
+    
+    // Show success message
+    showSuccessToast();
+    
+    // Redirect to login after a short delay
+    setTimeout(() => {
+      goto(`/${locale}/login`);
+    }, 1000);
+  }
+
+  function handleChangePassword() {
+    showProfileModal = false;
+    goto(`/${locale}/change-password`);
+  }
+
+  function showSuccessToast() {
+    // Create toast notification
+    const toast = document.createElement('div');
+    toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-[100] flex items-center gap-2 animate-slide-in';
+    toast.innerHTML = `
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span>Logout Successful!</span>
+    `;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.remove();
+    }, 3000);
+  }
 </script>
+
+<svelte:head>
+  <style>
+    @keyframes slide-in {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    .animate-slide-in {
+      animation: slide-in 0.3s ease-out;
+    }
+  </style>
+</svelte:head>
 
 <div class="min-h-screen bg-gradient-to-br from-purple-50 via-purple-50 to-purple-100">
   
-  <DashboardHeader {t} {locale} />
+  <DashboardHeader {t} {locale} {userData} on:openProfile={openProfileModal} />
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
     
@@ -45,7 +140,7 @@
             </svg>
           </div>
           <h1 class="text-3xl sm:text-4xl font-bold mb-3 text-gray-900">
-            {t.welcome.welcomeNewUser || 'Welcome to MAMFDC!'}
+            Welcome {userData.name}!
           </h1>
           <p class="text-base sm:text-lg mb-6 text-gray-600 leading-relaxed max-w-2xl mx-auto">
             {t.welcome.newUserMessage || 'Start your education loan application journey today. Get financial support for your educational dreams.'}
@@ -133,7 +228,6 @@
             <div class="w-12 h-12 bg-purple-500 text-white rounded-lg flex items-center justify-center text-lg font-bold">
             1
             </div>
-
           </div>
           <div class="flex-1">
             <h3 class="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
@@ -300,3 +394,13 @@
     </section>
   </div>
 </div>
+
+<!-- Profile Modal Component -->
+<ProfileModal 
+  bind:showProfileModal={showProfileModal}
+  {userData}
+  {locale}
+  on:close={closeProfileModal}
+  on:logout={handleLogout}
+  on:changePassword={handleChangePassword}
+/>

@@ -5,16 +5,42 @@
   import ApplicationStepper from '$lib/components/newapplication/ApplicationStepper.svelte';
   import DashboardHeader from '$lib/components/dashboard/DashboardHeader.svelte';
   import applicationStartValidation from '$lib/validation/application/strat';
+  import { onMount } from 'svelte';
+  import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
+
+
 
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
 
+  let userData = null;
+  let showProfileModal = false;
+
+
+  onMount(() => {
+  if (typeof window !== 'undefined') {
+    const authUser = sessionStorage.getItem('authUser');
+
+    if (!authUser) {
+      goto(`/${locale}/login`);
+    }
+    else {
+       const user = JSON.parse(authUser);
+        userData = {
+          name: user.name || "Guest User",
+          phone: user.mobile || "",
+          username: user.username || ""
+        };
+    }
+  }
+});
+
+
   let currentStep = 1;
   let isSubmitting = false;
   let errors = {};
   
-  // Form data structure - ready for backend integration
   let formData = {
     community: '',
     isResident: '',
@@ -45,11 +71,9 @@
     { value: 'NAGPUR', label: 'NAGPUR - नागपूर' }
   ];
 
-  // Show next sections ONLY if resident = Yes
     $: showNextSections =
       formData.community !== '' && formData.isResident === 'Yes';
 
-    // Show not eligible message if resident = No
     $: notEligible = formData.isResident === 'No';
 
   function validateForm() {
@@ -61,10 +85,8 @@
   }
 
 
-  // Handle form submission - ready for backend API call
   async function handleProceed() {
     if (!validateForm()) {
-      // Scroll to first error
       const firstErrorElement = document.querySelector('.error-message');
       if (firstErrorElement) {
         firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -109,7 +131,25 @@
 </svelte:head>
 
 <div class="min-h-screen bg-gradient-to-br from-purple-50 via-purple-50 to-purple-100">
-  <DashboardHeader {t} {locale} />
+  <DashboardHeader
+  {t}
+  {locale}
+  {userData}
+  on:openProfile={() => showProfileModal = true}
+/>
+
+<ProfileModal
+  {userData}
+  {locale}
+  bind:showProfileModal
+  on:close={() => showProfileModal = false}
+  on:logout={() => {
+    sessionStorage.removeItem('authUser');
+    goto(`/${locale}/login`);
+  }}
+/>
+
+
   <ApplicationStepper {currentStep} {locale} />
 
   <div class="w-full px-2 sm:px-4 md:px-6 lg:px-8 pb-12 overflow-x-hidden">

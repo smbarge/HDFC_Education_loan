@@ -11,7 +11,7 @@ const applicationStartValidation = create((data, t) => {
     enforce(data.isResident).isNotEmpty();
   });
 
-  // ✅ District (skip when resident is NOT Yes)
+  //District (skip when resident is NOT Yes)
   skipWhen(data.isResident !== 'Yes', () => {
     test('district', t?.applicationStart?.districtRequired || 'Please select your district', () => {
       enforce(data.district).isNotEmpty();
