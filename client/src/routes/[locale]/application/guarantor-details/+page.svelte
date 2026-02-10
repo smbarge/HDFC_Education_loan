@@ -6,6 +6,7 @@
   import DashboardHeader from '$lib/components/dashboard/DashboardHeader.svelte';
   import { onMount } from 'svelte';
   import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
+  import guarantorDetailsValidation from '$lib/validation/application/guarantorDetails';
 
 
   $: locale = $page.params.locale || 'en';
@@ -160,46 +161,23 @@
     formData.permanentPinCode = formData.currentPinCode;
   }
 
-  function validateForm() {
-    errors = {};
-    
-    if (!formData.guarantorCommunity) errors.guarantorCommunity = 'Community is required';
-    if (!formData.guarantorFullName) errors.guarantorFullName = 'Full name is required';
-    else if (formData.guarantorFullName.length < 3) errors.guarantorFullName = 'Full name must be at least 3 characters';
-    if (!formData.guarantorDOB) errors.guarantorDOB = 'Date of birth is required';
-    if (!formData.guarantorGender) errors.guarantorGender = 'Gender is required';
-    if (formData.guarantorAadhar && !/^\d{12}$/.test(formData.guarantorAadhar)) errors.guarantorAadhar = 'Aadhar must be 12 digits';
-    if (formData.guarantorPAN && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(formData.guarantorPAN)) errors.guarantorPAN = 'Invalid PAN format';
-    if (!formData.guarantorMobile) errors.guarantorMobile = 'Mobile number is required';
-    else if (!/^[6-9]\d{9}$/.test(formData.guarantorMobile)) errors.guarantorMobile = 'Invalid mobile number';
-    if (formData.guarantorEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.guarantorEmail)) errors.guarantorEmail = 'Invalid email address';
-    
-    if (!formData.currentStreetAddress) errors.currentStreetAddress = 'Street address is required';
-    if (!formData.currentDistrict) errors.currentDistrict = 'District is required';
-    if (!formData.currentTaluka) errors.currentTaluka = 'Taluka is required';
-    if (!formData.currentPlace) errors.currentPlace = 'Place is required';
-    if (!formData.currentArea) errors.currentArea = 'Area is required';
-    if (!formData.currentPinCode) errors.currentPinCode = 'Pin code is required';
-    else if (!/^\d{6}$/.test(formData.currentPinCode)) errors.currentPinCode = 'Pin code must be 6 digits';
-    
-    if (!formData.permanentStreetAddress) errors.permanentStreetAddress = 'Street address is required';
-    if (!formData.permanentDistrict) errors.permanentDistrict = 'District is required';
-    if (!formData.permanentTaluka) errors.permanentTaluka = 'Taluka is required';
-    if (!formData.permanentPlace) errors.permanentPlace = 'Place is required';
-    if (!formData.permanentArea) errors.permanentArea = 'Area is required';
-    if (!formData.permanentPinCode) errors.permanentPinCode = 'Pin code is required';
-    else if (!/^\d{6}$/.test(formData.permanentPinCode)) errors.permanentPinCode = 'Pin code must be 6 digits';
-    
-    if (!formData.maritalStatus) errors.maritalStatus = 'Marital status is required';
-    if (!formData.educationalQualification) errors.educationalQualification = 'Educational qualification is required';
-    if (!formData.guardianOccupation) errors.guardianOccupation = 'Occupation is required';
-    if (!formData.annualIncome) errors.annualIncome = 'Annual income is required';
-    else if (!/^\d+$/.test(formData.annualIncome)) errors.annualIncome = 'Annual income must be a valid number';
-    if (!formData.previousSurety) errors.previousSurety = 'Please select an option';
-    if (formData.previousSurety === 'Yes' && !formData.suretyDetails) errors.suretyDetails = 'Please provide details';
-    
-    return Object.keys(errors).length === 0;
+ function validateField(fieldName) {
+  const result = guarantorDetailsValidation(formData, t);
+  const fieldErrors = result.getErrors();
+  
+  if (fieldErrors[fieldName]) {
+    errors = { ...errors, [fieldName]: fieldErrors[fieldName] };
+  } else {
+    const { [fieldName]: _, ...rest } = errors;
+    errors = rest;
   }
+}
+
+function validateForm() {
+  const result = guarantorDetailsValidation(formData, t);
+  errors = result.getErrors();
+  return result.isValid();
+}
 
   // async function handleProceed() {
   //   if (!validateForm()) {
@@ -254,7 +232,10 @@
 
 
 async function handleProceed() {
-  if (!validateForm()) {
+  const result = guarantorDetailsValidation(formData, t);
+  errors = result.getErrors();
+  
+  if (!result.isValid()) {
     const firstErrorElement = document.querySelector('.error-message');
     if (firstErrorElement) {
       firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -361,12 +342,13 @@ async function handleProceed() {
           {#each communities as community}
             <label class="flex items-center cursor-pointer">
               <input 
-                type="radio" 
-                name="guarantorCommunity" 
-                value={community.value}
-                bind:group={formData.guarantorCommunity}
-                class="w-4 h-4 text-purple-600 focus:ring-purple-500"
-              />
+                  type="radio" 
+                  name="guarantorCommunity" 
+                  value={community.value}
+                  bind:group={formData.guarantorCommunity}
+                  on:change={() => validateField('guarantorCommunity')}  
+                  class="w-4 h-4 text-purple-600 focus:ring-purple-500"
+                />
               <span class="ml-2 text-sm text-gray-700">
                 {community.label[locale] || community.label.en}
               </span>
@@ -392,6 +374,7 @@ async function handleProceed() {
             <input
               type="text"
               bind:value={formData.guarantorFullName}
+              on:input={() => validateField('guarantorFullName')}
               placeholder={t.guarantorDetails?.guarantorFullNamePlaceholder}
               class="w-full pl-9 pr-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.guarantorFullName ? 'border-red-500' : 'border-gray-300'}"
             />
@@ -414,6 +397,7 @@ async function handleProceed() {
             <input
               type="date"
               bind:value={formData.guarantorDOB}
+              on:change={() => validateField('guarantorDOB')}
               placeholder="01/01/2001"
               class="w-full pl-9 pr-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.guarantorDOB ? 'border-red-500' : 'border-gray-300'}"
             />
@@ -429,6 +413,7 @@ async function handleProceed() {
           </label>
           <select
             bind:value={formData.guarantorGender}
+            on:change={() => validateField('guarantorGender')}
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.guarantorGender ? 'border-red-500' : 'border-gray-300'}"
           >
             <option value="">{t.guarantorDetails?.guarantorGenderPlaceholder}</option>
@@ -456,6 +441,7 @@ async function handleProceed() {
             <input
               type="text"
               bind:value={formData.guarantorAadhar}
+              on:input={() => validateField('guarantorAadhar')}
               placeholder={t.guarantorDetails?.guarantorAadharPlaceholder}
               maxlength="12"
               class="w-full pl-9 pr-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.guarantorAadhar ? 'border-red-500' : 'border-gray-300'}"
@@ -479,6 +465,7 @@ async function handleProceed() {
             <input
               type="text"
               bind:value={formData.guarantorPAN}
+              on:input={() => validateField('guarantorPAN')} 
               placeholder={t.guarantorDetails?.guarantorPANPlaceholder}
               maxlength="10"
               class="w-full pl-9 pr-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.guarantorPAN ? 'border-red-500' : 'border-gray-300'}"
@@ -503,6 +490,7 @@ async function handleProceed() {
             <input
               type="text"
               bind:value={formData.guarantorMobile}
+              on:input={() => validateField('guarantorMobile')}
               placeholder={t.guarantorDetails?.guarantorMobilePlaceholder}
               maxlength="10"
               class="w-full pl-9 pr-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.guarantorMobile ? 'border-red-500' : 'border-gray-300'}"
@@ -526,6 +514,7 @@ async function handleProceed() {
             <input
               type="email"
               bind:value={formData.guarantorEmail}
+              on:input={() => validateField('guarantorEmail')} 
               placeholder={t.guarantorDetails?.guarantorEmailPlaceholder}
               class="w-full pl-9 pr-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.guarantorEmail ? 'border-red-500' : 'border-gray-300'}"
             />
@@ -568,6 +557,7 @@ async function handleProceed() {
             <input
               type="text"
               bind:value={formData.currentStreetAddress}
+              on:input={() => validateField('currentStreetAddress')}
               placeholder={t.guarantorDetails?.currentStreetAddressPlaceholder}
               class="w-full pl-9 pr-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.currentStreetAddress ? 'border-red-500' : 'border-gray-300'}"
             />
@@ -585,6 +575,7 @@ async function handleProceed() {
             </label>
             <select
               bind:value={formData.currentDistrict}
+              on:change={() => validateField('currentDistrict')}
               class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.currentDistrict ? 'border-red-500' : 'border-gray-300'}"
             >
               {#each districts as district}
@@ -603,6 +594,7 @@ async function handleProceed() {
             </label>
             <select
               bind:value={formData.currentTaluka}
+              on:change={() => validateField('currentTaluka')}
               class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.currentTaluka ? 'border-red-500' : 'border-gray-300'}"
             >
               {#each talukas as taluka}
@@ -622,6 +614,7 @@ async function handleProceed() {
             <input
               type="text"
               bind:value={formData.currentPlace}
+              on:input={() => validateField('currentPlace')}
               placeholder={t.guarantorDetails?.currentPlacePlaceholder}
               class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.currentPlace ? 'border-red-500' : 'border-gray-300'}"
             />
@@ -637,6 +630,7 @@ async function handleProceed() {
             </label>
             <select
               bind:value={formData.currentArea}
+              on:change={() => validateField('currentArea')}
               class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.currentArea ? 'border-red-500' : 'border-gray-300'}"
             >
               {#each areas as area}
@@ -657,6 +651,7 @@ async function handleProceed() {
           <input
             type="text"
             bind:value={formData.currentPinCode}
+            on:input={() => validateField('currentPinCode')}
             placeholder={t.guarantorDetails?.currentPinCodePlaceholder}
             maxlength="6"
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.currentPinCode ? 'border-red-500' : 'border-gray-300'}"
@@ -712,6 +707,7 @@ async function handleProceed() {
             <input
               type="text"
               bind:value={formData.permanentStreetAddress}
+              on:input={() => validateField('permanentStreetAddress')}
               placeholder={t.guarantorDetails?.permanentStreetAddressPlaceholder}
               disabled={formData.sameAsCurrentAddress}
               class="w-full pl-9 pr-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 text-sm {errors.permanentStreetAddress ? 'border-red-500' : 'border-gray-300'}"
@@ -730,6 +726,7 @@ async function handleProceed() {
             </label>
             <select
               bind:value={formData.permanentDistrict}
+              on:change={() => validateField('permanentDistrict')}
               disabled={formData.sameAsCurrentAddress}
               class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 text-sm {errors.permanentDistrict ? 'border-red-500' : 'border-gray-300'}"
             >
@@ -749,6 +746,7 @@ async function handleProceed() {
             </label>
             <select
               bind:value={formData.permanentTaluka}
+              on:change={() => validateField('permanentTaluka')}
               disabled={formData.sameAsCurrentAddress}
               class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 text-sm {errors.permanentTaluka ? 'border-red-500' : 'border-gray-300'}"
             >
@@ -769,6 +767,7 @@ async function handleProceed() {
             <input
               type="text"
               bind:value={formData.permanentPlace}
+              on:input={() => validateField('permanentPlace')}
               placeholder={t.guarantorDetails?.permanentPlacePlaceholder}
               disabled={formData.sameAsCurrentAddress}
               class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 text-sm {errors.permanentPlace ? 'border-red-500' : 'border-gray-300'}"
@@ -785,6 +784,7 @@ async function handleProceed() {
             </label>
             <select
               bind:value={formData.permanentArea}
+              on:change={() => validateField('permanentArea')}
               disabled={formData.sameAsCurrentAddress}
               class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 text-sm {errors.permanentArea ? 'border-red-500' : 'border-gray-300'}"
             >
@@ -806,6 +806,7 @@ async function handleProceed() {
           <input
             type="text"
             bind:value={formData.permanentPinCode}
+            on:input={() => validateField('permanentPinCode')}
             placeholder={t.guarantorDetails?.currentPinCodePlaceholder}
             maxlength="6"
             disabled={formData.sameAsCurrentAddress}
@@ -841,6 +842,7 @@ async function handleProceed() {
           </label>
           <select
             bind:value={formData.maritalStatus}
+            on:change={() => validateField('maritalStatus')}
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.maritalStatus ? 'border-red-500' : 'border-gray-300'}"
           >
             {#each maritalStatusOptions as status}
@@ -859,6 +861,7 @@ async function handleProceed() {
           </label>
           <select
             bind:value={formData.educationalQualification}
+              on:change={() => validateField('educationalQualification')} 
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.educationalQualification ? 'border-red-500' : 'border-gray-300'}"
           >
             {#each educationalQualifications as qual}
@@ -895,6 +898,7 @@ async function handleProceed() {
           </label>
           <select
             bind:value={formData.guardianOccupation}
+            on:change={() => validateField('guardianOccupation')}
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.guardianOccupation ? 'border-red-500' : 'border-gray-300'}"
           >
             {#each occupations as occupation}
@@ -918,6 +922,7 @@ async function handleProceed() {
             <input
               type="text"
               bind:value={formData.annualIncome}
+              on:input={() => validateField('annualIncome')}
               placeholder={t.guarantorDetails?.annualIncomePlaceholder}
               class="w-full pl-8 pr-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.annualIncome ? 'border-red-500' : 'border-gray-300'}"
             />
@@ -944,6 +949,7 @@ async function handleProceed() {
                 name="previousSurety" 
                 value="Yes"
                 bind:group={formData.previousSurety}
+                on:change={() => validateField('previousSurety')} 
                 class="w-4 h-4 text-cyan-600 focus:ring-cyan-500"
               />
               <span class="ml-2 text-sm text-gray-700">Yes</span>
@@ -954,6 +960,7 @@ async function handleProceed() {
                 name="previousSurety" 
                 value="No"
                 bind:group={formData.previousSurety}
+                on:change={() => validateField('previousSurety')}
                 class="w-4 h-4 text-cyan-600 focus:ring-cyan-500"
               />
               <span class="ml-2 text-sm text-gray-700">No</span>
@@ -968,6 +975,7 @@ async function handleProceed() {
           <div>
             <textarea
               bind:value={formData.suretyDetails}
+              on:input={() => validateField('suretyDetails')}
               placeholder={t.guarantorDetails?.suretyDetailsPlaceholder}
               rows="3"
               class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.suretyDetails ? 'border-red-500' : 'border-gray-300'}"

@@ -998,7 +998,252 @@ export const hi = {
   // Alerts
   deleteConfirm: 'क्या आप वाकई इस जमानत को हटाना चाहते हैं?',
   noCollateralAlert: 'कृपया कम से कम एक जमानत जोड़ें',
-  submitError: 'सबमिट करने में विफल। कृपया पुनः प्रयास करें।'
+  submitError: 'सबमिट करने में विफल। कृपया पुनः प्रयास करें।',
+
+
+  //
+  propertyCollateralModal: {
+  modalTitle: "गिरवी संपत्ति जोड़ें",
+
+  propertyTypeLabel: "कृपया संपत्ति का प्रकार चुनें:",
+
+  residential: "आवासीय",
+  commercial: "व्यावसायिक",
+  agriLand: "कृषि भूमि",
+  openPlot: "खाली प्लॉट",
+
+  documentTypeLabel: "कृपया दस्तावेज़ का प्रकार चुनें:",
+
+  doc712: "7/12",
+  doc8A: "8A",
+  prCard: "PR कार्ड",
+  doc6D: "6D",
+
+  propertyAddressTitle: "संपत्ति का पता",
+
+  surveyNo: "सर्वे नंबर",
+  surveyNoPlaceholder: "सर्वे नंबर दर्ज करें",
+
+  district: "जिला",
+  districtPlaceholder: "जिला चुनें",
+
+  taluka: "तहसील",
+  talukaPlaceholder: "तहसील चुनें",
+
+  village: "गांव",
+  villagePlaceholder: "शहर/गांव दर्ज करें",
+
+  pinCode: "पिन कोड",
+  pinCodePlaceholder: "पिन कोड दर्ज करें",
+
+  propertyValueAreaTitle: "संपत्ति मूल्य और क्षेत्रफल",
+
+  units: "इकाइयाँ",
+  unitsPlaceholder: "चुनें",
+  unitsHectares: "हेक्टेयर",
+  unitsAcres: "एकड़",
+  unitsGuntha: "गुंठा",
+  hectaresAcres: "हेक्टेयर/एकड़",
+  hectaresPlaceholder: "क्षेत्रफल दर्ज करें",
+
+  rGuntha: "आर/गुंठा",
+  rGunthaPlaceholder: "क्षेत्रफल दर्ज करें",
+
+  propertyValue: "संपत्ति का मूल्य (रु.)",
+  propertyValuePlaceholder: "संपत्ति का मूल्य दर्ज करें",
+
+  kolhapur: "कोल्हापुर",
+  pune: "पुणे",
+  mumbai: "मुंबई",
+  nagpur: "नागपुर",
+  beed: "बीड",
+
+  hatkalangle: "हातकणंगले",
+  beedTaluka: "बीड",
+  ashti: "आष्टी",
+
+  cancelButton: "रद्द करें",
+  addButton: "जोड़ें",
+
+  required: "*",
+
+  surveyNoRequired: "सर्वे नंबर आवश्यक है",
+  districtRequired: "जिला आवश्यक है",
+  talukaRequired: "तहसील आवश्यक है",
+  villageRequired: "गांव आवश्यक है",
+  pinCodeRequired: "पिन कोड आवश्यक है",
+  pinCodeInvalid: "पिन कोड 6 अंकों का होना चाहिए",
+  propertyValueRequired: "संपत्ति का मूल्य आवश्यक है",
+  },
+
+  //
+  licCollateralModal: {
+    modalTitle: "गिरवी FD/LIC जोड़ें",
+
+    licPolicyDetailsTitle: "LIC पॉलिसी विवरण",
+
+    policyName: "पॉलिसी का नाम",
+    policyNamePlaceholder: "पॉलिसी का नाम दर्ज करें",
+
+    policyType: "पॉलिसी का प्रकार",
+    policyTypePlaceholder: "पॉलिसी का प्रकार दर्ज करें",
+
+    policyReceiptNo: "पॉलिसी रसीद संख्या",
+    policyReceiptNoPlaceholder: "पॉलिसी रसीद संख्या दर्ज करें",
+
+    policySurrenderValue: "पॉलिसी सरेंडर मूल्य",
+    policySurrenderValuePlaceholder: "पॉलिसी सरेंडर मूल्य दर्ज करें",
+
+    policyStartDate: "पॉलिसी प्रारंभ तिथि",
+    policyMaturityDate: "पॉलिसी परिपक्वता तिथि",
+
+    cancelButton: "रद्द करें",
+    addButton: "जोड़ें",
+
+    required: "*",
+
+    policyNameRequired: "पॉलिसी का नाम आवश्यक है",
+    policyTypeRequired: "पॉलिसी का प्रकार आवश्यक है",
+    policyReceiptNoRequired: "पॉलिसी रसीद संख्या आवश्यक है",
+    policySurrenderValueRequired: "पॉलिसी सरेंडर मूल्य आवश्यक है",
+    policyStartDateRequired: "पॉलिसी प्रारंभ तिथि आवश्यक है",
+    policyMaturityDateRequired: "पॉलिसी परिपक्वता तिथि आवश्यक है",
+  },
+
+  //
+  fdCollateralModal: {
+    modalTitle: "गिरवी FD जोड़ें",
+
+    fdBankDetailsTitle: "FD बैंक विवरण",
+
+    bankName: "बैंक का नाम",
+    bankNamePlaceholder: "बैंक का नाम दर्ज करें",
+
+    branchName: "शाखा का नाम",
+    branchNamePlaceholder: "शाखा का नाम दर्ज करें",
+
+    streetAddress: "सड़क का पता",
+    streetAddressPlaceholder: "बैंक का पता दर्ज करें",
+
+    district: "जिला",
+    districtPlaceholder: "जिला चुनें",
+
+    taluka: "तालुका",
+    talukaPlaceholder: "तालुका चुनें",
+
+    place: "स्थान",
+    placePlaceholder: "बैंक का शहर/गांव दर्ज करें",
+
+    pinCode: "पिन कोड",
+    pinCodePlaceholder: "पिन कोड दर्ज करें",
+
+    fdDetailsTitle: "FD विवरण",
+
+    fdAccountNumber: "FD खाता संख्या",
+    fdAccountNumberPlaceholder: "FD खाता संख्या दर्ज करें",
+
+    fdStartDate: "FD प्रारंभ तिथि",
+    fdMaturityDate: "FD परिपक्वता तिथि",
+
+    interestRate: "ब्याज दर",
+    interestRatePlaceholder: "0",
+
+    fdDepositAmount: "FD जमा राशि",
+    fdDepositAmountPlaceholder: "FD जमा राशि दर्ज करें",
+
+    cancelButton: "रद्द करें",
+    addButton: "जोड़ें",
+
+    required: "*",
+
+    bankNameRequired: "बैंक का नाम आवश्यक है",
+    branchNameRequired: "शाखा का नाम आवश्यक है",
+    streetAddressRequired: "सड़क का पता आवश्यक है",
+    districtRequired: "जिला आवश्यक है",
+    talukaRequired: "तालुका आवश्यक है",
+    placeRequired: "स्थान आवश्यक है",
+    pinCodeRequired: "पिन कोड आवश्यक है",
+    pinCodeInvalid: "पिन कोड 6 अंकों का होना चाहिए",
+    fdAccountNumberRequired: "FD खाता संख्या आवश्यक है",
+    fdStartDateRequired: "FD प्रारंभ तिथि आवश्यक है",
+    fdMaturityDateRequired: "FD परिपक्वता तिथि आवश्यक है",
+    interestRateRequired: "ब्याज दर आवश्यक है",
+    fdDepositAmountRequired: "FD जमा राशि आवश्यक है",
+  },
+
+  govtEmployeeModal: {
+  modalTitle: "सरकारी कर्मचारी गारंटर जोड़ें",
+
+  personalDetailsTitle: "गारंटर की व्यक्तिगत जानकारी",
+
+  fullName: "गारंटर का पूरा नाम",
+  fullNamePlaceholder: "पूरा नाम दर्ज करें...",
+
+  relationship: "आवेदक से संबंध",
+  relationshipPlaceholder: "संबंध चुनें",
+
+  aadharNumber: "आधार नंबर",
+  aadharNumberPlaceholder: "12 अंकों का आधार दर्ज करें...",
+
+  mobileNumber: "मोबाइल नंबर",
+  mobileNumberPlaceholder: "10 अंकों का मोबाइल नंबर दर्ज करें...",
+
+  residentialAddress: "निवासी पता",
+  residentialAddressPlaceholder: "पूरा निवासी पता दर्ज करें...",
+
+  employmentDetailsTitle: "रोजगार विवरण",
+
+  departmentName: "विभाग / कार्यालय का नाम",
+  departmentNamePlaceholder: "विभाग/कार्यालय का नाम दर्ज करें...",
+
+  designation: "पद",
+  designationPlaceholder: "पद दर्ज करें...",
+
+  employeeID: "कर्मचारी आईडी नंबर",
+  employeeIDPlaceholder: "कर्मचारी आईडी दर्ज करें...",
+
+  retirementDate: "सेवानिवृत्ति की तिथि (अनिवार्य)",
+
+  requiredDocsTitle: "आवश्यक दस्तावेज़",
+  requiredDocsSubtitle: "सभी अनिवार्य",
+
+  salaryCertificate: "मूल वेतन प्रमाणपत्र",
+  identityCard: "कार्यालय पहचान पत्र",
+  form24B: "फॉर्म – 24 (बी)",
+  permanentEmployee: "स्थायी सरकारी कर्मचारी",
+
+  father: "पिता",
+  mother: "माता",
+  spouse: "पति / पत्नी",
+  brother: "भाई",
+  sister: "बहन",
+  uncle: "चाचा",
+  aunt: "चाची",
+  friend: "मित्र",
+  other: "अन्य",
+
+  cancelButton: "रद्द करें",
+  addButton: "जोड़ें",
+
+  required: "*",
+
+  fullNameRequired: "पूरा नाम आवश्यक है",
+  fullNameMinLength: "पूरा नाम कम से कम 3 अक्षरों का होना चाहिए",
+  relationshipRequired: "संबंध आवश्यक है",
+  aadharRequired: "आधार नंबर आवश्यक है",
+  aadharInvalid: "आधार नंबर 12 अंकों का होना चाहिए",
+  mobileRequired: "मोबाइल नंबर आवश्यक है",
+  mobileInvalid: "अमान्य मोबाइल नंबर",
+  residentialAddressRequired: "निवासी पता आवश्यक है",
+  departmentNameRequired: "विभाग का नाम आवश्यक है",
+  designationRequired: "पद आवश्यक है",
+  employeeIDRequired: "कर्मचारी आईडी आवश्यक है",
+  retirementDateRequired: "सेवानिवृत्ति तिथि आवश्यक है (अनिवार्य)",
+  permanentEmployeeRequired: "स्थायी कर्मचारी होना आवश्यक है"
+}
+
+
+
   },
 
   uploadDocuments: {

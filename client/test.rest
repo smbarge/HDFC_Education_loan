@@ -11,6 +11,15 @@ Content-Type: application/json
   "name": "Akshata"
 }
 
+### Verify OTP
+POST http://localhost:5173/api/verifyOTP
+Content-Type: application/json
+
+{
+  "uid": "15c71351-8c0c-4d36-a67a-501bf3373d7c",
+  "otp": "859179"
+}
+
 
 ### Register user
 POST http://localhost:5173/api/auth
@@ -34,3 +43,24 @@ Content-Type: application/json
   "mobile": "8767096290",
   "password": "Admin@123"
 }
+
+### Get user by mobile
+POST http://localhost:5173/api/auth
+Content-Type: application/json
+
+{
+  "action": "getUserByMobile",
+  "mobile": "9999999999"
+}
+
+
+### Change password
+POST http://localhost:5173/api/auth
+Content-Type: application/json
+
+{
+  "action": "changePassword",
+  "mobile": "9999999999",
+  "password": "NewPassword@123"
+}
+

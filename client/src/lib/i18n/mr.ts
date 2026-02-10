@@ -996,7 +996,248 @@ export const mr = {
   // Alerts
   deleteConfirm: 'आपण ही तारण माहिती हटवू इच्छिता का?',
   noCollateralAlert: 'कृपया किमान एक तारण जोडा',
-  submitError: 'सबमिट करण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.'
+  submitError: 'सबमिट करण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.',
+  
+  propertyCollateralModal: {
+  modalTitle: "तारण मालमत्ता जोडा",
+
+  propertyTypeLabel: "कृपया मालमत्तेचा प्रकार निवडा:",
+
+  residential: "निवासी",
+  commercial: "व्यावसायिक",
+  agriLand: "कृषी जमीन",
+  openPlot: "मोकळा प्लॉट",
+
+  documentTypeLabel: "कृपया कागदपत्राचा प्रकार निवडा:",
+
+  doc712: "७/१२",
+  doc8A: "८अ",
+  prCard: "पीआर कार्ड",
+  doc6D: "६डी",
+
+  propertyAddressTitle: "मालमत्तेचा पत्ता",
+
+  surveyNo: "सर्वे क्रमांक",
+  surveyNoPlaceholder: "सर्वे क्रमांक प्रविष्ट करा",
+
+  district: "जिल्हा",
+  districtPlaceholder: "जिल्हा निवडा",
+
+  taluka: "तालुका",
+  talukaPlaceholder: "तालुका निवडा",
+
+  village: "गाव",
+  villagePlaceholder: "शहर/गाव प्रविष्ट करा",
+
+  pinCode: "पिन कोड",
+  pinCodePlaceholder: "पिन कोड प्रविष्ट करा",
+
+  propertyValueAreaTitle: "मालमत्तेची किंमत आणि क्षेत्रफळ",
+
+  units: "युनिट्स",
+  unitsPlaceholder: "निवडा",
+  unitsHectares: "हेक्टर",
+  unitsAcres: "एकर",
+  unitsGuntha: "गुंठा",
+  hectaresAcres: "हेक्टर/एकर",
+  hectaresPlaceholder: "क्षेत्रफळ प्रविष्ट करा",
+
+  rGuntha: "आर/गुंठा",
+  rGunthaPlaceholder: "क्षेत्रफळ प्रविष्ट करा",
+
+  propertyValue: "मालमत्तेची किंमत (रु.)",
+  propertyValuePlaceholder: "मालमत्तेची किंमत प्रविष्ट करा",
+
+  kolhapur: "कोल्हापूर",
+  pune: "पुणे",
+  mumbai: "मुंबई",
+  nagpur: "नागपूर",
+  beed: "बीड",
+
+  hatkalangle: "हातकणंगले",
+  beedTaluka: "बीड",
+  ashti: "आष्टी",
+
+  cancelButton: "रद्द करा",
+  addButton: "जोडा",
+
+  required: "*",
+
+  surveyNoRequired: "सर्वे क्रमांक आवश्यक आहे",
+  districtRequired: "जिल्हा आवश्यक आहे",
+  talukaRequired: "तालुका आवश्यक आहे",
+  villageRequired: "गाव आवश्यक आहे",
+  pinCodeRequired: "पिन कोड आवश्यक आहे",
+  pinCodeInvalid: "पिन कोड ६ अंकी असावा",
+  propertyValueRequired: "मालमत्तेची किंमत आवश्यक आहे",
+  },
+
+  licCollateralModal: {
+    modalTitle: "तारण FD/LIC जोडा",
+
+    licPolicyDetailsTitle: "LIC पॉलिसी तपशील",
+
+    policyName: "पॉलिसीचे नाव",
+    policyNamePlaceholder: "पॉलिसीचे नाव प्रविष्ट करा",
+
+    policyType: "पॉलिसीचा प्रकार",
+    policyTypePlaceholder: "पॉलिसीचा प्रकार प्रविष्ट करा",
+
+    policyReceiptNo: "पॉलिसी पावती क्रमांक",
+    policyReceiptNoPlaceholder: "पॉलिसी पावती क्रमांक प्रविष्ट करा",
+
+    policySurrenderValue: "पॉलिसी सरेंडर मूल्य",
+    policySurrenderValuePlaceholder: "पॉलिसी सरेंडर मूल्य प्रविष्ट करा",
+
+    policyStartDate: "पॉलिसी सुरूवातीची तारीख",
+    policyMaturityDate: "पॉलिसी परिपक्वता तारीख",
+
+    cancelButton: "रद्द करा",
+    addButton: "जोडा",
+
+    required: "*",
+
+    policyNameRequired: "पॉलिसीचे नाव आवश्यक आहे",
+    policyTypeRequired: "पॉलिसीचा प्रकार आवश्यक आहे",
+    policyReceiptNoRequired: "पॉलिसी पावती क्रमांक आवश्यक आहे",
+    policySurrenderValueRequired: "पॉलिसी सरेंडर मूल्य आवश्यक आहे",
+    policyStartDateRequired: "पॉलिसी सुरूवातीची तारीख आवश्यक आहे",
+    policyMaturityDateRequired: "पॉलिसी परिपक्वता तारीख आवश्यक आहे",
+  },
+
+  fdCollateralModal: {
+    modalTitle: "तारण FD जोडा",
+
+    fdBankDetailsTitle: "FD बँक तपशील",
+
+    bankName: "बँकेचे नाव",
+    bankNamePlaceholder: "बँकेचे नाव प्रविष्ट करा",
+
+    branchName: "शाखेचे नाव",
+    branchNamePlaceholder: "शाखेचे नाव प्रविष्ट करा",
+
+    streetAddress: "रस्त्याचा पत्ता",
+    streetAddressPlaceholder: "बँकेचा पत्ता प्रविष्ट करा",
+
+    district: "जिल्हा",
+    districtPlaceholder: "जिल्हा निवडा",
+
+    taluka: "तालुका",
+    talukaPlaceholder: "तालुका निवडा",
+
+    place: "ठिकाण",
+    placePlaceholder: "बँकेचे शहर/गाव प्रविष्ट करा",
+
+    pinCode: "पिन कोड",
+    pinCodePlaceholder: "पिन कोड प्रविष्ट करा",
+
+    fdDetailsTitle: "FD तपशील",
+
+    fdAccountNumber: "FD खाते क्रमांक",
+    fdAccountNumberPlaceholder: "FD खाते क्रमांक प्रविष्ट करा",
+
+    fdStartDate: "FD सुरूवातीची तारीख",
+    fdMaturityDate: "FD परिपक्वता तारीख",
+
+    interestRate: "व्याज दर",
+    interestRatePlaceholder: "0",
+
+    fdDepositAmount: "FD ठेव रक्कम",
+    fdDepositAmountPlaceholder: "FD ठेव रक्कम प्रविष्ट करा",
+
+    cancelButton: "रद्द करा",
+    addButton: "जोडा",
+
+    required: "*",
+
+    bankNameRequired: "बँकेचे नाव आवश्यक आहे",
+    branchNameRequired: "शाखेचे नाव आवश्यक आहे",
+    streetAddressRequired: "रस्त्याचा पत्ता आवश्यक आहे",
+    districtRequired: "जिल्हा आवश्यक आहे",
+    talukaRequired: "तालुका आवश्यक आहे",
+    placeRequired: "ठिकाण आवश्यक आहे",
+    pinCodeRequired: "पिन कोड आवश्यक आहे",
+    pinCodeInvalid: "पिन कोड ६ अंकी असावा",
+    fdAccountNumberRequired: "FD खाते क्रमांक आवश्यक आहे",
+    fdStartDateRequired: "FD सुरूवातीची तारीख आवश्यक आहे",
+    fdMaturityDateRequired: "FD परिपक्वता तारीख आवश्यक आहे",
+    interestRateRequired: "व्याज दर आवश्यक आहे",
+    fdDepositAmountRequired: "FD ठेव रक्कम आवश्यक आहे",
+  },
+
+  govtEmployeeModal: {
+  modalTitle: "शासकीय कर्मचारी हमीदार जोडा",
+
+  personalDetailsTitle: "हमीदाराची वैयक्तिक माहिती",
+
+  fullName: "हमीदाराचे पूर्ण नाव",
+  fullNamePlaceholder: "पूर्ण नाव प्रविष्ट करा...",
+
+  relationship: "अर्जदाराशी नाते",
+  relationshipPlaceholder: "नाते निवडा",
+
+  aadharNumber: "आधार क्रमांक",
+  aadharNumberPlaceholder: "12 अंकी आधार क्रमांक प्रविष्ट करा...",
+
+  mobileNumber: "मोबाईल क्रमांक",
+  mobileNumberPlaceholder: "10 अंकी मोबाईल क्रमांक प्रविष्ट करा...",
+
+  residentialAddress: "निवासी पत्ता",
+  residentialAddressPlaceholder: "पूर्ण निवासी पत्ता प्रविष्ट करा...",
+
+  employmentDetailsTitle: "नोकरीची माहिती",
+
+  departmentName: "विभाग / कार्यालयाचे नाव",
+  departmentNamePlaceholder: "विभाग/कार्यालयाचे नाव प्रविष्ट करा...",
+
+  designation: "पदनाम",
+  designationPlaceholder: "पदनाम प्रविष्ट करा...",
+
+  employeeID: "कर्मचारी आयडी क्रमांक",
+  employeeIDPlaceholder: "कर्मचारी आयडी प्रविष्ट करा...",
+
+  retirementDate: "निवृत्तीची तारीख (अनिवार्य)",
+
+  requiredDocsTitle: "आवश्यक कागदपत्रे",
+  requiredDocsSubtitle: "सर्व अनिवार्य",
+
+  salaryCertificate: "मूळ वेतन प्रमाणपत्र",
+  identityCard: "कार्यालयीन ओळखपत्र",
+  form24B: "फॉर्म – 24 (ब)",
+  permanentEmployee: "कायम शासकीय कर्मचारी",
+
+  father: "वडील",
+  mother: "आई",
+  spouse: "पती / पत्नी",
+  brother: "भाऊ",
+  sister: "बहीण",
+  uncle: "काका",
+  aunt: "मावशी",
+  friend: "मित्र",
+  other: "इतर",
+
+  cancelButton: "रद्द करा",
+  addButton: "जोडा",
+
+  required: "*",
+
+  fullNameRequired: "पूर्ण नाव आवश्यक आहे",
+  fullNameMinLength: "पूर्ण नाव किमान 3 अक्षरांचे असावे",
+  relationshipRequired: "नाते आवश्यक आहे",
+  aadharRequired: "आधार क्रमांक आवश्यक आहे",
+  aadharInvalid: "आधार क्रमांक 12 अंकी असावा",
+  mobileRequired: "मोबाईल क्रमांक आवश्यक आहे",
+  mobileInvalid: "अवैध मोबाईल क्रमांक",
+  residentialAddressRequired: "निवासी पत्ता आवश्यक आहे",
+  departmentNameRequired: "विभागाचे नाव आवश्यक आहे",
+  designationRequired: "पदनाम आवश्यक आहे",
+  employeeIDRequired: "कर्मचारी आयडी आवश्यक आहे",
+  retirementDateRequired: "निवृत्तीची तारीख आवश्यक आहे (अनिवार्य)",
+  permanentEmployeeRequired: "कायम कर्मचारी असणे आवश्यक आहे"
+}
+
+
+
 },  
 
 uploadDocuments: {
@@ -1114,7 +1355,7 @@ GuarantorDocument: {
     noGuarantorFound: "जामीनदाराची माहिती आढळली नाही. कृपया जामीनदार तपशील पूर्ण करा."
   },
 
-  CollateralDocuments: {
+CollateralDocuments: {
     // Header
     sectionTitle: "तारण कागदपत्र",
     

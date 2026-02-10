@@ -6,6 +6,7 @@
   import DashboardHeader from '$lib/components/dashboard/DashboardHeader.svelte';
   import { onMount } from 'svelte';
   import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
+  import academicInfoValidation from '$lib/validation/application/academicInfo';
 
 
 
@@ -136,166 +137,58 @@
     formData.remainingFee = (total - paid).toString();
   }
 
-  // Form validation
-  function validateForm() {
-    errors = {};
-    
-    // Student Details
-    if (!formData.studentName) {
-      errors.studentName = 'Student name is required';
-    } else if (formData.studentName.length < 3) {
-      errors.studentName = 'Student name must be at least 3 characters';
-    }
-    
-    if (!formData.courseName) {
-      errors.courseName = 'Course name is required';
-    }
-    
-    if (!formData.courseType) {
-      errors.courseType = 'Course type is required';
-    }
-    
-    if (!formData.streamSpecialization) {
-      errors.streamSpecialization = 'Stream/Specialization is required';
-    }
-    
-    if (!formData.courseDuration) {
-      errors.courseDuration = 'Course duration is required';
-    } else if (!/^\d+$/.test(formData.courseDuration)) {
-      errors.courseDuration = 'Course duration must be a valid number (years)';
-    }
-    
-    if (!formData.modeOfStudy) {
-      errors.modeOfStudy = 'Mode of study is required';
-    }
-    
-    // Institution Details
-    if (!formData.instituteName) {
-      errors.instituteName = 'Institute/College name is required';
-    }
-    
-    if (!formData.universityName) {
-      errors.universityName = 'University/Board name is required';
-    }
-    
-    if (!formData.instituteAddress) {
-      errors.instituteAddress = 'Institute address is required';
-    }
-    
-    if (!formData.district) {
-      errors.district = 'District is required';
-    }
-    
-    if (!formData.taluka) {
-      errors.taluka = 'Taluka is required';
-    }
-    
-    if (!formData.place) {
-      errors.place = 'Place is required';
-    }
-    
-    if (!formData.pinCode) {
-      errors.pinCode = 'Pin code is required';
-    } else if (!/^\d{6}$/.test(formData.pinCode)) {
-      errors.pinCode = 'Pin code must be 6 digits';
-    }
-    
-    // Admission & Fee Details
-    if (!formData.admissionStatus) {
-      errors.admissionStatus = 'Admission status is required';
-    }
-    
-    if (!formData.admissionYear) {
-      errors.admissionYear = 'Admission year is required';
-    }
-    
-    if (!formData.totalCourseFee) {
-      errors.totalCourseFee = 'Total course fee is required';
-    } else if (!/^\d+(\.\d{1,2})?$/.test(formData.totalCourseFee)) {
-      errors.totalCourseFee = 'Total course fee must be a valid amount';
-    }
-    
-    if (formData.feePaid && !/^\d+(\.\d{1,2})?$/.test(formData.feePaid)) {
-      errors.feePaid = 'Fee paid must be a valid amount';
-    }
-    
-    if (!formData.remainingFee) {
-      errors.remainingFee = 'Remaining fee is required';
-    }
-    
-    // Loan Requirement Details
-    if (!formData.loanRequired) {
-      errors.loanRequired = 'Loan required amount is required';
-    } else if (!/^\d+(\.\d{1,2})?$/.test(formData.loanRequired)) {
-      errors.loanRequired = 'Loan required must be a valid amount';
-    }
-    
-    if (!formData.purposeOfLoan) {
-      errors.purposeOfLoan = 'Purpose of loan is required';
-    }
-    
-    // GST Number is optional but validate format if provided
-    if (formData.gstNumber && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(formData.gstNumber)) {
-      errors.gstNumber = 'Please enter a valid GST number';
-    }
-    
-    // Bank Details
-    if (!formData.bankName) {
-      errors.bankName = 'Bank name is required';
-    }
-    
-    if (!formData.ifscCode) {
-      errors.ifscCode = 'IFSC code is required';
-    } else if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(formData.ifscCode)) {
-      errors.ifscCode = 'Please enter a valid IFSC code';
-    }
-    
-    if (!formData.branchName) {
-      errors.branchName = 'Branch name is required';
-    }
-    
-    if (!formData.accountNumber) {
-      errors.accountNumber = 'Account number is required';
-    } else if (!/^\d{9,18}$/.test(formData.accountNumber)) {
-      errors.accountNumber = 'Account number must be 9-18 digits';
-    }
-    
-    if (!formData.bankAddress) {
-      errors.bankAddress = 'Bank address is required';
-    }
-    
-    return Object.keys(errors).length === 0;
+ function validateField(fieldName) {
+  const result = academicInfoValidation(formData, t);
+  const fieldErrors = result.getErrors();
+  
+  if (fieldErrors[fieldName]) {
+    // Set error if validation fails for this field
+    errors = { ...errors, [fieldName]: fieldErrors[fieldName] };
+  } else {
+    // Clear error if validation passes for this field
+    const { [fieldName]: _, ...rest } = errors;
+    errors = rest;
   }
+}
+
+function validateForm() {
+  const result = academicInfoValidation(formData, t);
+  errors = result.getErrors();
+  return result.isValid();
+}
 
   // Handle form submission
-  async function handleProceed() {
-    if (!validateForm()) {
-      const firstErrorElement = document.querySelector('.error-message');
-      if (firstErrorElement) {
-        firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-      return;
+ async function handleProceed() {
+  const result = academicInfoValidation(formData, t);
+  errors = result.getErrors();
+  
+  if (!result.isValid()) {
+    const firstErrorElement = document.querySelector('.error-message');
+    if (firstErrorElement) {
+      firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-
-    isSubmitting = true;
-
-    try {
-      // TODO: Replace with actual API endpoint
-      // const response = await fetch('/api/application/academic-info', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData)
-      // });
-      
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      goto(`/${locale}/application/guarantor-details`);
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      alert('Failed to submit form. Please try again.');
-    } finally {
-      isSubmitting = false;
-    }
+    return;
   }
+
+  isSubmitting = true;
+
+  try {
+    // TODO: Replace with actual API endpoint
+    // const response = await fetch('/api/application/academic-info', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(formData)
+    // });
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    goto(`/${locale}/application/guarantor-details`);
+  } catch (error) {
+    console.error('Error submitting form:', error);
+    alert('Failed to submit form. Please try again.');
+  } finally {
+    isSubmitting = false;
+  }
+}
 
   function handleBack() {
     goto(`/${locale}/dashboard`);
@@ -375,11 +268,13 @@
             {t.academicInfo?.studentNameLabel}<span class="text-red-500">*</span>
           </label>
           <input
-            type="text"
-            bind:value={formData.studentName}
-            placeholder={t.academicInfo?.studentNamePlaceholder}
-            class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.studentName ? 'border-red-500' : 'border-gray-300'}"
-          />
+          type="text"
+          bind:value={formData.studentName}
+          on:input={() => validateField('studentName')}
+          placeholder={t.academicInfo?.studentNamePlaceholder}
+          class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.studentName ? 'border-red-500' : 'border-gray-300'}"
+        />
+
           {#if errors.studentName}
             <p class="error-message mt-1 text-xs text-red-600">{errors.studentName}</p>
           {/if}
@@ -391,11 +286,12 @@
            
           </label>
           <input
-            type="text"
-            bind:value={formData.courseName}
-            placeholder={t.academicInfo?.courseNamePlaceholder}
-            class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.courseName ? 'border-red-500' : 'border-gray-300'}"
-          />
+          type="text"
+          bind:value={formData.courseName}
+          on:input={() => validateField('courseName')}  
+          placeholder={t.academicInfo?.courseNamePlaceholder}
+          class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.courseName ? 'border-red-500' : 'border-gray-300'}"
+        />
           {#if errors.courseName}
             <p class="error-message mt-1 text-xs text-red-600">{errors.courseName}</p>
           {/if}
@@ -407,9 +303,10 @@
             
           </label>
           <select
-            bind:value={formData.courseType}
-            class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.courseType ? 'border-red-500' : 'border-gray-300'}"
-          >
+              bind:value={formData.courseType}
+              on:change={() => validateField('courseType')}
+              class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.courseType ? 'border-red-500' : 'border-gray-300'}"
+            >
             <option value="">{t.academicInfo?.courseTypePlaceholder}</option>
             {#each courseTypes as type}
               <option value={type.value}>{type.label[locale] || type.label.en}</option>
@@ -426,6 +323,7 @@
           </label>
           <select
             bind:value={formData.streamSpecialization}
+              on:change={() => validateField('streamSpecialization')}
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.streamSpecialization ? 'border-red-500' : 'border-gray-300'}"
           >
             <option value="">{t.academicInfo?.streamPlaceholder}</option>
@@ -442,9 +340,10 @@
           <label class="block text-sm font-medium text-gray-700 mb-2">
            {t.academicInfo?.courseDurationLabel}<span class="text-red-500">*</span>
           </label>
-          <input
+         <input
             type="text"
             bind:value={formData.courseDuration}
+            on:input={() => validateField('courseDuration')} 
             placeholder={t.academicInfo?.courseDurationPlaceholder}
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.courseDuration ? 'border-red-500' : 'border-gray-300'}"
           />
@@ -459,6 +358,7 @@
           </label>
           <select
             bind:value={formData.modeOfStudy}
+            on:change={() => validateField('modeOfStudy')}
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.modeOfStudy ? 'border-red-500' : 'border-gray-300'}"
           >
             <option value="">{t.academicInfo?.modeOfStudyPlaceholder}</option>
@@ -498,6 +398,7 @@
             <input
               type="text"
               bind:value={formData.instituteName}
+               on:input={() => validateField('instituteName')}
               placeholder={t.academicInfo?.instituteNamePlaceholder}
               class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.instituteName ? 'border-red-500' : 'border-gray-300'}"
             />
@@ -513,6 +414,7 @@
             <input
               type="text"
               bind:value={formData.universityName}
+              on:input={() => validateField('universityName')}
               placeholder={t.academicInfo?.universityNamePlaceholder}
               class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.universityName ? 'border-red-500' : 'border-gray-300'}"
             />
@@ -529,6 +431,7 @@
           <input
             type="text"
             bind:value={formData.instituteAddress}
+            on:input={() => validateField('instituteAddress')}
             placeholder={t.academicInfo?.instituteAddressPlaceholder}
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.instituteAddress ? 'border-red-500' : 'border-gray-300'}"
           />
@@ -545,6 +448,7 @@
             </label>
             <select
               bind:value={formData.district}
+              on:change={() => validateField('district')}
               class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.district ? 'border-red-500' : 'border-gray-300'}"
             >
               <option value="">{t.academicInfo?.districtPlaceholder}</option>
@@ -565,6 +469,7 @@
             <input
               type="text"
               bind:value={formData.taluka}
+              on:input={() => validateField('taluka')}
               placeholder={t.academicInfo?.talukaPlaceholder}
               class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.taluka ? 'border-red-500' : 'border-gray-300'}"
             />
@@ -580,6 +485,7 @@
             <input
               type="text"
               bind:value={formData.place}
+              on:input={() => validateField('place')}
               placeholder={t.academicInfo?.placePlaceholder}
               class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.place ? 'border-red-500' : 'border-gray-300'}"
             />
@@ -596,6 +502,7 @@
             <input
               type="text"
               bind:value={formData.pinCode}
+              on:input={() => validateField('pinCode')}
               placeholder={t.academicInfo?.pinCodePlaceholder}
               maxlength="6"
               class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.pinCode ? 'border-red-500' : 'border-gray-300'}"
@@ -630,6 +537,7 @@
           </label>
           <select
             bind:value={formData.admissionStatus}
+            on:change={() => validateField('admissionStatus')}
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.admissionStatus ? 'border-red-500' : 'border-gray-300'}"
           >
             <option value="">{t.academicInfo?.admissionStatusPlaceholder}</option>
@@ -649,6 +557,7 @@
           <input
             type="text"
             bind:value={formData.admissionYear}
+            on:input={() => validateField('admissionYear')}
             placeholder={t.academicInfo?.admissionYearPlaceholder}
             maxlength="4"
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.admissionYear ? 'border-red-500' : 'border-gray-300'}"
@@ -666,6 +575,7 @@
           <input
             type="text"
             bind:value={formData.totalCourseFee}
+            on:input={() => validateField('totalCourseFee')}
             placeholder={t.academicInfo?.totalCourseFeePlaceholder}
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.totalCourseFee ? 'border-red-500' : 'border-gray-300'}"
           />
@@ -680,6 +590,7 @@
           <input
             type="text"
             bind:value={formData.feePaid}
+            on:input={() => validateField('feePaid')}
             placeholder={t.academicInfo?.feePaidPlaceholder}
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.feePaid ? 'border-red-500' : 'border-gray-300'}"
           />
@@ -695,6 +606,7 @@
           <input
             type="text"
             bind:value={formData.remainingFee}
+            on:input={() => validateField('remainingFee')}
             placeholder={t.academicInfo?.remainingFeePlaceholder}
             readonly
             class="w-full px-3 py-2.5 border rounded-lg bg-gray-50 text-sm {errors.remainingFee ? 'border-red-500' : 'border-gray-300'}"
@@ -729,6 +641,7 @@
           <input
             type="text"
             bind:value={formData.loanRequired}
+            on:input={() => validateField('loanRequired')}
             placeholder={t.academicInfo?.loanRequiredPlaceholder}
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.loanRequired ? 'border-red-500' : 'border-gray-300'}"
           />
@@ -743,6 +656,7 @@
           </label>
           <select
             bind:value={formData.purposeOfLoan}
+            on:change={() => validateField('purposeOfLoan')} 
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.purposeOfLoan ? 'border-red-500' : 'border-gray-300'}"
           >
             <option value="">{t.academicInfo?.purposeOfLoanPlaceholder}</option>
@@ -762,6 +676,7 @@
           <input
             type="text"
             bind:value={formData.gstNumber}
+            on:input={() => validateField('gstNumber')}
             placeholder={t.academicInfo?.gstNumberPlaceholder}
             maxlength="15"
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.gstNumber ? 'border-red-500' : 'border-gray-300'}"
@@ -797,6 +712,7 @@
           <input
             type="text"
             bind:value={formData.bankName}
+            on:input={() => validateField('bankName')}
             placeholder={t.academicInfo?.bankNamePlaceholder}
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.bankName ? 'border-red-500' : 'border-gray-300'}"
           />
@@ -812,6 +728,7 @@
           <input
             type="text"
             bind:value={formData.ifscCode}
+            on:input={() => validateField('ifscCode')}
             placeholder={t.academicInfo?.ifscCodePlaceholder}
             maxlength="11"
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.ifscCode ? 'border-red-500' : 'border-gray-300'}"
@@ -829,6 +746,7 @@
           <input
             type="text"
             bind:value={formData.branchName}
+            on:input={() => validateField('branchName')}
             placeholder={t.academicInfo?.branchNamePlaceholder}
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.branchName ? 'border-red-500' : 'border-gray-300'}"
           />
@@ -845,6 +763,7 @@
           <input
             type="text"
             bind:value={formData.accountNumber}
+             on:input={() => validateField('accountNumber')}
             placeholder={t.academicInfo?.accountNumberPlaceholder}
             maxlength="18"
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.accountNumber ? 'border-red-500' : 'border-gray-300'}"
@@ -862,6 +781,7 @@
           <input
             type="text"
             bind:value={formData.bankAddress}
+            on:input={() => validateField('bankAddress')}
             placeholder={t.academicInfo?.bankAddressPlaceholder}
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.bankAddress ? 'border-red-500' : 'border-gray-300'}"
           />

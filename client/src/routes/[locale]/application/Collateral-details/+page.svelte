@@ -11,6 +11,7 @@
   import GovtEmployeeGuarantorModal from '$lib/components/collateral/GovtEmployeeGuarantorModal.svelte';
   import { onMount } from 'svelte';
   import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
+  import collateralDetailsValidation from '$lib/validation/collateral/collateralDetails';
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
@@ -18,6 +19,8 @@
 
   let userData = null;
   let showProfileModal = false;
+
+  let errors = {};
 
 
 
@@ -93,33 +96,44 @@
   }
 
   function savePropertyCollateral(data) {
-    collateralItems = [...collateralItems, data];
-    showPropertyModal = false;
-  }
+        collateralItems = [...collateralItems, data];
+        sessionStorage.setItem('collateralItems', JSON.stringify(collateralItems));
+        showPropertyModal = false;
+        errors = {};
+      }
 
   function saveFDCollateral(data) {
     collateralItems = [...collateralItems, data];
     showFDModal = false;
+    sessionStorage.setItem('collateralItems', JSON.stringify(collateralItems));
+    errors = {};
   }
 
   function saveLICCollateral(data) {
-    collateralItems = [...collateralItems, data];
-    showLICModal = false;
-  }
+  collateralItems = [...collateralItems, data];
+  showLICModal = false;
+  sessionStorage.setItem('collateralItems', JSON.stringify(collateralItems));
+  errors = {};
+}
 
-  function saveGovtEmployee(data) {
-    collateralItems = [...collateralItems, data];
-    showGovtEmployeeModal = false;
-  }
+function saveGovtEmployee(data) {
+  collateralItems = [...collateralItems, data];
+  showGovtEmployeeModal = false;
+  sessionStorage.setItem('collateralItems', JSON.stringify(collateralItems));
+  errors = {};
+}
 
-  function deleteCollateral(id) {
-    if (confirm('Are you sure you want to delete this collateral?')) {
-      collateralItems = collateralItems.filter(item => item.id !== id);
-    }
+function deleteCollateral(id) {
+  if (confirm('Are you sure you want to delete this collateral?')) {
+    collateralItems = collateralItems.filter(item => item.id !== id);
+    sessionStorage.setItem('collateralItems', JSON.stringify(collateralItems)); 
   }
+}
 
   function editCollateral(item) {
     collateralItems = collateralItems.filter(i => i.id !== item.id);
+    sessionStorage.setItem('collateralItems', JSON.stringify(collateralItems)); 
+
     
     if (item.type === 'property') {
       showPropertyModal = true;
@@ -131,6 +145,12 @@
       showGovtEmployeeModal = true;
     }
   }
+
+ function validateCollateralList() {
+  const result = collateralDetailsValidation({ collateralItems }, t);
+  errors = result.getErrors();
+  return result.isValid();
+}
 
   function handleBack() {
     goto(`/${locale}/dashboard`);
@@ -187,12 +207,9 @@
 //   }
 // }
 
-
-
-
 async function handleProceed() {
-  if (collateralItems.length === 0) {
-    alert('Please add at least one collateral');
+  // Validate that at least one collateral is added
+  if (!validateCollateralList()) {
     return;
   }
 
@@ -219,12 +236,11 @@ async function handleProceed() {
     goto(`/${locale}/application/upload-documents`);
   } catch (error) {
     console.error('Error:', error);
-    alert('Failed to submit. Please try again.');
+    alert(t.collateralDetails?.submitError || 'Failed to submit. Please try again.');
   } finally {
     isSubmitting = false;
   }
 }
-
 
 </script>
 
@@ -365,10 +381,10 @@ async function handleProceed() {
                   <h4 class="font-bold text-gray-900">{t.collateralDetails?.propertyCollateral}</h4>
                 </div>
                 <div class="space-y-1 text-sm text-gray-600">
-                  <p><span class="font-medium">{t.collateralDetails?.type}:</span> {item.propertyType}</p>
-                  <p><span class="font-medium">{t.collateralDetails?.surveyNo}:</span> {item.surveyNo}</p>
-                  <p><span class="font-medium">{t.collateralDetails?.village}:</span> {item.village}</p>
-                  <p><span class="font-medium">{t.collateralDetails?.propertyValue}:</span> ₹{item.propertyValue}</p>
+                  <p><span class="font-medium">{t.collateralDetails?.propertyCollateralModal?.propertyTypeLabel || 'Type'}:</span> {item.propertyType || 'N/A'}</p>
+                   <p><span class="font-medium">{t.collateralDetails?.propertyCollateralModal?.surveyNo || 'Survey No'}:</span> {item.surveyNo || 'N/A'}</p>
+                   <p><span class="font-medium">{t.collateralDetails?.propertyCollateralModal?.village || 'Village'}:</span> {item.village || 'N/A'}</p>
+                  <p><span class="font-medium">{t.collateralDetails?.propertyCollateralModal?.propertyValue || 'Property Value'}:</span> ₹{item.propertyValue || '0'}</p>
                 </div>
 
               {:else if item.type === 'fd'}
@@ -379,10 +395,10 @@ async function handleProceed() {
                   <h4 class="font-bold text-gray-900">{t.collateralDetails?.fdCollateral}</h4>
                 </div>
                 <div class="space-y-1 text-sm text-gray-600">
-                  <p><span class="font-medium">{t.collateralDetails?.bankName}:</span> {item.bankName}</p>
-                  <p><span class="font-medium">{t.collateralDetails?.branchName}:</span> {item.branchName}</p>
-                  <p><span class="font-medium">{t.collateralDetails?.fdDepositAmount}:</span> ₹{item.fdDepositAmount}</p>
-                  <p><span class="font-medium">{t.collateralDetails?.fdMaturityDate}:</span> {item.fdMaturityDate}</p>
+                  <p><span class="font-medium">{t.collateralDetails?.fdCollateralModal?.bankName || 'Bank Name'}:</span> {item.bankName || 'N/A'}</p>
+                  <p><span class="font-medium">{t.collateralDetails?.fdCollateralModal?.branchName || 'Branch Name'}:</span> {item.branchName || 'N/A'}</p>
+                  <p><span class="font-medium">{t.collateralDetails?.fdCollateralModal?.fdDepositAmount || 'Deposit Amount'}:</span> ₹{item.fdDepositAmount || '0'}</p>
+                  <p><span class="font-medium">{t.collateralDetails?.fdCollateralModal?.fdMaturityDate || 'Maturity Date'}:</span> {item.fdMaturityDate || 'N/A'}</p>
                 </div>
 
               {:else if item.type === 'lic'}
@@ -393,10 +409,10 @@ async function handleProceed() {
                   <h4 class="font-bold text-gray-900">{t.collateralDetails?.licCollateral}</h4>
                 </div>
                 <div class="space-y-1 text-sm text-gray-600">
-                  <p><span class="font-medium">{t.collateralDetails?.policyName}:</span> {item.policyName}</p>
-                  <p><span class="font-medium">{t.collateralDetails?.policyType}:</span> {item.policyType}</p>
-                  <p><span class="font-medium">{t.collateralDetails?.policyReceiptNo}:</span> {item.policyReceiptNo}</p>
-                  <p><span class="font-medium">{t.collateralDetails?.policySurrenderValue}:</span> ₹{item.policySurrenderValue}</p>
+                  <p><span class="font-medium">{t.collateralDetails?.licCollateralModal?.policyName || 'Policy Name'}:</span> {item.policyName || 'N/A'}</p>
+                  <p><span class="font-medium">{t.collateralDetails?.licCollateralModal?.policyType || 'Policy Type'}:</span> {item.policyType || 'N/A'}</p>
+                  <p><span class="font-medium">{t.collateralDetails?.licCollateralModal?.policyReceiptNo || 'Receipt No'}:</span> {item.policyReceiptNo || 'N/A'}</p>
+                  <p><span class="font-medium">{t.collateralDetails?.licCollateralModal?.policySurrenderValue || 'Surrender Value'}:</span> ₹{item.policySurrenderValue || '0'}</p>
                 </div>
               {:else if item.type === 'govt-employee'}
                 <div class="flex items-center gap-2 mb-2">
@@ -406,24 +422,31 @@ async function handleProceed() {
                   <h4 class="font-bold text-gray-900">{t.collateralDetails?.govtEmployee}</h4>
                 </div>
                 <div class="space-y-1 text-sm text-gray-600">
-                  <p><span class="font-medium">{t.collateralDetails?.fullName}:</span> {item.fullName}</p>
-                  <p><span class="font-medium">{t.collateralDetails?.departmentName}:</span> {item.departmentName}</p>
-                  <p><span class="font-medium">{t.collateralDetails?.designation}:</span> {item.designation}</p>
-                  <p><span class="font-medium">{t.collateralDetails?.employeeID}:</span> {item.employeeID}</p>
+                  <p><span class="font-medium">{t.collateralDetails?.govtEmployeeModal?.fullName || 'Full Name'}:</span> {item.fullName || 'N/A'}</p>
+                  <p><span class="font-medium">{t.collateralDetails?.govtEmployeeModal?.departmentName || 'Department'}:</span> {item.departmentName || 'N/A'}</p>
+                  <p><span class="font-medium">{t.collateralDetails?.govtEmployeeModal?.designation || 'Designation'}:</span> {item.designation || 'N/A'}</p>
+                  <p><span class="font-medium">{t.collateralDetails?.govtEmployeeModal?.employeeID || 'Employee ID'}:</span> {item.employeeID || 'N/A'}</p>
                 </div>
               {/if}
             </div>
           </div>
         {/each}
       </div>
-    {:else}
-      <div class="bg-white rounded-xl shadow-md p-12 text-center mb-6">
-        <svg class="w-20 h-20 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-        </svg>
-        <p class="text-gray-500 text-lg font-medium">{t.collateralDetails?.noCollateralTitle}</p>
-        <p class="text-gray-400 text-sm mt-1">{t.collateralDetails?.noCollateralSubtitle}</p>
-      </div>
+   {:else}
+        <div class="bg-white rounded-xl shadow-md p-12 text-center mb-6">
+          <svg class="w-20 h-20 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <p class="text-gray-500 text-lg font-medium">{t.collateralDetails?.noCollateralTitle}</p>
+          <p class="text-gray-400 text-sm mt-1">{t.collateralDetails?.noCollateralSubtitle}</p>
+          
+          <!-- Add error message here -->
+          {#if errors.collateralList}
+            <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p class="text-sm text-red-600 font-medium">{errors.collateralList}</p>
+            </div>
+          {/if}
+        </div>
     {/if}
 
     <!-- Action Buttons -->
@@ -466,24 +489,32 @@ async function handleProceed() {
 <!-- Modals -->
  
 <PropertyCollateralModal 
+  {locale}         
+  {t} 
   show={showPropertyModal} 
   onSave={savePropertyCollateral} 
   onCancel={closePropertyModal} 
 />
 
 <FDCollateralModal 
+  {locale}         
+  {t} 
   show={showFDModal} 
   onSave={saveFDCollateral} 
   onCancel={closeFDModal} 
 />
 
 <LICCollateralModal 
+  {locale}         
+  {t} 
   show={showLICModal} 
   onSave={saveLICCollateral} 
   onCancel={closeLICModal} 
 />
 
 <GovtEmployeeGuarantorModal 
+  {locale}         
+  {t} 
   show={showGovtEmployeeModal} 
   onSave={saveGovtEmployee} 
   onCancel={closeGovtEmployeeModal} 

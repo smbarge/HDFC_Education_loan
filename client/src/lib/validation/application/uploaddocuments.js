@@ -1,4 +1,3 @@
-// lib/validation/application/uploaddocuments.js
 import { create, test, enforce, skipWhen } from 'vest';
 
 /**
@@ -30,11 +29,10 @@ export function getDocumentTypeRequirement(docId) {
   };
 }
 
-/**
- * File size validation
- */
+// File size validation
+
 export function validateFileSize(file) {
-  const MAX_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+  const MAX_SIZE = 5 * 1024 * 1024; 
   if (file.size > MAX_SIZE) {
     return {
       valid: false,
@@ -44,9 +42,7 @@ export function validateFileSize(file) {
   return { valid: true };
 }
 
-/**
- * Image file type validation
- */
+// Image file type validation
 export function validateImageType(file) {
   const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png'];
   if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
@@ -58,9 +54,7 @@ export function validateImageType(file) {
   return { valid: true };
 }
 
-/**
- * PDF file type validation
- */
+// PDF file type validation
 export function validateFileType(file) {
   const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
   if (!ALLOWED_TYPES.includes(file.type)) {
@@ -72,20 +66,13 @@ export function validateFileType(file) {
   return { valid: true };
 }
 
-/**
- * Validate file based on document type
- */
+// Validate file based on document type
 export function validateDocumentFile(file, docId) {
-  // First check file size
   const sizeValidation = validateFileSize(file);
   if (!sizeValidation.valid) {
     return sizeValidation;
   }
-
-  // Get document type requirement
   const typeReq = getDocumentTypeRequirement(docId);
-
-  // Validate based on requirement
   if (typeReq.requiresImage) {
     return validateImageType(file);
   } else {
@@ -93,9 +80,7 @@ export function validateDocumentFile(file, docId) {
   }
 }
 
-/**
- * Get required document IDs for applicant
- */
+// Get required document IDs for applicant
 export function getRequiredApplicantDocs() {
   return [
     'aadharCard',
@@ -113,9 +98,7 @@ export function getRequiredApplicantDocs() {
   ];
 }
 
-/**
- * Get required co-applicant documents
- */
+// Get required co-applicant documents
 export function getRequiredCoApplicantDocs() {
   return [
     'coAadhar',
@@ -123,9 +106,8 @@ export function getRequiredCoApplicantDocs() {
   ];
 }
 
-/**
- * Get required guarantor documents
- */
+
+// Get required guarantor documents
 export function getRequiredGuarantorDocs() {
   return [
     'guarantor_aadharCard',
@@ -134,9 +116,7 @@ export function getRequiredGuarantorDocs() {
   ];
 }
 
-/**
- * Get required collateral documents based on type
- */
+//  Get required collateral documents based on type
 export function getRequiredCollateralDocs(type, index) {
   const prefix = `collateral_${type}_${index}_`;
   
@@ -151,31 +131,24 @@ export function getRequiredCollateralDocs(type, index) {
   return docs.map(doc => prefix + doc);
 }
 
-/**
- * Format document name for display
- */
+// Format document name for display
 function formatDocumentName(docId) {
-  // Remove prefixes
   let name = docId
     .replace('guarantor_', '')
     .replace('collateral_', '')
     .replace(/^(property|govt-employee|lic|fd)_\d+_/, '');
   
-  // Convert camelCase to Title Case
   return name
     .replace(/([A-Z])/g, ' $1')
     .replace(/^./, str => str.toUpperCase())
     .trim();
 }
 
-/**
- * Vest validation suite for document uploads
- */
+// Vest validation suite for document uploads
 const documentUploadValidation = create((data, t, collateralItems = []) => {
   
-  // ========================================
+ 
   // APPLICANT DOCUMENTS VALIDATION
-  // ========================================
   const requiredApplicant = getRequiredApplicantDocs();
   
   requiredApplicant.forEach(docId => {
@@ -183,14 +156,14 @@ const documentUploadValidation = create((data, t, collateralItems = []) => {
       enforce(data.uploadedDocs?.[docId]?.uploaded).isTruthy();
     });
 
-    // File size validation
+   
     skipWhen(!data.uploadedDocs?.[docId]?.file, () => {
       test(docId, t?.uploadDocuments?.validationMessages?.fileSizeError || 'File size must be less than 5MB', () => {
         const MAX_SIZE = 5 * 1024 * 1024;
         enforce(data.uploadedDocs[docId].file.size).lessThanOrEquals(MAX_SIZE);
       });
 
-      // File type validation
+      
       test(docId, t?.uploadDocuments?.validationMessages?.fileTypeError || 'Invalid file type', () => {
         const file = data.uploadedDocs[docId].file;
         const typeReq = getDocumentTypeRequirement(docId);
@@ -206,9 +179,9 @@ const documentUploadValidation = create((data, t, collateralItems = []) => {
     });
   });
 
-  // ========================================
+  
   // CO-APPLICANT DOCUMENTS VALIDATION
-  // ========================================
+
   const requiredCoApplicant = getRequiredCoApplicantDocs();
   
   requiredCoApplicant.forEach(docId => {
@@ -237,9 +210,9 @@ const documentUploadValidation = create((data, t, collateralItems = []) => {
     });
   });
 
-  // ========================================
+ 
   // GUARANTOR DOCUMENTS VALIDATION
-  // ========================================
+
   const requiredGuarantor = getRequiredGuarantorDocs();
   
   requiredGuarantor.forEach(docId => {
@@ -268,9 +241,8 @@ const documentUploadValidation = create((data, t, collateralItems = []) => {
     });
   });
 
-  // ========================================
   // COLLATERAL DOCUMENTS VALIDATION
-  // ========================================
+
   collateralItems.forEach((item, index) => {
     const requiredCollateral = getRequiredCollateralDocs(item.type, index);
     
@@ -302,9 +274,7 @@ const documentUploadValidation = create((data, t, collateralItems = []) => {
   });
 });
 
-/**
- * Validate all required documents are uploaded
- */
+// Validate all required documents are uploaded
 export function validateAllRequiredDocuments(uploadedDocs, collateralItems) {
   const missing = [];
 

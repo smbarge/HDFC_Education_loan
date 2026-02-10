@@ -7,6 +7,7 @@
   import VerificationModal from '$lib/components/newapplication/VerificationModal.svelte';
   import { onMount } from 'svelte';
   import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
+  import personalDetailsValidation from '$lib/validation/application/personalDetails';
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
@@ -170,123 +171,85 @@
     showVerificationModal = false;
   }
 
-  $: if (formData.sameAsCurrentAddress) {
+function handleSameAddressChange() {
+  if (formData.sameAsCurrentAddress) {
+    // Copy current address to permanent address
     formData.permanentStreetAddress = formData.currentStreetAddress;
     formData.permanentDistrict = formData.currentDistrict;
     formData.permanentTaluka = formData.currentTaluka;
     formData.permanentPlace = formData.currentPlace;
     formData.permanentArea = formData.currentArea;
     formData.permanentPinCode = formData.currentPinCode;
+    
+    // Clear all permanent address errors
+    const newErrors = { ...errors };
+    delete newErrors.permanentStreetAddress;
+    delete newErrors.permanentDistrict;
+    delete newErrors.permanentTaluka;
+    delete newErrors.permanentPlace;
+    delete newErrors.permanentArea;
+    delete newErrors.permanentPinCode;
+    errors = newErrors;
+  } else {
+    // Clear permanent address fields when unchecked
+    formData.permanentStreetAddress = '';
+    formData.permanentDistrict = '';
+    formData.permanentTaluka = '';
+    formData.permanentPlace = '';
+    formData.permanentArea = '';
+    formData.permanentPinCode = '';
   }
+}
+function validateField(fieldName) {
+  const result = personalDetailsValidation(formData, t);
+  const fieldErrors = result.getErrors();
+  
+  if (fieldErrors[fieldName]) {
+    // Set error if validation fails for this field
+    errors = { ...errors, [fieldName]: fieldErrors[fieldName] };
+  } else {
+    // Clear error if validation passes for this field
+    const { [fieldName]: _, ...rest } = errors;
+    errors = rest;
+  }
+}
 
   function validateForm() {
-    errors = {};
-    
-    if (!formData.mobileNumber) {
-      errors.mobileNumber = 'Mobile number is required';
-    } else if (!/^[6-9]\d{9}$/.test(formData.mobileNumber)) {
-      errors.mobileNumber = 'Please enter a valid 10-digit mobile number';
-    }
-    
-    if (formData.emailId && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.emailId)) {
-      errors.emailId = 'Please enter a valid email address';
-    }
-    
-    if (formData.panCard && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(formData.panCard)) {
-      errors.panCard = 'Please enter a valid PAN card number (e.g., ABCDE1234F)';
-    }
-    
-    if (!formData.rationCard) {
-      errors.rationCard = 'Ration card number is required';
-    }
-    
-    if (!formData.currentStreetAddress) {
-      errors.currentStreetAddress = 'Current street address is required';
-    }
-    if (!formData.currentDistrict) {
-      errors.currentDistrict = 'District is required';
-    }
-    if (!formData.currentTaluka) {
-      errors.currentTaluka = 'Taluka is required';
-    }
-    if (!formData.currentPlace) {
-      errors.currentPlace = 'Place is required';
-    }
-    if (!formData.currentArea) {
-      errors.currentArea = 'Area is required';
-    }
-    if (!formData.currentPinCode) {
-      errors.currentPinCode = 'Pin code is required';
-    } else if (!/^\d{6}$/.test(formData.currentPinCode)) {
-      errors.currentPinCode = 'Pin code must be 6 digits';
-    }
-    
-    if (!formData.permanentStreetAddress) {
-      errors.permanentStreetAddress = 'Permanent street address is required';
-    }
-    if (!formData.permanentDistrict) {
-      errors.permanentDistrict = 'District is required';
-    }
-    if (!formData.permanentTaluka) {
-      errors.permanentTaluka = 'Taluka is required';
-    }
-    if (!formData.permanentPlace) {
-      errors.permanentPlace = 'Place is required';
-    }
-    if (!formData.permanentArea) {
-      errors.permanentArea = 'Area is required';
-    }
-    if (!formData.permanentPinCode) {
-      errors.permanentPinCode = 'Pin code is required';
-    } else if (!/^\d{6}$/.test(formData.permanentPinCode)) {
-      errors.permanentPinCode = 'Pin code must be 6 digits';
-    }
-    
-    if (!formData.maritalStatus) {
-      errors.maritalStatus = 'Marital status is required';
-    }
-    if (!formData.educationalQualification) {
-      errors.educationalQualification = 'Educational qualification is required';
-    }
-    
-    if (!formData.parentName) {
-      errors.parentName = 'Parent/Guardian name is required';
-    }
-    if (!formData.relationship) {
-      errors.relationship = 'Relationship is required';
-    }
-    if (!formData.occupation) {
-      errors.occupation = 'Occupation is required';
-    }
-    if (!formData.annualIncome) {
-      errors.annualIncome = 'Annual income is required';
-    } else if (!/^\d+$/.test(formData.annualIncome)) {
-      errors.annualIncome = 'Annual income must be a valid number';
-    }
-    
-    if (!formData.previousSurety) {
-      errors.previousSurety = 'Please select surety status';
-    }
-    if (formData.previousSurety === 'Yes' && !formData.suretyDetails) {
-      errors.suretyDetails = 'Please provide surety details';
-    }
-    
-    return Object.keys(errors).length === 0;
+  const result = personalDetailsValidation(formData, t);
+  errors = result.getErrors();
+  return result.isValid();
   }
 
+
   async function handleProceed() {
-    if (!validateForm()) {
-      const firstErrorElement = document.querySelector('.error-message');
-      if (firstErrorElement) {
-        firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+     const result = personalDetailsValidation(formData, t);
+      errors = result.getErrors();
+      
+      if (!result.isValid()) {
+        const firstErrorElement = document.querySelector('.error-message');
+        if (firstErrorElement) {
+          firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
       }
-      return;
-    }
 
     isSubmitting = true;
 
     try {
+      // TODO: Replace with actual API endpoint
+      // const response = await fetch('/api/application/start', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(formData)
+      // });
+      
+      // if (!response.ok) throw new Error('Submission failed');
+      // const data = await response.json();
+      
+      // Simulate API call for now
       await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Navigate to next step
       goto(`/${locale}/application/acadamic-info`);
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -295,7 +258,6 @@
       isSubmitting = false;
     }
   }
-
   function handleBack() {
     goto(`/${locale}/dashboard`);
   }
@@ -376,17 +338,18 @@
           <div class="flex gap-2">
             <div class="flex-1 relative">
               <input
-                type="text"
-                bind:value={formData.mobileNumber}
-                placeholder={t.personalDetails?.mobilePlaceholder || 'Enter mobile'}
-                maxlength="10"
-                disabled={isMobileVerified}
-                readonly={!isMobileEditable}
-                class="w-full px-3 py-2.5 border rounded-lg text-sm
-                  focus:ring-2 focus:ring-purple-500 focus:border-purple-500
-                  disabled:bg-gray-100
-                  {errors.mobileNumber ? 'border-red-500' : 'border-gray-300'}"
-              />
+              type="text"
+              bind:value={formData.mobileNumber}
+              on:input={() => validateField('mobileNumber')}
+              placeholder={t.personalDetails?.mobilePlaceholder || 'Enter mobile'}
+              maxlength="10"
+              disabled={isMobileVerified}
+              readonly={!isMobileEditable}
+              class="w-full px-3 py-2.5 border rounded-lg text-sm
+                focus:ring-2 focus:ring-purple-500 focus:border-purple-500
+                disabled:bg-gray-100
+                {errors.mobileNumber ? 'border-red-500' : 'border-gray-300'}"
+            />
 
               {#if isMobileVerified}
                 <div class="absolute inset-y-0 right-2 flex items-center">
@@ -421,16 +384,17 @@
 
           <div class="flex gap-2">
             <input
-              type="email"
-              bind:value={formData.emailId}
-              placeholder={t.personalDetails?.emailPlaceholder || 'Enter email'}
-              disabled={isEmailVerified}
-              readonly={!isEmailEditable}
-              class="flex-1 px-3 py-2.5 border rounded-lg text-sm
-                focus:ring-2 focus:ring-purple-500 focus:border-purple-500
-                disabled:bg-gray-100
-                {errors.emailId ? 'border-red-500' : 'border-gray-300'}"
-            />
+            type="email"
+            bind:value={formData.emailId}
+            on:input={() => validateField('emailId')}
+            placeholder={t.personalDetails?.emailPlaceholder || 'Enter email'}
+            disabled={isEmailVerified}
+            readonly={!isEmailEditable}
+            class="flex-1 px-3 py-2.5 border rounded-lg text-sm
+              focus:ring-2 focus:ring-purple-500 focus:border-purple-500
+              disabled:bg-gray-100
+              {errors.emailId ? 'border-red-500' : 'border-gray-300'}"
+          />
 
             <button
               on:click={handleEmailVerify}
@@ -456,15 +420,16 @@
             {t.personalDetails?.panLabel || 'PAN Card'}
           </label>
           <input
-            type="text"
-            bind:value={formData.panCard}
-            placeholder={t.personalDetails?.panPlaceholder || 'Enter PAN'}
-            maxlength="10"
-            class="w-full px-3 py-2.5 border rounded-lg text-sm
-              focus:ring-2 focus:ring-purple-500 focus:border-purple-500
-              {errors.panCard ? 'border-red-500' : 'border-gray-300'}"
-            style="text-transform: uppercase;"
-          />
+          type="text"
+          bind:value={formData.panCard}
+          on:input={() => validateField('panCard')}
+          placeholder={t.personalDetails?.panPlaceholder || 'Enter PAN'}
+          maxlength="10"
+          class="w-full px-3 py-2.5 border rounded-lg text-sm
+            focus:ring-2 focus:ring-purple-500 focus:border-purple-500
+            {errors.panCard ? 'border-red-500' : 'border-gray-300'}"
+          style="text-transform: uppercase;"
+        />
           {#if errors.panCard}
             <p class="mt-1 text-xs text-red-600">{errors.panCard}</p>
           {/if}
@@ -478,6 +443,7 @@
           <input
             type="text"
             bind:value={formData.rationCard}
+            on:input={() => validateField('rationCard')}
             placeholder={t.personalDetails?.rationPlaceholder || 'Enter ration card'}
             class="w-full px-3 py-2.5 border rounded-lg text-sm
               focus:ring-2 focus:ring-purple-500 focus:border-purple-500
@@ -523,12 +489,13 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
               </svg>
             </div>
-            <input
-              type="text"
-              bind:value={formData.currentStreetAddress}
-              placeholder={t.personalDetails?.streetPlaceholder || 'Enter address'}
-              class="w-full pl-10 pr-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.currentStreetAddress ? 'border-red-500' : 'border-gray-300'}"
-            />
+           <input
+            type="text"
+            bind:value={formData.currentStreetAddress}
+            on:input={() => validateField('currentStreetAddress')}
+            placeholder={t.personalDetails?.streetPlaceholder || 'Enter address'}
+            class="w-full pl-10 pr-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.currentStreetAddress ? 'border-red-500' : 'border-gray-300'}"
+          />
           </div>
           {#if errors.currentStreetAddress}
             <p class="error-message mt-1 text-xs text-red-600">{errors.currentStreetAddress}</p>
@@ -541,8 +508,9 @@
             <label class="block text-sm font-medium text-gray-700 mb-2">
               {t.personalDetails?.districtLabel || 'District'} <span class="text-red-500">*</span>
             </label>
-            <select
+           <select
               bind:value={formData.currentDistrict}
+              on:change={() => validateField('currentDistrict')}
               class="w-full px-2 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.currentDistrict ? 'border-red-500' : 'border-gray-300'}"
             >
               <option value="">{t.personalDetails?.districtPlaceholder || 'Select'}</option>
@@ -560,9 +528,10 @@
             <label class="block text-sm font-medium text-gray-700 mb-2">
               {t.personalDetails?.talukaLabel || 'Taluka'} <span class="text-red-500">*</span>
             </label>
-            <input
+          <input
               type="text"
               bind:value={formData.currentTaluka}
+              on:input={() => validateField('currentTaluka')}
               placeholder={t.personalDetails?.talukaPlaceholder || 'Taluka'}
               class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.currentTaluka ? 'border-red-500' : 'border-gray-300'}"
             />
@@ -579,6 +548,7 @@
             <input
               type="text"
               bind:value={formData.currentPlace}
+              on:input={() => validateField('currentPlace')}
               placeholder={t.personalDetails?.placePlaceholder || 'Place'}
               class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.currentPlace ? 'border-red-500' : 'border-gray-300'}"
             />
@@ -592,12 +562,13 @@
             <label class="block text-sm font-medium text-gray-700 mb-2">
              {t.personalDetails?.areaLabel || 'Area'}<span class="text-red-500">*</span>
             </label>
-            <input
-              type="text"
-              bind:value={formData.currentArea}
-              placeholder={t.personalDetails?.areaPlaceholder || 'Area'}
-              class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.currentArea ? 'border-red-500' : 'border-gray-300'}"
-            />
+           <input
+            type="text"
+            bind:value={formData.currentArea}
+            on:input={() => validateField('currentArea')}
+            placeholder={t.personalDetails?.areaPlaceholder || 'Area'}
+            class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.currentArea ? 'border-red-500' : 'border-gray-300'}"
+          />
             {#if errors.currentArea}
               <p class="error-message mt-1 text-xs text-red-600">{errors.currentArea}</p>
             {/if}
@@ -609,9 +580,10 @@
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {t.personalDetails?.pinCodeLabel || 'Pin Code'} <span class="text-red-500">*</span>
           </label>
-          <input
+         <input
             type="text"
             bind:value={formData.currentPinCode}
+            on:input={() => validateField('currentPinCode')}
             placeholder={t.personalDetails?.pinCodePlaceholder || 'Pin Code'}
             maxlength="6"
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.currentPinCode ? 'border-red-500' : 'border-gray-300'}"
@@ -627,10 +599,11 @@
     <div class="mb-6">
       <label class="flex items-start cursor-pointer">
         <input 
-          type="checkbox" 
-          bind:checked={formData.sameAsCurrentAddress}
-          class="w-4 h-4 text-purple-600 focus:ring-purple-500 rounded mt-1"
-        />
+            type="checkbox" 
+            bind:checked={formData.sameAsCurrentAddress}
+            on:change={handleSameAddressChange}
+            class="w-4 h-4 text-purple-600 focus:ring-purple-500 rounded mt-1"
+          />
         <span class="ml-2 text-sm text-gray-700">
           <p class="font-medium">{t.personalDetails?.sameAddressQuestion || 'Same as current address'}</p>
         </span>
@@ -661,6 +634,7 @@
           <input
             type="text"
             bind:value={formData.permanentStreetAddress}
+            on:input={() => validateField('permanentStreetAddress')}
             placeholder={t.personalDetails?.streetPlaceholder || 'Enter address'}
             disabled={formData.sameAsCurrentAddress}
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed text-sm {errors.permanentStreetAddress ? 'border-red-500' : 'border-gray-300'}"
@@ -676,11 +650,13 @@
             <label class="block text-sm font-medium text-gray-700 mb-2">
               {t.personalDetails?.districtLabel || 'District'} <span class="text-red-500">*</span>
             </label>
-            <select
-              bind:value={formData.permanentDistrict}
-              disabled={formData.sameAsCurrentAddress}
-              class="w-full px-2 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed text-sm {errors.permanentDistrict ? 'border-red-500' : 'border-gray-300'}"
-            >
+           
+                <select
+                  bind:value={formData.permanentDistrict}
+                  on:change={() => validateField('permanentDistrict')}
+                  disabled={formData.sameAsCurrentAddress}
+                  class="w-full px-2 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed text-sm {errors.permanentDistrict ? 'border-red-500' : 'border-gray-300'}"
+                >
               <option value="">{t.personalDetails?.districtPlaceholder || 'Select'}</option>
               {#each districts as district}
                 <option value={district.value}>{district.label}</option>
@@ -697,12 +673,13 @@
               {t.personalDetails?.talukaLabel || 'Taluka'}<span class="text-red-500">*</span>
             </label>
             <input
-              type="text"
-              bind:value={formData.permanentTaluka}
-              placeholder={t.personalDetails?.talukaPlaceholder || 'Taluka'}
-              disabled={formData.sameAsCurrentAddress}
-              class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed text-sm {errors.permanentTaluka ? 'border-red-500' : 'border-gray-300'}"
-            />
+                type="text"
+                bind:value={formData.permanentTaluka}
+                on:input={() => validateField('permanentTaluka')}
+                placeholder={t.personalDetails?.talukaPlaceholder || 'Taluka'}
+                disabled={formData.sameAsCurrentAddress}
+                class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed text-sm {errors.permanentTaluka ? 'border-red-500' : 'border-gray-300'}"
+              />
             {#if errors.permanentTaluka}
               <p class="error-message mt-1 text-xs text-red-600">{errors.permanentTaluka}</p>
             {/if}
@@ -716,6 +693,7 @@
             <input
               type="text"
               bind:value={formData.permanentPlace}
+              on:input={() => validateField('permanentPlace')}
               placeholder={t.personalDetails?.placePlaceholder || 'Place'}
               disabled={formData.sameAsCurrentAddress}
               class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed text-sm {errors.permanentPlace ? 'border-red-500' : 'border-gray-300'}"
@@ -751,6 +729,7 @@
           <input
             type="text"
             bind:value={formData.permanentPinCode}
+            on:input={() => validateField('permanentPinCode')}
             placeholder={t.personalDetails?.pinCodePlaceholder || 'Pin Code'}
             maxlength="6"
             disabled={formData.sameAsCurrentAddress}
@@ -786,6 +765,7 @@
           </label>
           <select
             bind:value={formData.maritalStatus}
+            on:change={() => validateField('maritalStatus')}
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.maritalStatus ? 'border-red-500' : 'border-gray-300'}"
           >
             <option value="">{t.personalDetails?.maritalPlaceholder || 'Select'}</option>
@@ -803,9 +783,10 @@
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {t.personalDetails?.educationLabel || 'Educational Qualification'} <span class="text-red-500">*</span>
           </label>
-          <input
+         <input
             type="text"
             bind:value={formData.educationalQualification}
+            on:input={() => validateField('educationalQualification')}
             placeholder={t.personalDetails?.educationPlaceholder || 'Last passed exam'}
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.educationalQualification ? 'border-red-500' : 'border-gray-300'}"
           />
@@ -840,6 +821,7 @@
           <input
             type="text"
             bind:value={formData.parentName}
+            on:input={() => validateField('parentName')}
             placeholder={t.personalDetails?.parentNamePlaceholder || 'Enter name'}
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.parentName ? 'border-red-500' : 'border-gray-300'}"
           />
@@ -855,6 +837,7 @@
           </label>
           <select
             bind:value={formData.relationship}
+            on:change={() => validateField('relationship')}
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.relationship ? 'border-red-500' : 'border-gray-300'}"
           >
             <option value="">{t.personalDetails?.relationshipPlaceholder || 'Select'}</option>
@@ -875,6 +858,7 @@
           <input
             type="text"
             bind:value={formData.occupation}
+            on:input={() => validateField('occupation')}
             placeholder={t.personalDetails?.occupationPlaceholder || 'Enter occupation'}
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.occupation ? 'border-red-500' : 'border-gray-300'}"
           />
@@ -891,6 +875,7 @@
           <input
             type="text"
             bind:value={formData.annualIncome}
+            on:input={() => validateField('annualIncome')}
             placeholder={t.personalDetails?.annualIncomePlaceholder || 'Enter annual income'}
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.annualIncome ? 'border-red-500' : 'border-gray-300'}"
           />
@@ -924,22 +909,25 @@
           <div class="flex gap-6">
             <label class="flex items-center cursor-pointer">
               <input 
-                type="radio" 
-                name="surety" 
-                value="Yes"
-                bind:group={formData.previousSurety}
-                class="w-4 h-4 text-purple-600 focus:ring-purple-500"
-              />
+              type="radio" 
+              name="surety" 
+              value="Yes"
+              bind:group={formData.previousSurety}
+              on:change={() => validateField('previousSurety')}
+              class="w-4 h-4 text-purple-600 focus:ring-purple-500"
+            />
+
               <span class="ml-2 text-sm text-gray-700">{t.personalDetails?.suretyYes || 'Yes'}</span>
             </label>
             <label class="flex items-center cursor-pointer">
-              <input 
-                type="radio" 
-                name="surety" 
-                value="No"
-                bind:group={formData.previousSurety}
-                class="w-4 h-4 text-purple-600 focus:ring-purple-500"
-              />
+             <input 
+              type="radio" 
+              name="surety" 
+              value="No"
+              bind:group={formData.previousSurety}
+              on:change={() => validateField('previousSurety')}
+              class="w-4 h-4 text-purple-600 focus:ring-purple-500"
+            />
               <span class="ml-2 text-sm text-gray-700">{t.personalDetails?.suretyNo || 'No'}</span>
             </label>
           </div>

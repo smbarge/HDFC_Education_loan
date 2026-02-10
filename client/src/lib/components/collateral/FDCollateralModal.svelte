@@ -1,12 +1,16 @@
 <script>
+  import fdCollateralValidation from '$lib/validation/collateral/fdCollateral';
+
   export let show = false;
   export let onSave;
   export let onCancel;
+  export let locale = 'en';
+  export let t = {};
   
   let errors = {};
   
   let formData = {
-    type: 'bankfd',
+    type: '',
     bankName: '',
     branchName: '',
     streetAddress: '',
@@ -22,7 +26,7 @@
   };
 
   const districts = [
-    { value: '', label: 'District' },
+    { value: '', label: t.collateralDetails?.fdCollateralModal?.districtPlaceholder || 'Select District' },
     { value: 'KOLHAPUR', label: 'KOLHAPUR' },
     { value: 'PUNE', label: 'PUNE' },
     { value: 'MUMBAI', label: 'MUMBAI' },
@@ -31,37 +35,41 @@
   ];
 
   const talukas = [
-    { value: '', label: 'Taluka' },
+    { value: '', label: t.collateralDetails?.fdCollateralModal?.talukaPlaceholder || 'Select Taluka' },
     { value: 'HATKALANGLE', label: 'HATKALANGLE' },
     { value: 'BEED', label: 'BEED' },
     { value: 'ASHTI', label: 'ASHTI' }
   ];
 
-  function validate() {
-    errors = {};
+  function validateField(fieldName) {
+    const result = fdCollateralValidation(formData, t);
+    const fieldErrors = result.getErrors();
     
-    if (!formData.bankName) errors.bankName = 'Bank name is required';
-    if (!formData.branchName) errors.branchName = 'Branch name is required';
-    if (!formData.streetAddress) errors.streetAddress = 'Street address is required';
-    if (!formData.district) errors.district = 'District is required';
-    if (!formData.taluka) errors.taluka = 'Taluka is required';
-    if (!formData.place) errors.place = 'Place is required';
-    if (!formData.pinCode) errors.pinCode = 'PIN code is required';
-    else if (!/^\d{6}$/.test(formData.pinCode)) errors.pinCode = 'PIN code must be 6 digits';
-    if (!formData.fdAccountNumber) errors.fdAccountNumber = 'FD account number is required';
-    if (!formData.fdStartDate) errors.fdStartDate = 'FD start date is required';
-    if (!formData.fdMaturityDate) errors.fdMaturityDate = 'FD maturity date is required';
-    if (!formData.interestRate) errors.interestRate = 'Interest rate is required';
-    if (!formData.fdDepositAmount) errors.fdDepositAmount = 'FD deposit amount is required';
-    
-    return Object.keys(errors).length === 0;
+    if (fieldErrors[fieldName]) {
+      errors = { ...errors, [fieldName]: fieldErrors[fieldName] };
+    } else {
+      const { [fieldName]: _, ...rest } = errors;
+      errors = rest;
+    }
+  }
+
+  function validateForm() {
+    const result = fdCollateralValidation(formData, t);
+    errors = result.getErrors();
+    return result.isValid();
   }
 
   function handleAdd() {
-    if (validate()) {
-      onSave({ ...formData, id: Date.now(), type: 'fd' });
-      resetForm();
+    if (!validateForm()) {
+      const firstErrorElement = document.querySelector('.error-message');
+      if (firstErrorElement) {
+        firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return;
     }
+
+    onSave({ ...formData, id: Date.now(), type: 'fd' });
+    resetForm();
   }
 
   function handleCancel() {
@@ -71,7 +79,7 @@
 
   function resetForm() {
     formData = {
-      type: 'bankfd',
+      type: '',
       bankName: '',
       branchName: '',
       streetAddress: '',
@@ -95,7 +103,7 @@
       <!-- Header -->
       <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
         <h3 class="text-xl font-bold text-gray-900">
-          Add Collateral FD/ तारण एफडी जोडा
+          {t.collateralDetails?.fdCollateralModal?.modalTitle || 'Add Collateral FD'}
         </h3>
         <button
           on:click={handleCancel}
@@ -108,78 +116,68 @@
       </div>
 
       <div class="p-6 space-y-6">
-        <!-- Property Type -->
-  
         <!-- FD Bank Details -->
         <div>
           <h4 class="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b">
-            FD Bank Details/ एफडी बँक तपशील
+            {t.collateralDetails?.fdCollateralModal?.fdBankDetailsTitle || 'FD Bank Details'}
           </h4>
           
           <div class="grid md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                Bank Name <span class="text-red-500">*</span>
-                <span class="block text-xs text-gray-500">
-                 बँकचे नाव
-               </span>
+                {t.collateralDetails?.fdCollateralModal?.bankName || 'Bank Name'} <span class="text-red-500">{t.collateralDetails?.fdCollateralModal?.required || '*'}</span>
               </label>
               <input
                 type="text"
                 bind:value={formData.bankName}
-                placeholder="Enter Bank Name"
+                on:input={() => validateField('bankName')}
+                placeholder={t.collateralDetails?.fdCollateralModal?.bankNamePlaceholder || 'Enter Bank Name'}
                 class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm {errors.bankName ? 'border-red-500' : 'border-gray-300'}"
               />
               {#if errors.bankName}
-                <p class="mt-1 text-xs text-red-600">{errors.bankName}</p>
-              {/if}
+              <p class="error-message mt-1 text-xs text-red-600">{errors.bankName}</p>
+            {/if}
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                Branch Name <span class="text-red-500">*</span>
-                <span class="block text-xs text-gray-500">
-                 शाखेचे नाव
-               </span>
+                {t.collateralDetails?.fdCollateralModal?.branchName || 'Branch Name'} <span class="text-red-500">{t.collateralDetails?.fdCollateralModal?.required || '*'}</span>
               </label>
               <input
                 type="text"
                 bind:value={formData.branchName}
-                placeholder="Enter Branch Name"
+                on:input={() => validateField('branchName')}
+                placeholder={t.collateralDetails?.fdCollateralModal?.branchNamePlaceholder || 'Enter Branch Name'}
                 class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm {errors.branchName ? 'border-red-500' : 'border-gray-300'}"
               />
               {#if errors.branchName}
-                <p class="mt-1 text-xs text-red-600">{errors.branchName}</p>
-              {/if}
+              <p class="error-message mt-1 text-xs text-red-600">{errors.branchName}</p>
+            {/if}
             </div>
 
             <div class="md:col-span-2">
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                Street Address <span class="text-red-500">*</span>
-                <span class="block text-xs text-gray-500">
-                 रस्त्याचा पत्ता
-               </span>
+                {t.collateralDetails?.fdCollateralModal?.streetAddress || 'Street Address'} <span class="text-red-500">{t.collateralDetails?.fdCollateralModal?.required || '*'}</span>
               </label>
               <input
                 type="text"
                 bind:value={formData.streetAddress}
-                placeholder="Enter Bank Address"
+                on:input={() => validateField('streetAddress')}
+                placeholder={t.collateralDetails?.fdCollateralModal?.streetAddressPlaceholder || 'Enter Bank Address'}
                 class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm {errors.streetAddress ? 'border-red-500' : 'border-gray-300'}"
               />
               {#if errors.streetAddress}
-                <p class="mt-1 text-xs text-red-600">{errors.streetAddress}</p>
+                <p class="error-message mt-1 text-xs text-red-600">{errors.streetAddress}</p>
               {/if}
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                District <span class="text-red-500">*</span>
-                <span class="block text-xs text-gray-500">
-                जिल्हा
-               </span>
+                {t.collateralDetails?.fdCollateralModal?.district || 'District'} <span class="text-red-500">{t.collateralDetails?.fdCollateralModal?.required || '*'}</span>
               </label>
               <select
                 bind:value={formData.district}
+                on:change={() => validateField('district')} 
                 class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm {errors.district ? 'border-red-500' : 'border-gray-300'}"
               >
                 {#each districts as dist}
@@ -187,19 +185,17 @@
                 {/each}
               </select>
               {#if errors.district}
-                <p class="mt-1 text-xs text-red-600">{errors.district}</p>
-              {/if}
+              <p class="error-message mt-1 text-xs text-red-600">{errors.district}</p>
+            {/if}
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                Taluka <span class="text-red-500">*</span>
-                <span class="block text-xs text-gray-500">
-                तालुका
-               </span>
+                {t.collateralDetails?.fdCollateralModal?.taluka || 'Taluka'} <span class="text-red-500">{t.collateralDetails?.fdCollateralModal?.required || '*'}</span>
               </label>
               <select
                 bind:value={formData.taluka}
+                on:change={() => validateField('taluka')}
                 class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm {errors.taluka ? 'border-red-500' : 'border-gray-300'}"
               >
                 {#each talukas as tal}
@@ -207,45 +203,41 @@
                 {/each}
               </select>
               {#if errors.taluka}
-                <p class="mt-1 text-xs text-red-600">{errors.taluka}</p>
-              {/if}
+              <p class="error-message mt-1 text-xs text-red-600">{errors.taluka}</p>
+            {/if}
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                Place <span class="text-red-500">*</span>
-                <span class="block text-xs text-gray-500">
-                ठिकाण
-               </span>
+                {t.collateralDetails?.fdCollateralModal?.place || 'Place'} <span class="text-red-500">{t.collateralDetails?.fdCollateralModal?.required || '*'}</span>
               </label>
               <input
                 type="text"
                 bind:value={formData.place}
-                placeholder="Enter City/Town/Village of Bank"
+                on:input={() => validateField('place')}
+                placeholder={t.collateralDetails?.fdCollateralModal?.placePlaceholder || 'Enter City/Town/Village of Bank'}
                 class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm {errors.place ? 'border-red-500' : 'border-gray-300'}"
               />
               {#if errors.place}
-                <p class="mt-1 text-xs text-red-600">{errors.place}</p>
-              {/if}
+              <p class="error-message mt-1 text-xs text-red-600">{errors.place}</p>
+            {/if}
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                PIN code <span class="text-red-500">*</span>
-                 <span class="block text-xs text-gray-500">
-                पिन कोड
-               </span>
+                {t.collateralDetails?.fdCollateralModal?.pinCode || 'PIN code'} <span class="text-red-500">{t.collateralDetails?.fdCollateralModal?.required || '*'}</span>
               </label>
               <input
                 type="text"
                 bind:value={formData.pinCode}
-                placeholder="Enter PIN code"
+                on:input={() => validateField('pinCode')}
+                placeholder={t.collateralDetails?.fdCollateralModal?.pinCodePlaceholder || 'Enter PIN code'}
                 maxlength="6"
                 class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm {errors.pinCode ? 'border-red-500' : 'border-gray-300'}"
               />
               {#if errors.pinCode}
-                <p class="mt-1 text-xs text-red-600">{errors.pinCode}</p>
-              {/if}
+              <p class="error-message mt-1 text-xs text-red-600">{errors.pinCode}</p>
+            {/if}
             </div>
           </div>
         </div>
@@ -253,96 +245,86 @@
         <!-- FD Details -->
         <div>
           <h4 class="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b">
-            FD Details / मुदत ठेव तपशील
+            {t.collateralDetails?.fdCollateralModal?.fdDetailsTitle || 'FD Details'}
           </h4>
           
           <div class="grid md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                FD Account Number <span class="text-red-500">*</span>
-                <span class="block text-xs text-gray-500">
-                मुदत ठेव खाते क्रमांक
-               </span>
+                {t.collateralDetails?.fdCollateralModal?.fdAccountNumber || 'FD Account Number'} <span class="text-red-500">{t.collateralDetails?.fdCollateralModal?.required || '*'}</span>
               </label>
               <input
                 type="text"
                 bind:value={formData.fdAccountNumber}
-                placeholder="Enter FD Account Number"
+                on:input={() => validateField('fdAccountNumber')}
+                placeholder={t.collateralDetails?.fdCollateralModal?.fdAccountNumberPlaceholder || 'Enter FD Account Number'}
                 class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm {errors.fdAccountNumber ? 'border-red-500' : 'border-gray-300'}"
               />
               {#if errors.fdAccountNumber}
-                <p class="mt-1 text-xs text-red-600">{errors.fdAccountNumber}</p>
+                <p class="error-message mt-1 text-xs text-red-600">{errors.fdAccountNumber}</p>
               {/if}
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                FD Start Date <span class="text-red-500">*</span>
-                 <span class="block text-xs text-gray-500">
-                मुदत ठेवीची सुरुवात तारीख
-               </span>
+                {t.collateralDetails?.fdCollateralModal?.fdStartDate || 'FD Start Date'} <span class="text-red-500">{t.collateralDetails?.fdCollateralModal?.required || '*'}</span>
               </label>
               <input
                 type="date"
                 bind:value={formData.fdStartDate}
+                on:change={() => validateField('fdStartDate')} 
                 class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm {errors.fdStartDate ? 'border-red-500' : 'border-gray-300'}"
               />
               {#if errors.fdStartDate}
-                <p class="mt-1 text-xs text-red-600">{errors.fdStartDate}</p>
+                <p class="error-message mt-1 text-xs text-red-600">{errors.fdStartDate}</p>
               {/if}
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                FD Maturity Date <span class="text-red-500">*</span>
-                <span class="block text-xs text-gray-500">
-                मुदत ठेवीची परिपक्वता तारीख
-               </span>
+                {t.collateralDetails?.fdCollateralModal?.fdMaturityDate || 'FD Maturity Date'} <span class="text-red-500">{t.collateralDetails?.fdCollateralModal?.required || '*'}</span>
               </label>
               <input
                 type="date"
                 bind:value={formData.fdMaturityDate}
+                on:change={() => validateField('fdMaturityDate')}
                 class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm {errors.fdMaturityDate ? 'border-red-500' : 'border-gray-300'}"
               />
               {#if errors.fdMaturityDate}
-                <p class="mt-1 text-xs text-red-600">{errors.fdMaturityDate}</p>
+                <p class="error-message mt-1 text-xs text-red-600">{errors.fdMaturityDate}</p>
               {/if}
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                Interest Rate <span class="text-red-500">*</span>
-                <span class="block text-xs text-gray-500">
-                व्याजाचा दर
-               </span>
+                {t.collateralDetails?.fdCollateralModal?.interestRate || 'Interest Rate'} <span class="text-red-500">{t.collateralDetails?.fdCollateralModal?.required || '*'}</span>
               </label>
               <input
                 type="number"
                 bind:value={formData.interestRate}
-                placeholder="0"
+                on:input={() => validateField('interestRate')}
+                placeholder={t.collateralDetails?.fdCollateralModal?.interestRatePlaceholder || '0'}
                 step="0.01"
                 class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm {errors.interestRate ? 'border-red-500' : 'border-gray-300'}"
               />
               {#if errors.interestRate}
-                <p class="mt-1 text-xs text-red-600">{errors.interestRate}</p>
-              {/if}
+              <p class="error-message mt-1 text-xs text-red-600">{errors.interestRate}</p>
+            {/if}
             </div>
 
             <div class="md:col-span-2">
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                FD Deposit Amount <span class="text-red-500">*</span>
-                <span class="block text-xs text-gray-500">
-                एफडी जमा रक्कम
-               </span>
+                {t.collateralDetails?.fdCollateralModal?.fdDepositAmount || 'FD Deposit Amount'} <span class="text-red-500">{t.collateralDetails?.fdCollateralModal?.required || '*'}</span>
               </label>
               <input
                 type="text"
                 bind:value={formData.fdDepositAmount}
-                placeholder="Enter FD Deposit Amount"
+                on:input={() => validateField('fdDepositAmount')}
+                placeholder={t.collateralDetails?.fdCollateralModal?.fdDepositAmountPlaceholder || 'Enter FD Deposit Amount'}
                 class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm {errors.fdDepositAmount ? 'border-red-500' : 'border-gray-300'}"
               />
               {#if errors.fdDepositAmount}
-                <p class="mt-1 text-xs text-red-600">{errors.fdDepositAmount}</p>
+                <p class="error-message mt-1 text-xs text-red-600">{errors.fdDepositAmount}</p>
               {/if}
             </div>
           </div>
@@ -354,13 +336,13 @@
             on:click={handleCancel}
             class="px-6 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors text-sm"
           >
-            Cancel
+            {t.collateralDetails?.fdCollateralModal?.cancelButton || 'Cancel'}
           </button>
           <button
             on:click={handleAdd}
             class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors text-sm"
           >
-            Add
+            {t.collateralDetails?.fdCollateralModal?.addButton || 'Add'}
           </button>
         </div>
       </div>

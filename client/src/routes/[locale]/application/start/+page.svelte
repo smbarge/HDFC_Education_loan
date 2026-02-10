@@ -84,15 +84,29 @@
     return result.isValid();
   }
 
+  function validateField(fieldName) {
+  const result = applicationStartValidation(formData, t, fieldName);
+  errors = { ...errors, ...result.getErrors() };
+  
+  // Clear error if validation passes
+  if (!result.hasErrors(fieldName)) {
+    const { [fieldName]: _, ...rest } = errors;
+    errors = rest;
+  }
+}
+
 
   async function handleProceed() {
-    if (!validateForm()) {
-      const firstErrorElement = document.querySelector('.error-message');
-      if (firstErrorElement) {
-        firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+     const result = applicationStartValidation(formData, t);
+      errors = result.getErrors();
+      
+      if (!result.isValid()) {
+        const firstErrorElement = document.querySelector('.error-message');
+        if (firstErrorElement) {
+          firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
       }
-      return;
-    }
 
     isSubmitting = true;
 
@@ -203,11 +217,12 @@
       <div class="flex flex-wrap gap-4">
         {#each communities as community}
           <label class="flex items-center cursor-pointer">
-            <input 
+           <input 
               type="radio" 
               name="community" 
               value={community.value}
               bind:group={formData.community}
+              on:change={() => validateField('community')}
               class="w-4 h-4 text-purple-600 focus:ring-purple-500"
             />
            <span class="ml-2 text-sm text-gray-700">
@@ -235,6 +250,7 @@
             name="resident" 
             value="Yes"
             bind:group={formData.isResident}
+            on:change={() => validateField('isResident')}
             class="w-4 h-4 text-purple-600 focus:ring-purple-500"
           />
           <span class="ml-2 text-sm text-gray-700">{t.applicationStart?.residencyYes || 'Yes'}</span>
@@ -245,6 +261,7 @@
             name="resident" 
             value="No"
             bind:group={formData.isResident}
+            on:change={() => validateField('isResident')}
             class="w-4 h-4 text-purple-600 focus:ring-purple-500"
           />
           <span class="ml-2 text-sm text-gray-700">{t.applicationStart?.residencyNo || 'No'}</span>
@@ -262,10 +279,11 @@
           <span class="text-red-500">*</span>
         </h3>
         
-        <select 
-          bind:value={formData.district}
-          class="w-full max-w-md px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.district ? 'border-red-500' : ''}"
-        >
+       <select 
+            bind:value={formData.district}
+            on:change={() => validateField('district')}
+            class="w-full max-w-md px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.district ? 'border-red-500' : ''}"
+          >
           <option value="">{t.applicationStart?.districtPlaceholder || 'Choose your district'}</option>
           {#each districts as district}
             <option value={district.value}>{district.label}</option>
@@ -309,9 +327,10 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                 </svg>
               </div>
-              <input
+             <input
                 type="text"
                 bind:value={formData.aadharNumber}
+                on:input={() => validateField('aadharNumber')}
                 placeholder={t.applicationStart?.aadharPlaceholder || 'Enter 12-digit Aadhar number'}
                 maxlength="12"
                 class="w-full pl-10 pr-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.aadharNumber ? 'border-red-500' : 'border-gray-300'}"
@@ -333,19 +352,19 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                 </svg>
               </div>
-              <input
-                type="text"
-                bind:value={formData.fullName}
-                placeholder={t.applicationStart?.namePlaceholder || 'Enter your full name as per Aadhar'}
-                class="w-full pl-10 pr-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.fullName ? 'border-red-500' : 'border-gray-300'}"
-              />
+             <input
+              type="text"
+              bind:value={formData.fullName}
+              on:input={() => validateField('fullName')}
+              placeholder={t.applicationStart?.namePlaceholder || 'Enter your full name as per Aadhar'}
+              class="w-full pl-10 pr-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.fullName ? 'border-red-500' : 'border-gray-300'}"
+            />
             </div>
             {#if errors.fullName}
               <p class="error-message mt-1 text-xs text-red-600">{errors.fullName}</p>
             {/if}
           </div>
 
-       
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
               {t.applicationStart?.dobLabel || 'Date of Birth'} <span class="text-red-500">*</span>
@@ -356,26 +375,27 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
               </div>
-              <input
-                type="date"
-                bind:value={formData.dateOfBirth}
-                class="w-full pl-10 pr-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.dateOfBirth ? 'border-red-500' : 'border-gray-300'}"
-              />
+             <input
+              type="date"
+              bind:value={formData.dateOfBirth}
+              on:change={() => validateField('dateOfBirth')}
+              class="w-full pl-10 pr-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.dateOfBirth ? 'border-red-500' : 'border-gray-300'}"
+            />
             </div>
             {#if errors.dateOfBirth}
               <p class="error-message mt-1 text-xs text-red-600">{errors.dateOfBirth}</p>
             {/if}
           </div>
-
       
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
               {t.applicationStart?.genderLabel || 'Gender'} <span class="text-red-500">*</span>
             </label>
             <select 
-              bind:value={formData.gender}
-              class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.gender ? 'border-red-500' : 'border-gray-300'}"
-            >
+                bind:value={formData.gender}
+                on:change={() => validateField('gender')}
+                class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.gender ? 'border-red-500' : 'border-gray-300'}"
+              >
               <option value="">{t.applicationStart?.genderPlaceholder || 'Select your gender'}</option>
               <option value="Male">{t.applicationStart?.genderOptions?.male || 'Male'}</option>
               <option value="Female">{t.applicationStart?.genderOptions?.female || 'Female'}</option>
@@ -391,10 +411,11 @@
         <div class="mt-4">
           <label class="flex items-start cursor-pointer">
             <input 
-              type="checkbox" 
-              bind:checked={formData.consent}
-              class="w-4 h-4 text-purple-600 focus:ring-purple-500 rounded mt-1 {errors.consent ? 'border-red-500' : ''}"
-            />
+                type="checkbox" 
+                bind:checked={formData.consent}
+                on:change={() => validateField('consent')}
+                class="w-4 h-4 text-purple-600 focus:ring-purple-500 rounded mt-1 {errors.consent ? 'border-red-500' : ''}"
+              />
             <span class="ml-3 text-xs text-gray-700">
               <p>{t.applicationStart?.consentText || 'I provide my consent to share my details with the issuer for the purpose of fetching my details.'}</p>
             </span>

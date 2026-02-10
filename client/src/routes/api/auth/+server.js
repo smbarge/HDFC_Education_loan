@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { env } from '$env/dynamic/private';
 
-const JWT_SECRET = env.JWT_SECRET || 'your-secret-key-2024';
+const JWT_SECRET = env.JWT_SECRET;
 
 async function generateId() {
     const result = await pool.query(
@@ -15,7 +15,6 @@ async function generateId() {
     return maxId + 1;
 }
 
-/** @type {import('./$types').RequestHandler} */
 export async function GET({ url }) {
     try {
         const action = url.searchParams.get('action');
@@ -56,7 +55,6 @@ export async function GET({ url }) {
     }
 }
 
-/** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
     try {
         const body = await request.json();

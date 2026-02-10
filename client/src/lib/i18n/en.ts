@@ -1,4 +1,6 @@
 export const en = {
+
+  
   header: {
     title: "Maulana Azad Minorities Financial Development Corporation Limited",
     subtitle: "A Govt. of Maharashtra Undertaking"
@@ -992,8 +994,291 @@ export const en = {
       // Alerts
       deleteConfirm: 'Are you sure you want to delete this collateral?',
       noCollateralAlert: 'Please add at least one collateral',
-      submitError: 'Failed to submit. Please try again.'
-    }, 
+      submitError: 'Failed to submit. Please try again.',
+
+
+    propertyCollateralModal: {
+      // Modal Header
+      modalTitle: "Add Collateral Property",
+      
+      // Property Type Section
+      propertyTypeLabel: "Property Type:",
+      
+      // Property Types
+      residential: "Residential",
+      
+      commercial: "Commercial",
+      
+      agriLand: "Agri Land",
+      
+      openPlot: "Open Plot",
+      
+      // Document Type Section
+      documentTypeLabel: "Please select the document type:",
+      
+      // Document Types
+      doc712: "7/12",
+      doc8A: "8A",
+      prCard: "PR Card",  
+      doc6D: "6D",
+      
+      // Property Address Section
+      propertyAddressTitle: "Property Address",
+      
+      surveyNo: "Survey No",
+      surveyNoPlaceholder: "Enter Survey No.",
+      
+      district: "District",
+      districtPlaceholder: "Select District",
+      
+      taluka: "Taluka",
+      talukaPlaceholder: "Select Taluka",
+      
+      village: "Village",
+      villagePlaceholder: "Enter City/Town/Village of property",
+      
+      pinCode: "PIN code",
+      pinCodePlaceholder: "Enter PIN code",
+      
+      // Property Value and Area Section
+      propertyValueAreaTitle: "Property Value and Area",
+      
+      units: "Units",
+      unitsPlaceholder: "Select",
+      unitsHectares: "Hectares",
+      unitsAcres: "Acres", 
+      unitsGuntha: "Guntha",
+      hectaresAcres: "Hectares/Acres",
+      hectaresPlaceholder: "Enter Area",
+      
+      rGuntha: "R/Guntha",
+      rGunthaPlaceholder: "Enter Area",
+      
+      propertyValue: "Property Value in Rs",
+      propertyValuePlaceholder: "Enter property value",
+      
+      // Districts
+      kolhapur: "KOLHAPUR",
+      pune: "PUNE",
+      mumbai: "MUMBAI",
+      nagpur: "NAGPUR",
+      beed: "BEED",
+      
+      // Talukas
+      hatkalangle: "HATKALANGLE",
+      beedTaluka: "BEED",
+      ashti: "ASHTI",
+      
+      // Buttons
+      cancelButton: "Cancel",
+      
+      addButton: "Add",
+      
+      // Required Indicator
+      required: "*",
+      
+      // Validation Messages
+      surveyNoRequired: "Survey number is required",
+      
+      districtRequired: "District is required",
+      
+      talukaRequired: "Taluka is required",
+      
+      villageRequired: "Village is required",
+      
+      pinCodeRequired: "PIN code is required",
+      
+      pinCodeInvalid: "PIN code must be 6 digits",
+      
+      propertyValueRequired: "Property value is required",
+    },
+
+    licCollateralModal: {
+      // Modal Header
+      modalTitle: "Add Collateral FD/LIC",
+      
+      // Section Title
+      licPolicyDetailsTitle: "LIC Policy Details",
+      
+      // Field Labels
+      policyName: "Policy Name",
+      policyNamePlaceholder: "Enter Policy Name",
+      
+      policyType: "Policy Type",
+      policyTypePlaceholder: "Enter Policy Type",
+      
+      policyReceiptNo: "Policy Receipt No",
+      policyReceiptNoPlaceholder: "Enter Policy Receipt No",
+      
+      policySurrenderValue: "Policy Surrender Value",
+      policySurrenderValuePlaceholder: "Enter Policy Surrender Value",
+      
+      policyStartDate: "Policy Start Date",
+      
+      policyMaturityDate: "Policy Maturity Date",
+      
+      // Buttons
+      cancelButton: "Cancel",
+      addButton: "Add",
+      
+      // Required Indicator
+      required: "*",
+      
+      // Validation Messages
+      policyNameRequired: "Policy name is required",
+      policyTypeRequired: "Policy type is required",
+      policyReceiptNoRequired: "Policy receipt number is required",
+      policySurrenderValueRequired: "Policy surrender value is required",
+      policyStartDateRequired: "Policy start date is required",
+      policyMaturityDateRequired: "Policy maturity date is required",
+    },
+
+     fdCollateralModal: {
+      // Modal Header
+      modalTitle: "Add Collateral FD",
+      
+      // FD Bank Details Section
+      fdBankDetailsTitle: "FD Bank Details",
+      
+      bankName: "Bank Name",
+      bankNamePlaceholder: "Enter Bank Name",
+      
+      branchName: "Branch Name",
+      branchNamePlaceholder: "Enter Branch Name",
+      
+      streetAddress: "Street Address",
+      streetAddressPlaceholder: "Enter Bank Address",
+      
+      district: "District",
+      districtPlaceholder: "Select District",
+      
+      taluka: "Taluka",
+      talukaPlaceholder: "Select Taluka",
+      
+      place: "Place",
+      placePlaceholder: "Enter City/Town/Village of Bank",
+      
+      pinCode: "PIN code",
+      pinCodePlaceholder: "Enter PIN code",
+      
+      // FD Details Section
+      fdDetailsTitle: "FD Details",
+      
+      fdAccountNumber: "FD Account Number",
+      fdAccountNumberPlaceholder: "Enter FD Account Number",
+      
+      fdStartDate: "FD Start Date",
+      
+      fdMaturityDate: "FD Maturity Date",
+      
+      interestRate: "Interest Rate",
+      interestRatePlaceholder: "0",
+      
+      fdDepositAmount: "FD Deposit Amount",
+      fdDepositAmountPlaceholder: "Enter FD Deposit Amount",
+      
+      // Buttons
+      cancelButton: "Cancel",
+      addButton: "Add",
+      
+      // Required Indicator
+      required: "*",
+      
+      // Validation Messages
+      bankNameRequired: "Bank name is required",
+      branchNameRequired: "Branch name is required",
+      streetAddressRequired: "Street address is required",
+      districtRequired: "District is required",
+      talukaRequired: "Taluka is required",
+      placeRequired: "Place is required",
+      pinCodeRequired: "PIN code is required",
+      pinCodeInvalid: "PIN code must be 6 digits",
+      fdAccountNumberRequired: "FD account number is required",
+      fdStartDateRequired: "FD start date is required",
+      fdMaturityDateRequired: "FD maturity date is required",
+      interestRateRequired: "Interest rate is required",
+      fdDepositAmountRequired: "FD deposit amount is required",
+    },
+
+     govtEmployeeModal: {
+      // Modal Header
+      modalTitle: "Add Government Employee Guarantor",
+      
+      // Personal Details Section
+      personalDetailsTitle: "Guarantor Personal Details",
+      
+      fullName: "Full Name of Guarantor",
+      fullNamePlaceholder: "Enter full name...",
+      
+      relationship: "Relationship with Applicant",
+      relationshipPlaceholder: "Select Relationship",
+      
+      aadharNumber: "Aadhaar Number",
+      aadharNumberPlaceholder: "Enter 12-digit Aadhaar...",
+      
+      mobileNumber: "Mobile Number",
+      mobileNumberPlaceholder: "Enter 10-digit mobile...",
+      
+      residentialAddress: "Residential Address",
+      residentialAddressPlaceholder: "Enter complete residential address...",
+      
+      // Employment Details Section
+      employmentDetailsTitle: "Employment Details",
+      
+      departmentName: "Department / Office Name",
+      departmentNamePlaceholder: "Enter department/office name...",
+      
+      designation: "Designation",
+      designationPlaceholder: "Enter designation...",
+      
+      employeeID: "Employee ID Number",
+      employeeIDPlaceholder: "Enter employee ID...",
+      
+      retirementDate: "Date of Retirement (Mandatory)",
+      
+      // Required Documents Section
+      requiredDocsTitle: "Required Documents",
+      requiredDocsSubtitle: "All Mandatory",
+      
+      salaryCertificate: "Original Salary Certificate",
+      identityCard: "Office Identity Card",
+      form24B: "Form – 24 (B)",
+      permanentEmployee: "Permanent Government Employee",
+      
+      // Relationship Options
+      father: "Father",
+      mother: "Mother",
+      spouse: "Spouse",
+      brother: "Brother",
+      sister: "Sister",
+      uncle: "Uncle",
+      aunt: "Aunt",
+      friend: "Friend",
+      other: "Other",
+      
+      // Buttons
+      cancelButton: "Cancel",
+      addButton: "Add",
+      
+      // Required Indicator
+      required: "*",
+      
+      // Validation Messages
+      fullNameRequired: "Full name is required",
+      fullNameMinLength: "Full name must be at least 3 characters",
+      relationshipRequired: "Relationship is required",
+      aadharRequired: "Aadhar number is required",
+      aadharInvalid: "Aadhar must be 12 digits",
+      mobileRequired: "Mobile number is required",
+      mobileInvalid: "Invalid mobile number",
+      residentialAddressRequired: "Residential address is required",
+      departmentNameRequired: "Department name is required",
+      designationRequired: "Designation is required",
+      employeeIDRequired: "Employee ID is required",
+      retirementDateRequired: "Retirement date is required (Mandatory)",
+      permanentEmployeeRequired: "Must be permanent employee",
+    }
+  }, 
     
     uploadDocuments: {
     // Page Header
