@@ -7,7 +7,8 @@
   import applicationStartValidation from '$lib/validation/application/strat';
   import { onMount } from 'svelte';
   import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
-
+  import { fetchMasters } from '$lib/api/auth';
+import { customCreateApplication } from '$lib/api/authApi';
 
 
 
@@ -17,24 +18,70 @@
   let userData = null;
   let showProfileModal = false;
 
+  //Distrct Dropdown
+  let districts = [];
+  let isLoadingDistricts = false;
+  let districtError = null;
 
-  onMount(() => {
+  //gender
+  let genders = [];
+
+  let applicationId = null;
+
+  onMount(async () => {
   if (typeof window !== 'undefined') {
     const authUser = sessionStorage.getItem('authUser');
 
     if (!authUser) {
       goto(`/${locale}/login`);
+      return;
     }
+
     else {
        const user = JSON.parse(authUser);
         userData = {
           name: user.name || "Guest User",
           phone: user.mobile || "",
-          username: user.username || ""
+          username: user.username || "",
+          id: user.id || null 
         };
+        console.log('Loaded user data:', userData);
     }
+
+    await loadMasters();
   }
 });
+
+ async function loadMasters() {
+   isLoadingDistricts = true;
+  districtError = null;
+
+  try {
+    const result = await fetchMasters();
+
+    if (result.error === 0) {
+      // District dropdown
+      districts = result.masters.m_district.map(row => ({
+        value: row.dist_id,
+        label: `${row.eng_name} - ${row.dev_name}`
+      }));
+
+      // Gender dropdown
+      genders = result.masters.m_gender.map(row => ({
+        value: row.id,
+        label: `${row.eng_name} - ${row.dev_name}`
+      }));
+
+    } else {
+      districtError = 'Failed to load masters';
+    }
+
+  } catch (error) {
+    districtError = 'Failed to load masters';
+  } finally {
+    isLoadingDistricts = false;
+  }
+}
 
 
   let currentStep = 1;
@@ -63,13 +110,6 @@
     { value: 'jew', label: 'jew' }
   ];
 
-  // District options
-  const districts = [
-    { value: 'AHMEDNAGAR', label: 'AHMEDNAGAR - अहमदनगर' },
-    { value: 'PUNE', label: 'PUNE - पुणे' },
-    { value: 'MUMBAI', label: 'MUMBAI - मुंबई' },
-    { value: 'NAGPUR', label: 'NAGPUR - नागपूर' }
-  ];
 
     $: showNextSections =
       formData.community !== '' && formData.isResident === 'Yes';
@@ -96,44 +136,96 @@
 }
 
 
-  async function handleProceed() {
-     const result = applicationStartValidation(formData, t);
-      errors = result.getErrors();
+  // async function handleProceed() {
+  //    const result = applicationStartValidation(formData, t);
+  //     errors = result.getErrors();
       
-      if (!result.isValid()) {
-        const firstErrorElement = document.querySelector('.error-message');
-        if (firstErrorElement) {
-          firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        return;
+  //     if (!result.isValid()) {
+  //       const firstErrorElement = document.querySelector('.error-message');
+  //       if (firstErrorElement) {
+  //         firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  //       }
+  //       return;
+  //     }
+
+  //   isSubmitting = true;
+
+  //   try {
+  //     // TODO: Replace with actual API endpoint
+  //     // const response = await fetch('/api/application/start', {
+  //     //   method: 'POST',
+  //     //   headers: { 'Content-Type': 'application/json' },
+  //     //   body: JSON.stringify(formData)
+  //     // });
+      
+  //     // if (!response.ok) throw new Error('Submission failed');
+  //     // const data = await response.json();
+      
+  //     // Simulate API call for now
+
+
+        
+  //     await new Promise(resolve => setTimeout(resolve, 1000));
+      
+  //     // Navigate to next step
+  //     goto(`/${locale}/application/personal-details`);
+  //   } catch (error) {
+  //     console.error('Error submitting form:', error);
+  //     alert('Failed to submit form. Please try again.');
+  //   } finally {
+  //     isSubmitting = false;
+  //   }
+  // }
+
+async function handleProceed() {
+   const result = applicationStartValidation(formData, t);
+    errors = result.getErrors();
+    
+    if (!result.isValid()) {
+      const firstErrorElement = document.querySelector('.error-message');
+      if (firstErrorElement) {
+        firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
-
-    isSubmitting = true;
-
-    try {
-      // TODO: Replace with actual API endpoint
-      // const response = await fetch('/api/application/start', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData)
-      // });
-      
-      // if (!response.ok) throw new Error('Submission failed');
-      // const data = await response.json();
-      
-      // Simulate API call for now
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Navigate to next step
-      goto(`/${locale}/application/personal-details`);
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      alert('Failed to submit form. Please try again.');
-    } finally {
-      isSubmitting = false;
+      return;
     }
-  }
 
+  isSubmitting = true;
+
+  try {
+    //CREATE APPLICATION HERE (not on dashboard)
+    const createResult = await customCreateApplication({
+      userId: userData.id  // Use user_id from user1 table
+    });
+
+    if (createResult.error !== 0) {
+      alert(createResult.errorMsg || 'Failed to create application');
+      return;
+    }
+
+    const newApplicationId = createResult.applicationId;
+    
+    //Store application ID in session
+    sessionStorage.setItem('currentApplicationId', newApplicationId);
+    
+    console.log('Application created with ID:', newApplicationId);
+    console.log('For user ID:', userData.id);
+    
+    // Store form data with application ID
+    sessionStorage.setItem('applicationFormData', JSON.stringify({
+      ...formData,
+      applicationId: newApplicationId
+    }));
+    
+    // Navigate to next step
+    goto(`/${locale}/application/personal-details`);
+    
+  } catch (error) {
+    console.error('Error submitting form:', error);
+    alert('Failed to submit form. Please try again.');
+  } finally {
+    isSubmitting = false;
+  }
+}
   // Navigate back to home
   function handleBackToHome() {
     goto(`/${locale}/dashboard`);
@@ -278,8 +370,30 @@
           {t.applicationStart?.districtTitle || 'Application for District Office:'}
           <span class="text-red-500">*</span>
         </h3>
+
+        <!-- {#if districtError}
+          <div class="mb-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
+            ⚠️ {districtError}
+          </div>
+        {/if} -->
         
-       <select 
+       <!-- <select 
+            bind:value={formData.district}
+            on:change={() => validateField('district')}
+            disabled={isLoadingDistricts}
+            class="w-full max-w-md px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.district ? 'border-red-500' : ''} {isLoadingDistricts ? 'bg-gray-100 cursor-wait' : ''}"
+          >
+            <option value="">
+              {isLoadingDistricts 
+                ? 'Loading districts...' 
+                : (t.applicationStart?.districtPlaceholder || 'Choose your district')}
+            </option>
+            {#each districts as district}
+              <option value={district.value}>{district.label}</option>
+            {/each}
+          </select> -->
+
+        <select 
             bind:value={formData.district}
             on:change={() => validateField('district')}
             class="w-full max-w-md px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.district ? 'border-red-500' : ''}"
@@ -289,6 +403,7 @@
             <option value={district.value}>{district.label}</option>
           {/each}
         </select>
+    
         {#if errors.district}
           <p class="error-message mt-2 text-sm text-red-600">{errors.district}</p>
         {/if}
@@ -306,7 +421,7 @@
             </svg>
             <div>
               <h4 class="font-bold text-gray-900 mb-1 text-sm">
-                Aadhar (Mandatory) / आधार (अनिवार्य)
+                {t.applicationStart?.identityTitle1}
               </h4>
               <p class="text-xs text-gray-600">
                 {t.applicationStart?.identityInstruction || 'Keep Aadhar card with you along with the Mobile Number registered in Aadhar.'}
@@ -387,24 +502,28 @@
             {/if}
           </div>
       
+          <!-- Gender section -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              {t.applicationStart?.genderLabel || 'Gender'} <span class="text-red-500">*</span>
-            </label>
-            <select 
-                bind:value={formData.gender}
-                on:change={() => validateField('gender')}
-                class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.gender ? 'border-red-500' : 'border-gray-300'}"
-              >
-              <option value="">{t.applicationStart?.genderPlaceholder || 'Select your gender'}</option>
-              <option value="Male">{t.applicationStart?.genderOptions?.male || 'Male'}</option>
-              <option value="Female">{t.applicationStart?.genderOptions?.female || 'Female'}</option>
-              <option value="Other">{t.applicationStart?.genderOptions?.other || 'Other'}</option>
-            </select>
-            {#if errors.gender}
-              <p class="error-message mt-1 text-xs text-red-600">{errors.gender}</p>
-            {/if}
-          </div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            {t.applicationStart?.genderLabel || 'Gender'} <span class="text-red-500">*</span>
+          </label>
+
+          <select 
+            bind:value={formData.gender}
+            on:change={() => validateField('gender')}
+            class="w-full max-w-md px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.district ? 'border-red-500' : ''}"
+          >
+          <option value="">{t.applicationStart?.genderPlaceholder || 'Choose your gender'}</option>
+          {#each genders as gender}
+            <option value={gender.value}>{gender.label}</option>
+          {/each}
+         </select>
+    
+          {#if errors.gender}
+            <p class="error-message mt-1 text-xs text-red-600">{errors.gender}</p>
+          {/if}
+           </div>
+
         </div>
 
        

@@ -7,7 +7,7 @@ export async function POST({ request }) {
     try {
         await client.query('BEGIN');
 
-        const { uid, otp: otp_code } = await request.json();
+        const { uid, otp: otp_code, dataName } = await request.json();
         
         console.log("Verifying OTP - UID:", uid, "OTP:", otp_code);
 
@@ -54,6 +54,16 @@ export async function POST({ request }) {
             'UPDATE otp SET verified = TRUE, verified_at = NOW() WHERE uid = $1::uuid',
             [uid]
         );
+
+        if (dataName && otpRecord.id) {
+            await client.query(
+                `INSERT INTO contacts (id, mobile_${dataName})
+                 VALUES ($1, $2)
+                 ON CONFLICT (id)
+                 DO UPDATE SET mobile_${dataName} = EXCLUDED.mobile_${dataName}`,
+                [otpRecord.id, otpRecord.mobile]
+            );
+        }
 
         await client.query('COMMIT');
 

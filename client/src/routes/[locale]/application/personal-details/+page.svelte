@@ -9,6 +9,11 @@
   import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
   import personalDetailsValidation from '$lib/validation/application/personalDetails';
 
+  import { customSendEmailOtp, customVerifyEmailOtp , customSendOtp,customVerifyOtp } from '$lib/api/authApi';
+
+  import { fetchMasters } from '$lib/api/auth';
+
+
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
 
@@ -16,7 +21,56 @@
   let showProfileModal = false;
 
 
-  onMount(() => {
+  //Distrct Dropdown
+  let districts = [];
+  let isLoadingDistricts = false;
+  let districtError = null;
+
+
+  //gender
+  let genders = [];
+  let otpError = '';
+  
+//   onMount(async () => {
+//   if (typeof window !== 'undefined') {
+//     const authUser = sessionStorage.getItem('authUser');
+
+//     if (!authUser) {
+//       goto(`/${locale}/login`);
+//     }
+//     else {
+//        const user = JSON.parse(authUser);
+//         userData = {
+//           name: user.name || "Guest User",
+//           phone: user.mobile || "",
+//           username: user.username || "",
+//           id: user.id || null 
+//         };
+
+//         const applicationId = sessionStorage.getItem('currentApplicationId');
+//         if (!applicationId) {
+//           alert('No active application found. Please start a new application.');
+//           goto(`/${locale}/dashboard`);
+//           return;
+//         }
+
+//         // Store application ID for later use
+//         userData.applicationId = applicationId;
+
+
+
+//         if (userData.phone) {
+//           formData.mobileNumber = userData.phone;
+//           isMobileVerified = true;
+//           isMobileEditable = false;
+//         }
+//     }
+
+//     await loadMasters();
+//   }
+// });
+
+onMount(async () => {
   if (typeof window !== 'undefined') {
     const authUser = sessionStorage.getItem('authUser');
 
@@ -28,11 +82,63 @@
         userData = {
           name: user.name || "Guest User",
           phone: user.mobile || "",
-          username: user.username || ""
+          username: user.username || "",
+          id: user.id || null
         };
+
+        //Load application ID from session
+        const applicationId = sessionStorage.getItem('currentApplicationId');
+        if (!applicationId) {
+          alert('No active application found. Please start a new application.');
+          goto(`/${locale}/dashboard`);
+          return;
+        }
+
+        // Store application ID for later use
+        userData.applicationId = applicationId;
+
+        // Mobile already verified from registration
+        if (userData.phone) {
+          formData.mobileNumber = userData.phone;
+          isMobileVerified = true;
+          isMobileEditable = false;
+        }
     }
+
+    await loadMasters();
   }
 });
+
+  async function loadMasters() {
+  isLoadingDistricts = true;
+  districtError = null;
+
+  try {
+    const result = await fetchMasters();
+
+    if (result.error === 0) {
+      // District dropdown
+      districts = result.masters.m_district.map(row => ({
+        value: row.dist_id,
+        label: `${row.eng_name} - ${row.dev_name}`
+      }));
+
+      // Gender dropdown
+      genders = result.masters.m_gender.map(row => ({
+        value: row.id,
+        label: row.eng_name
+      }));
+
+    } else {
+      districtError = 'Failed to load masters';
+    }
+
+  } catch (error) {
+    districtError = 'Failed to load masters';
+  } finally {
+    isLoadingDistricts = false;
+  }
+}
 
   let currentStep = 2;
   let isSubmitting = false;
@@ -41,6 +147,11 @@
   let showVerificationModal = false;
   let verificationType = 'email';
   let verificationContact = '';
+  let emailVerificationUID = '';
+
+  let mobileVerificationUID = '';
+
+
   let isMobileVerified = false;
   let isEmailVerified = false;
   let isMobileEditable = true;
@@ -85,13 +196,6 @@
     suretyDetails: ''
   };
 
-  const districts = [
-    { value: 'AHMEDNAGAR', label: 'AHMEDNAGAR - अहमदनगर' },
-    { value: 'PUNE', label: 'PUNE - पुणे' },
-    { value: 'MUMBAI', label: 'MUMBAI - मुंबई' },
-    { value: 'NAGPUR', label: 'NAGPUR - नागपूर' }
-  ];
-
   const maritalStatusOptions = [
     { value: 'Single', label: { en: 'Single', hi: 'अविवाहित', mr: 'अविवाहित' } },
     { value: 'Married', label: { en: 'Married', hi: 'विवाहित', mr: 'विवाहित' } },
@@ -121,15 +225,27 @@
     }
     
     try {
-      verificationType = 'mobile';
-      verificationContact = formData.mobileNumber;
-      showVerificationModal = true;
+      const result = await customSendOtp({
+        mobileNumber: formData.mobileNumber,
+        name: userData?.name || 'User',
+        id: userData?.applicationId 
+      });
+
+      if (result.error === 0) {
+        mobileVerificationUID = result.uid;
+        verificationType = 'mobile';
+        verificationContact = formData.mobileNumber;
+        showVerificationModal = true;
+      } else {
+        errors.mobileNumber = result.errorMsg || 'Failed to send OTP';
+      }
     } catch (error) {
       console.error('Failed to send OTP:', error);
+      errors.mobileNumber = 'Failed to send OTP. Please try again.';
     }
   }
 
-  async function handleEmailVerify() {
+ async function handleEmailVerify() {
     if (!formData.emailId) {
       errors.emailId = 'Please enter email address first';
       return;
@@ -140,32 +256,79 @@
     }
     
     try {
-      verificationType = 'email';
-      verificationContact = formData.emailId;
-      showVerificationModal = true;
+          const result = await customSendEmailOtp({
+          email: formData.emailId,
+          name: userData?.name || 'User',
+          id: userData?.applicationId // Use application ID from session
+        });
+
+      if (result.error === 0) {
+        emailVerificationUID = result.uid; // Save UID
+        verificationType = 'email';
+        verificationContact = formData.emailId;
+        showVerificationModal = true;
+      } else {
+        errors.emailId = result.errorMsg || 'Failed to send OTP';
+      }
     } catch (error) {
-      console.error('Failed to send OTP:', error);
+      console.error('Failed to send email OTP:', error);
+      errors.emailId = 'Failed to send OTP. Please try again.';
     }
   }
 
-  async function handleVerificationSuccess(event) {
-    const { otp, type } = event.detail;
-    
-    try {
-      if (type === 'mobile') {
+ async function handleVerificationSuccess(event) {
+  const { otp, type } = event.detail;
+   otpError = '';
+  
+  try {
+    if (type === 'mobile') {
+      // CHANGE: Verify mobile OTP with dataName parameter
+      const result = await customVerifyOtp({
+        uid: mobileVerificationUID,
+        otp: otp,
+        dataName: 'applicant' // Same as email verification
+      });
+
+      if (result.error === 0) {
         isMobileVerified = true;
         isMobileEditable = false;
-      } else if (type === 'email') {
+        showVerificationModal = false;
+        
+        // Clear mobile errors
+        const { mobileNumber, ...restErrors } = errors;
+        errors = restErrors;
+        
+        console.log('Mobile verified:', result.mobile);
+      } else {
+         otpError = result.errorMsg || 'Invalid OTP. Please try again.';
+      }
+    } 
+    else if (type === 'email') {
+      const result = await customVerifyEmailOtp({
+        uid: emailVerificationUID,
+        otp: otp,
+        dataName: 'applicant' // Optional: for contacts table
+      });
+
+      if (result.error === 0) {
         isEmailVerified = true;
         isEmailEditable = false;
+        showVerificationModal = false;
+        
+        // Clear email errors
+        const { emailId, ...restErrors } = errors;
+        errors = restErrors;
+        
+        console.log('Email verified:', result.email);
+      } else {
+        otpError = result.errorMsg || 'Invalid OTP. Please try again.';
       }
-      
-      showVerificationModal = false;
-    } catch (error) {
-      console.error('OTP verification failed:', error);
-      alert('Invalid OTP. Please try again.');
     }
+  } catch (error) {
+    console.error('OTP verification failed:', error);
+     otpError = 'Verification failed. Please try again.';
   }
+}
 
   function handleModalClose() {
     showVerificationModal = false;
@@ -253,7 +416,7 @@ function validateField(fieldName) {
       goto(`/${locale}/application/acadamic-info`);
     } catch (error) {
       console.error('Error submitting form:', error);
-      alert('Failed to submit form. Please try again.');
+      errors.general = 'Failed to submit form. Please try again.';
     } finally {
       isSubmitting = false;
     }
@@ -313,31 +476,32 @@ function validateField(fieldName) {
     </div>
 
     <!-- Applicant Personal Details -->
-    <section class="mb-6 bg-white rounded-xl shadow-md p-4 sm:p-6">
-    <div class="flex items-center gap-3 mb-4">
-      <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-        </svg>
-      </div>
-      <h3 class="text-lg font-bold text-gray-900">
-        1. {t.personalDetails?.section1Title || 'Applicant Personal Details'}
-      </h3>
+   <section class="mb-6 bg-white rounded-xl shadow-md p-4 sm:p-6">
+  <div class="flex items-center gap-3 mb-4">
+    <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+      <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+      </svg>
     </div>
+    <h3 class="text-base sm:text-lg font-bold text-gray-900">
+      1. {t.personalDetails?.section1Title || 'Applicant Personal Details'}
+    </h3>
+  </div>
 
-    <div class="space-y-4">
+  <div class="space-y-4">
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
 
-      <div class="grid md:grid-cols-2 gap-4">
+      <!-- Mobile -->
+      <div class="w-full">
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          {t.personalDetails?.mobileLabel || 'Mobile Number'} <span class="text-red-500">*</span>
+        </label>
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            {t.personalDetails?.mobileLabel || 'Mobile Number'} <span class="text-red-500">*</span>
-          </label>
-
-          <div class="flex gap-2">
-            <div class="flex-1 relative">
-              <input
+        <div class="flex flex-col sm:flex-row gap-2">
+          <div class="flex-1 relative min-w-0">
+            <input
               type="text"
               bind:value={formData.mobileNumber}
               on:input={() => validateField('mobileNumber')}
@@ -346,118 +510,121 @@ function validateField(fieldName) {
               disabled={isMobileVerified}
               readonly={!isMobileEditable}
               class="w-full px-3 py-2.5 border rounded-lg text-sm
-                focus:ring-2 focus:ring-purple-500 focus:border-purple-500
-                disabled:bg-gray-100
-                {errors.mobileNumber ? 'border-red-500' : 'border-gray-300'}"
+              focus:ring-2 focus:ring-purple-500 focus:border-purple-500
+              disabled:bg-gray-100
+              {errors.mobileNumber ? 'border-red-500' : 'border-gray-300'}"
             />
 
-              {#if isMobileVerified}
-                <div class="absolute inset-y-0 right-2 flex items-center">
-                  <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                  </svg>
-                </div>
-              {/if}
-            </div>
-
-            <button
-              on:click={isMobileVerified ? handleMobileEdit : handleMobileVerify}
-              class="px-4 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg text-sm"
-            >
-              {isMobileVerified
-                ? (t.personalDetails?.mobileEditButton || 'Edit')
-                : (t.personalDetails?.VerifyButton || 'Verify')}
-            </button>
+            {#if isMobileVerified}
+               <div class="absolute inset-y-0 right-2 flex items-center gap-2 pointer-events-none">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+            {/if}
           </div>
 
-          {#if errors.mobileNumber}
-            <p class="mt-1 text-xs text-red-600">{errors.mobileNumber}</p>
-          {/if}
+          <button
+            on:click={isMobileVerified ? handleMobileEdit : handleMobileVerify}
+            class="w-full sm:w-auto flex-shrink-0 px-4 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg text-sm transition-colors"
+          >
+            {isMobileVerified
+              ? (t.personalDetails?.mobileEditButton || 'Edit')
+              : (t.personalDetails?.VerifyButton || 'Verify')}
+          </button>
         </div>
 
-        <!-- Email -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            {t.personalDetails?.emailLabel || 'Email ID'}
-          </label>
+        {#if errors.mobileNumber}
+          <p class="mt-1 text-xs text-red-600">{errors.mobileNumber}</p>
+        {/if}
+      </div>
 
-          <div class="flex gap-2">
-            <input
+      
+      <!-- Email -->
+    <div class="w-full">
+      <label class="block text-sm font-medium text-gray-700 mb-2">
+        {t.personalDetails?.emailLabel || 'Email'} <span class="text-red-500">*</span>
+      </label>
+
+      <div class="flex flex-col sm:flex-row gap-2">
+
+        <div class="flex-1 relative min-w-0">
+          <input
             type="email"
             bind:value={formData.emailId}
             on:input={() => validateField('emailId')}
             placeholder={t.personalDetails?.emailPlaceholder || 'Enter email'}
             disabled={isEmailVerified}
             readonly={!isEmailEditable}
-            class="flex-1 px-3 py-2.5 border rounded-lg text-sm
-              focus:ring-2 focus:ring-purple-500 focus:border-purple-500
-              disabled:bg-gray-100
-              {errors.emailId ? 'border-red-500' : 'border-gray-300'}"
+            class="w-full px-3 py-2.5 border rounded-lg text-sm
+            focus:ring-2 focus:ring-purple-500 focus:border-purple-500
+            disabled:bg-gray-100
+            {errors.emailId ? 'border-red-500' : 'border-gray-300'}"
           />
 
-            <button
-              on:click={handleEmailVerify}
-              class="px-4 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg text-sm"
-            >
-              {t.personalDetails?.VerifyButton || 'Verify'}
-            </button>
-          </div>
-
-          {#if errors.emailId}
-            <p class="mt-1 text-xs text-red-600">{errors.emailId}</p>
+          {#if isEmailVerified}
+            <div class="absolute inset-y-0 right-2 flex items-center pointer-events-none">
+              <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
           {/if}
         </div>
 
+        <button
+          on:click={handleEmailVerify}
+          disabled={isEmailVerified}
+          class="w-full sm:w-auto flex-shrink-0 px-4 py-2.5 font-bold rounded-lg text-sm transition-colors flex items-center justify-center gap-2
+          {isEmailVerified 
+            ? 'bg-green-100 text-green-700 cursor-not-allowed' 
+            : 'bg-cyan-500 hover:bg-cyan-600 text-white'}"
+        >
+          {#if isEmailVerified}
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Verified
+          {:else}
+            {t.personalDetails?.VerifyButton || 'Verify'}
+          {/if}
+        </button>
+
       </div>
 
-      <!-- ROW 2 : PAN + Ration -->
-      <div class="grid md:grid-cols-2 gap-4">
+      {#if errors.emailId}
+        <p class="mt-1 text-xs text-red-600">{errors.emailId}</p>
+      {/if}
+    </div>
 
-        <!-- PAN -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            {t.personalDetails?.panLabel || 'PAN Card'}
-          </label>
-          <input
+
+      <!-- PAN -->
+      <div class="w-full">
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          {t.personalDetails?.panLabel || 'PAN Card'}
+        </label>
+        <input
           type="text"
           bind:value={formData.panCard}
           on:input={() => validateField('panCard')}
           placeholder={t.personalDetails?.panPlaceholder || 'Enter PAN'}
           maxlength="10"
           class="w-full px-3 py-2.5 border rounded-lg text-sm
-            focus:ring-2 focus:ring-purple-500 focus:border-purple-500
-            {errors.panCard ? 'border-red-500' : 'border-gray-300'}"
+          focus:ring-2 focus:ring-purple-500 focus:border-purple-500
+          {errors.panCard ? 'border-red-500' : 'border-gray-300'}"
           style="text-transform: uppercase;"
         />
-          {#if errors.panCard}
-            <p class="mt-1 text-xs text-red-600">{errors.panCard}</p>
-          {/if}
-        </div>
-
-        <!-- Ration Card -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            {t.personalDetails?.rationLabel || 'Ration Card'} <span class="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            bind:value={formData.rationCard}
-            on:input={() => validateField('rationCard')}
-            placeholder={t.personalDetails?.rationPlaceholder || 'Enter ration card'}
-            class="w-full px-3 py-2.5 border rounded-lg text-sm
-              focus:ring-2 focus:ring-purple-500 focus:border-purple-500
-              {errors.rationCard ? 'border-red-500' : 'border-gray-300'}"
-          />
-          {#if errors.rationCard}
-            <p class="mt-1 text-xs text-red-600">{errors.rationCard}</p>
-          {/if}
-        </div>
-
+        {#if errors.panCard}
+          <p class="mt-1 text-xs text-red-600">{errors.panCard}</p>
+        {/if}
       </div>
 
     </div>
-    </section>
+
+  </div>
+   </section>
+
 
 
     <!-- Current Address -->
@@ -981,6 +1148,7 @@ function validateField(fieldName) {
   bind:isOpen={showVerificationModal}
   {verificationType}
   contactInfo={verificationContact}
+  {otpError}
   on:verify={handleVerificationSuccess}
   on:cancel={handleModalClose}
   on:close={handleModalClose}

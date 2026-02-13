@@ -77,12 +77,40 @@ export async function POST({ request }) {
             //     { status: 500 }
             // );
         }
+
+        if (id) {
+            // Insert UID, OTP, created_at, and expires_at into the PostgreSQL table
+            const insertQuery = `
+            INSERT INTO otp (id,uid, otp_code, mobile, created_at, expires_at) 
+            VALUES ($1, $2, $3, $4, $5,$6)
+            `;
+            await pool.query(insertQuery, [
+                id,
+                uid,
+                otpCode,
+                mobileNumber,
+                createdAt,
+                expiresAt,
+            ]);
+            } else {
+            const insertQuery = `
+            INSERT INTO otp (uid, otp_code, mobile, created_at, expires_at) 
+            VALUES ($1, $2, $3, $4, $5)
+            `;
+            await pool.query(insertQuery, [
+                uid,
+                otpCode,
+                mobileNumber,
+                createdAt,
+                expiresAt,
+            ]);
+            }
         
-        await pool.query(
-            `INSERT INTO otp (uid, otp_code, mobile, created_at, expires_at, verified)
-             VALUES ($1::uuid, $2, $3, $4, $5, false)`,
-            [uid, otpCode, mobileNumber, createdAt, expiresAt]
-        );
+        // await pool.query(
+        //     `INSERT INTO otp (uid, otp_code, mobile, created_at, expires_at, verified)
+        //      VALUES ($1::uuid, $2, $3, $4, $5, false)`,
+        //     [uid, otpCode, mobileNumber, createdAt, expiresAt]
+        // );
 
         return json({
             error: 0,

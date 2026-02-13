@@ -487,44 +487,6 @@
       </section>
     {/if}
 
-    <!-- Benefits Section -->
-    <section class="mb-12">
-      <h2 class="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-8">
-        Why Choose MAMFDC?
-      </h2>
-      
-      <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-        <div class="bg-white rounded-xl shadow-md p-6 sm:p-8 text-center transform transition-all duration-300 hover:-translate-y-2 hover:shadow-lg">
-          <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-          </div>
-          <h3 class="text-xl font-bold text-gray-900 mb-3">Up to ₹5 Lakhs</h3>
-          <p class="text-gray-600 leading-relaxed text-sm">Get education loan up to ₹5,00,000 for your studies</p>
-        </div>
-
-        <div class="bg-white rounded-xl shadow-md p-6 sm:p-8 text-center transform transition-all duration-300 hover:-translate-y-2 hover:shadow-lg">
-          <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
-            </svg>
-          </div>
-          <h3 class="text-xl font-bold text-gray-900 mb-3">Low Interest Rate</h3>
-          <p class="text-gray-600 leading-relaxed text-sm">Starting from 3% per annum with government subsidy</p>
-        </div>
-
-        <div class="bg-white rounded-xl shadow-md p-6 sm:p-8 text-center transform transition-all duration-300 hover:-translate-y-2 hover:shadow-lg">
-          <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-            </svg>
-          </div>
-          <h3 class="text-xl font-bold text-gray-900 mb-3">Quick Processing</h3>
-          <p class="text-gray-600 leading-relaxed text-sm">Get approval within 15-20 working days</p>
-        </div>
-      </div>
-    </section>
 
     <!-- How It Works Section -->
     <section class="mb-12 bg-white rounded-2xl shadow-md p-6 sm:p-10">

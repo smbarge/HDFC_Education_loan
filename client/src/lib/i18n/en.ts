@@ -432,6 +432,7 @@ export const en = {
   districtRequired: "Please select your district",
   
   // Identity Verification Section
+  identityTitle1 :"Aadhar (Mandatory)",
   identityTitle: "Identity Verification",
   identityInstruction: "Keep Aadhar card with you along with the Mobile Number registered in Aadhar.",
   

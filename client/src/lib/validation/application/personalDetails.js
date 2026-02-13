@@ -59,7 +59,8 @@ const personalDetailsValidation = create((data, t) => {
   });
 
   // Permanent Address Fields - ONLY validate if NOT same as current
-  // CRITICAL: Skip ALL permanent address validation when sameAsCurrentAddress is true
+  // Skip ALL permanent address validation when sameAsCurrentAddress is true
+
   if (!data.sameAsCurrentAddress) {
     test('permanentStreetAddress', t?.personalDetails?.streetRequired || 'Permanent street address is required', () => {
       enforce(data.permanentStreetAddress).isNotEmpty();

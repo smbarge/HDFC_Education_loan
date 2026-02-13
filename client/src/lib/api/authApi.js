@@ -48,7 +48,7 @@ const customVerifyApplicantAndSendOtp = async ({ mobile, name }) => {
     }
 };
 
-const customVerifyOtp = async ({ uid, otp }) => {
+const customVerifyOtp = async ({ uid, otp,dataName }) => {
     console.log("customVerifyOtp called with UID:", uid);
     
     try {
@@ -57,7 +57,7 @@ const customVerifyOtp = async ({ uid, otp }) => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ uid, otp }),
+            body: JSON.stringify({ uid, otp,dataName}),
         });
 
         const data = await response.json();
@@ -104,6 +104,93 @@ const customVerifyApplicant = async ({ mobile, name, password, mobileConfirmatio
         
     } catch (e) {
         console.error("customVerifyApplicant failed:", e);
+        return { error: -1, errorMsg: e.message };
+    }
+};
+
+const customSendOtp = async ({ mobileNumber, name, id }) => {
+    console.log("customSendOtp called with mobile:", mobileNumber);
+    
+    try {
+        const params = { mobileNumber, name, id };
+        const response = await fetch('/api/sendOTP', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(params),
+        });
+
+        if (!response.ok) {
+            const { error, errorMsg } = await response.json();
+            return { error, errorMsg };
+        }
+
+        const { error, errorMsg, uid } = await response.json();
+        console.log("OTP sent. UID:", uid);
+        
+        return { error, errorMsg, uid };
+        
+    } catch (e) {
+        console.error("customSendOtp failed:", e);
+        return { error: -1, errorMsg: e.message };
+    }
+};
+
+//EMAIL OTP 
+
+const customSendEmailOtp = async ({ email, name, id }) => {
+    console.log("customSendEmailOtp called with email:", email);
+    
+    try {
+        const params = { email, name, id };
+        const response = await fetch('/api/sendEmailOTP', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(params),
+        });
+
+        if (!response.ok) {
+            const { error, errorMsg } = await response.json();
+            return { error, errorMsg };
+        }
+
+        const { error, errorMsg, uid } = await response.json();
+        console.log("Email OTP sent. UID:", uid);
+        
+        return { error, errorMsg, uid };
+        
+    } catch (e) {
+        console.error("customSendEmailOtp failed:", e);
+        return { error: -1, errorMsg: e.message };
+    }
+};
+
+const customVerifyEmailOtp = async ({ uid, otp, dataName }) => {
+    console.log("customVerifyEmailOtp called with UID:", uid);
+    
+    try {
+        const response = await fetch('/api/verifyEmailOTP', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ uid, otp, dataName }),
+        });
+
+        const data = await response.json();
+        
+        if (data.error && data.error !== 0) {
+            return { error: data.error, errorMsg: data.errorMsg };
+        }
+
+        console.log('Email OTP verified successfully');
+        return { error: 0, errorMsg: "", email: data.email };
+        
+    } catch (e) {
+        console.error("customVerifyEmailOtp failed:", e);
         return { error: -1, errorMsg: e.message };
     }
 };
@@ -250,12 +337,48 @@ const customSendPasswordResetOtp = async ({ mobile, name }) => {
     }
 };
 
+// Application Management
+const customCreateApplication = async ({ userId }) => {
+    console.log("customCreateApplication called for userId:", userId);
+    
+    try {
+        const response = await fetch('/api/createApplication', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userId }),
+        });
+
+        const data = await response.json();
+        
+        if (data.error && data.error !== 0) {
+            return { error: data.error, errorMsg: data.errorMsg };
+        }
+
+        console.log('Application created. ID:', data.applicationId);
+        return {
+            error: 0,
+            errorMsg: "",
+            applicationId: data.applicationId
+        };
+        
+    } catch (e) {
+        console.error("customCreateApplication failed:", e);
+        return { error: -1, errorMsg: e.message };
+    }
+};
+
 export {
   customVerifyApplicantAndSendOtp,
   customVerifyOtp,
   customVerifyApplicant,
+  customSendOtp,
+  customSendEmailOtp,
+  customVerifyEmailOtp,
   customLoginApplicant,
   customGetUserId,
   customChangePassword,
-  customSendPasswordResetOtp
+  customSendPasswordResetOtp,
+  customCreateApplication
 };

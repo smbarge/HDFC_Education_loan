@@ -471,6 +471,7 @@ export const mr = {
   districtRequired: "कृपया तुमचा जिल्हा निवडा",
   
   // Identity Verification Section
+  identityTitle1: "आधार (अनिवार्य)",
   identityTitle: "ओळख पडताळणी",
   identityInstruction: "आधारमध्ये नोंदणीकृत मोबाइल नंबरसह आधार कार्ड तुमच्याजवळ ठेवा.",
   

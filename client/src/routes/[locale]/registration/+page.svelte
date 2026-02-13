@@ -61,11 +61,7 @@
 
     return !validationResult.hasErrors();
   }
-
-
-
-
-
+  
   async function handleSubmit() {
     // Replace the old validation logic with this:
     if (!validateAllFields()) return;

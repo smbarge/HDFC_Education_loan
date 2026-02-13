@@ -133,7 +133,8 @@ export async function POST({ request }) {
             if (result.rows.length === 0) {
                 return json({
                     error: -1,
-                    errorMsg: 'Invalid mobile number or password'
+                    errorMsg: 'Mobile number not registered',
+                    field: 'mobile'  
                 });
             }
 
@@ -143,7 +144,8 @@ export async function POST({ request }) {
             if (!isValidPassword) {
                 return json({
                     error: -1,
-                    errorMsg: 'Invalid mobile number or password'
+                    errorMsg: 'Incorrect password',
+                    field: 'password'
                 });
             }
 

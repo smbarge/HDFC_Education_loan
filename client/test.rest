@@ -7,7 +7,7 @@ POST http://localhost:5173/api/sendOTP
 Content-Type: application/json
 
 {
-  "mobileNumber": "9999999999",
+  "mobileNumber": "8888888880",
   "name": "Akshata"
 }
 
@@ -16,9 +16,35 @@ POST http://localhost:5173/api/verifyOTP
 Content-Type: application/json
 
 {
-  "uid": "15c71351-8c0c-4d36-a67a-501bf3373d7c",
-  "otp": "859179"
+  "uid": "a2501cac-123e-4086-931c-318e3e43eb08",
+  "otp": "570295",
+   "dataName": "applicant"
 }
+
+
+### Send Email OTP
+POST http://localhost:5173/api/sendEmailOTP
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "id": 846,
+  "name": "Akshata"
+}
+
+
+### Verify Email OTP
+POST http://localhost:5173/api/verifyEmailOTP
+Content-Type: application/json
+
+{
+  "uid": "f697ff2b-0fdc-48a9-83cd-79665d6d9f1c",
+  "otp": "717127",
+  "dataName": "applicant"
+}
+
+
+
 
 
 ### Register user
@@ -63,4 +89,19 @@ Content-Type: application/json
   "mobile": "9999999999",
   "password": "NewPassword@123"
 }
+
+
+##Master DropDown
+
+### Fetch Districts
+GET http://localhost:5173/api/masters
+Content-Type: application/json
+
+
+### Get Masters (District + Gender)
+GET http://localhost:5173/api/masters
+Content-Type: application/json
+
+
+
 

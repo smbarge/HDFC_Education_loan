@@ -38,40 +38,76 @@
   return !result.hasErrors();
 }
 
-  async function handleLogin() {
-    const isValid = runValidation();
-    if (!isValid) return;
+  // async function handleLogin() {
+  //   const isValid = runValidation();
+  //   if (!isValid) return;
 
-    try {
-      const response = await customLoginApplicant({
-        mobile: formData.username,   // username = mobile number
-        password: formData.password
-      });
+  //   try {
+  //     const response = await customLoginApplicant({
+  //       mobile: formData.username,   // username = mobile number
+  //       password: formData.password
+  //     });
 
-      if (response.error !== 0) {
-        errors.password = response.errorMsg || 'Invalid credentials';
-        return;
-      }
+  //     if (response.error !== 0) {
+  //       errors.password = response.errorMsg || 'Invalid credentials';
+  //       return;
+  //     }
 
-      //Save session (simple & safe)
-      sessionStorage.setItem(
-        'authUser',
-        JSON.stringify(response.user)
-      );
+  //     //Save session (simple & safe)
+  //     sessionStorage.setItem(
+  //       'authUser',
+  //       JSON.stringify(response.user)
+  //     );
 
-      sessionStorage.setItem(
-        'accessToken',
-        response.token
+  //     sessionStorage.setItem(
+  //       'accessToken',
+  //       response.token
         
-      );
+  //     );
 
-      goto(`/${locale}/dashboard`);
+  //     goto(`/${locale}/dashboard`);
 
-    } catch (err) {
-      console.error(err);
-      errors.password = 'Server error. Please try again.';
+  //   } catch (err) {
+  //     console.error(err);
+  //     errors.password = 'Server error. Please try again.';
+  //   }
+  // }
+
+
+  async function handleLogin() {
+  const isValid = runValidation();
+  if (!isValid) return;
+
+  errors = { username: '', password: '' };
+
+  try {
+    const response = await customLoginApplicant({
+      mobile: formData.username,
+      password: formData.password
+    });
+
+    if (response.error !== 0) {
+      
+      if (response.field === 'mobile') {
+        errors.username = response.errorMsg;
+      } else if (response.field === 'password') {
+        errors.password = response.errorMsg;
+      } else {
+        errors.password = response.errorMsg || 'Invalid credentials';
+      }
+      return;
     }
+
+    sessionStorage.setItem('authUser', JSON.stringify(response.user));
+    sessionStorage.setItem('accessToken', response.access_token);
+
+    goto(`/${locale}/dashboard`);
+
+  } catch (err) {
+    console.error(err);
+    errors.password = 'Server error. Please try again.';
   }
+}
 
 
 
@@ -169,14 +205,16 @@
                 />
               </div>
 
-              {#if errors.username}
-                <p class="flex items-center gap-1 text-sm text-red-600 mt-1">
-                  <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                  </svg>
-                  <span>{errors.username}</span>
-                </p>
-              {/if}
+             <div class="h-2 mt-1">
+                {#if errors.username}
+                  <p class="flex items-center gap-1 text-sm text-red-600 transition-opacity duration-200 ease-in">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>{errors.username}</span>
+                  </p>
+                {/if}
+              </div>
             </div>
 
             <!-- Password -->
@@ -232,14 +270,16 @@
                 </button>
               </div>
 
-              {#if errors.password}
-                <p class="text-sm text-red-600 flex items-center gap-1">
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                  </svg>
-                  {errors.password}
-                </p>
-              {/if}
+              <div class="h-2 mt-1">
+                {#if errors.password}
+                  <p class="text-sm text-red-600 flex items-center gap-1 transition-opacity duration-200 ease-in">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    {errors.password}
+                  </p>
+                {/if}
+              </div>
             </div>
 
             <div class="flex items-center justify-between">

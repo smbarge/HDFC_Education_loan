@@ -4,6 +4,7 @@
   export let isOpen = false;
   export let verificationType = 'email'; 
   export let contactInfo = ''; 
+  export let otpError = '';
   
   const dispatch = createEventDispatcher();
   
@@ -29,6 +30,10 @@
   
   function handleOtpInput(index, event) {
     const value = event.target.value;
+
+     if (otpError) {
+    otpError = '';
+  }
     
     if (value.length > 1) {
       event.target.value = value.slice(-1);
@@ -163,6 +168,15 @@
           />
         {/each}
       </div>
+
+      {#if otpError}
+        <div class="mb-4">
+          <p class="text-sm text-red-600 text-center font-medium">
+            {otpError}
+          </p>
+        </div>
+      {/if}
+
       
       <div class="text-center mb-6">
         <p class="text-sm text-gray-600">

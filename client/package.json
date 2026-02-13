@@ -23,6 +23,7 @@
     "bcryptjs": "^3.0.3",
     "jsonwebtoken": "^9.0.3",
     "lucide-svelte": "^0.294.0",
+    "nodemailer": "^8.0.1",
     "pg": "^8.18.0",
     "uuid": "^13.0.0",
     "vest": "^5.4.6"

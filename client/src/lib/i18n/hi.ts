@@ -472,6 +472,7 @@ export const hi = {
   districtRequired: "कृपया अपना जिला चुनें",
   
   // Identity Verification Section
+  identityTitle1: "आधार (अनिवार्य)",
   identityTitle: "पहचान सत्यापन",
   identityInstruction: "आधार में पंजीकृत मोबाइल नंबर के साथ आधार कार्ड अपने पास रखें।",
   
