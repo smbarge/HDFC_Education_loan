@@ -369,6 +369,49 @@ const customCreateApplication = async ({ userId }) => {
     }
 };
 
+async function getVerifiedContacts(applicationId) {
+  try {
+    const response = await fetch(
+      `/api/getVerifiedContacts?applicationId=${applicationId}`,
+      {
+        method: 'GET'
+      }
+    );
+
+    const result = await response.json();
+
+    if (result.error === 0) {
+      return {
+        success: true,
+        mobileVerified: !!result.mobile,
+        emailVerified: !!result.email,
+        mobile: result.mobile,
+        email: result.email
+      };
+    } else {
+      return {
+        success: false,
+        mobileVerified: false,
+        emailVerified: false,
+        mobile: null,
+        email: null
+      };
+    }
+
+  } catch (error) {
+    console.error('Error fetching verified contacts:', error);
+
+    return {
+      success: false,
+      mobileVerified: false,
+      emailVerified: false,
+      mobile: null,
+      email: null
+    };
+  }
+}
+
+
 export {
   customVerifyApplicantAndSendOtp,
   customVerifyOtp,
@@ -380,5 +423,6 @@ export {
   customGetUserId,
   customChangePassword,
   customSendPasswordResetOtp,
-  customCreateApplication
+  customCreateApplication,
+  getVerifiedContacts
 };

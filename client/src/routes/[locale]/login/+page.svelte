@@ -5,6 +5,7 @@
   import loginValidation from '$lib/validation/login.js';
 
   import { customLoginApplicant } from '$lib/api/authApi.js';
+  import { user, token } from '$lib/stores/userStore';
 
 
 
@@ -98,8 +99,8 @@
       return;
     }
 
-    sessionStorage.setItem('authUser', JSON.stringify(response.user));
-    sessionStorage.setItem('accessToken', response.access_token);
+    user.set(response.user);
+    token.set(response.access_token);
 
     goto(`/${locale}/dashboard`);
 

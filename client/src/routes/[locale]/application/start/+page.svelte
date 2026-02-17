@@ -8,15 +8,22 @@
   import { onMount } from 'svelte';
   import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
   import { fetchMasters } from '$lib/api/auth';
-import { customCreateApplication } from '$lib/api/authApi';
-
+  import { customCreateApplication } from '$lib/api/authApi';
+  import { user, logout as logoutStore, applicationId } from '$lib/stores/userStore';
 
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
 
-  let userData = null;
+
   let showProfileModal = false;
+
+  $: userData = $user ? {
+  name: $user.name || "Guest User",
+  phone: $user.mobile || "",
+  username: $user.username || "",
+  id: $user.id || null 
+} : null;
 
   //Distrct Dropdown
   let districts = [];
@@ -26,30 +33,40 @@ import { customCreateApplication } from '$lib/api/authApi';
   //gender
   let genders = [];
 
-  let applicationId = null;
+//  let applicationId = null;
 
-  onMount(async () => {
-  if (typeof window !== 'undefined') {
-    const authUser = sessionStorage.getItem('authUser');
+//   onMount(async () => {
+//   if (typeof window !== 'undefined') {
+//     const authUser = sessionStorage.getItem('authUser');
 
-    if (!authUser) {
-      goto(`/${locale}/login`);
-      return;
-    }
+//     if (!authUser) {
+//       goto(`/${locale}/login`);
+//       return;
+//     }
 
-    else {
-       const user = JSON.parse(authUser);
-        userData = {
-          name: user.name || "Guest User",
-          phone: user.mobile || "",
-          username: user.username || "",
-          id: user.id || null 
-        };
-        console.log('Loaded user data:', userData);
-    }
+//     else {
+//        const user = JSON.parse(authUser);
+//         userData = {
+//           name: user.name || "Guest User",
+//           phone: user.mobile || "",
+//           username: user.username || "",
+//           id: user.id || null 
+//         };
+//         console.log('Loaded user data:', userData);
+//     }
 
-    await loadMasters();
+//     await loadMasters();
+//   }
+// });
+
+onMount(async () => {
+  if (!$user) {
+    goto(`/${locale}/login`);
+    return;
   }
+
+  console.log('Loaded user data:', userData);
+  await loadMasters();
 });
 
  async function loadMasters() {
@@ -205,16 +222,17 @@ async function handleProceed() {
     const newApplicationId = createResult.applicationId;
     
     //Store application ID in session
-    sessionStorage.setItem('currentApplicationId', newApplicationId);
+    // sessionStorage.setItem('currentApplicationId', newApplicationId);
+    applicationId.set(newApplicationId);
     
     console.log('Application created with ID:', newApplicationId);
     console.log('For user ID:', userData.id);
     
-    // Store form data with application ID
-    sessionStorage.setItem('applicationFormData', JSON.stringify({
-      ...formData,
-      applicationId: newApplicationId
-    }));
+    // // Store form data with application ID
+    // sessionStorage.setItem('applicationFormData', JSON.stringify({
+    //   ...formData,
+    //   applicationId: newApplicationId
+    // }));
     
     // Navigate to next step
     goto(`/${locale}/application/personal-details`);
@@ -230,6 +248,11 @@ async function handleProceed() {
   function handleBackToHome() {
     goto(`/${locale}/dashboard`);
   }
+
+  function handleLogout() {
+  logoutStore();
+  goto(`/${locale}/login`);
+}
 </script>
 
 <svelte:head>
@@ -249,10 +272,7 @@ async function handleProceed() {
   {locale}
   bind:showProfileModal
   on:close={() => showProfileModal = false}
-  on:logout={() => {
-    sessionStorage.removeItem('authUser');
-    goto(`/${locale}/login`);
-  }}
+  on:logout={handleLogout}
 />
 
 

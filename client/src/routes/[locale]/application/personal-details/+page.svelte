@@ -9,16 +9,22 @@
   import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
   import personalDetailsValidation from '$lib/validation/application/personalDetails';
 
-  import { customSendEmailOtp, customVerifyEmailOtp , customSendOtp,customVerifyOtp } from '$lib/api/authApi';
+  import { customSendEmailOtp, customVerifyEmailOtp , customSendOtp, customVerifyOtp ,getVerifiedContacts } from '$lib/api/authApi';
 
   import { fetchMasters } from '$lib/api/auth';
-
+import { user, logout as logoutStore, applicationId } from '$lib/stores/userStore';
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
 
-  let userData = null;
   let showProfileModal = false;
+
+  $: userData = $user ? {
+  name: $user.name || "Guest User",
+  phone: $user.mobile || "",
+  username: $user.username || "",
+  id: $user.id || null
+} : null;
 
 
   //Distrct Dropdown
@@ -70,44 +76,88 @@
 //   }
 // });
 
+
 onMount(async () => {
-  if (typeof window !== 'undefined') {
-    const authUser = sessionStorage.getItem('authUser');
-
-    if (!authUser) {
-      goto(`/${locale}/login`);
-    }
-    else {
-       const user = JSON.parse(authUser);
-        userData = {
-          name: user.name || "Guest User",
-          phone: user.mobile || "",
-          username: user.username || "",
-          id: user.id || null
-        };
-
-        //Load application ID from session
-        const applicationId = sessionStorage.getItem('currentApplicationId');
-        if (!applicationId) {
-          alert('No active application found. Please start a new application.');
-          goto(`/${locale}/dashboard`);
-          return;
-        }
-
-        // Store application ID for later use
-        userData.applicationId = applicationId;
-
-        // Mobile already verified from registration
-        if (userData.phone) {
-          formData.mobileNumber = userData.phone;
-          isMobileVerified = true;
-          isMobileEditable = false;
-        }
-    }
-
-    await loadMasters();
+  if (!$user) {
+    goto(`/${locale}/login`);
+    return;
   }
+
+  // Check if application ID exists in store
+  if (!$applicationId) {
+    goto(`/${locale}/dashboard`);
+    return;
+  }
+
+  // Add application ID to userData
+  userData = {
+    ...userData,
+    applicationId: $applicationId
+  };
+
+  // Load verified contacts
+  const verifiedContacts = await getVerifiedContacts($applicationId);
+  
+  if (verifiedContacts.success && verifiedContacts.mobile){
+    formData.mobileNumber = verifiedContacts.mobile;
+    isMobileVerified = true;
+    isMobileEditable = false;
+  } else if (userData.phone) {
+    // Fallback to user registration mobile
+    formData.mobileNumber = userData.phone;
+    isMobileVerified = true;
+    isMobileEditable = false;
+  }
+
+  if (verifiedContacts.success && verifiedContacts.email) {
+    formData.emailId = verifiedContacts.email;
+    isEmailVerified = true;
+    isEmailEditable = false;
+  }
+
+  await loadMasters();
 });
+
+// Final
+// onMount(async () => {
+//   if (typeof window !== 'undefined') {
+//     const authUser = sessionStorage.getItem('authUser');
+
+//     if (!authUser) {
+//       goto(`/${locale}/login`);
+//     }
+//     else {
+//        const user = JSON.parse(authUser);
+//         userData = {
+//           name: user.name || "Guest User",
+//           phone: user.mobile || "",
+//           username: user.username || "",
+//           id: user.id || null
+//         };
+
+//         //Load application ID from session
+//         const applicationId = sessionStorage.getItem('currentApplicationId');
+//         if (!applicationId) {
+//           alert('No active application found. Please start a new application.');
+//           goto(`/${locale}/dashboard`);
+//           return;
+//         }
+
+//         // Store application ID for later use
+//         userData.applicationId = applicationId;
+
+//         // Mobile already verified from registration
+//         if (userData.phone) {
+//           formData.mobileNumber = userData.phone;
+//           isMobileVerified = true;
+//           isMobileEditable = false;
+//         }
+//     }
+
+//     await loadMasters();
+//   }
+// });
+
 
   async function loadMasters() {
   isLoadingDistricts = true;
@@ -428,6 +478,11 @@ function validateField(fieldName) {
   function handleCancel() {
     goto(`/${locale}/application/start`);
   }
+
+  function handleLogout() {
+  logoutStore();
+  goto(`/${locale}/login`);
+}
 </script>
 
 <svelte:head>
@@ -447,10 +502,7 @@ function validateField(fieldName) {
   {locale}
   bind:showProfileModal
   on:close={() => showProfileModal = false}
-  on:logout={() => {
-    sessionStorage.removeItem('authUser');
-    goto(`/${locale}/login`);
-  }}
+  on:logout={handleLogout}
 />
 
   <ApplicationStepper {currentStep} {t} />

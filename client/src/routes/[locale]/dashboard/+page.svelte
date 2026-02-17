@@ -7,33 +7,49 @@
   import DocumentsSection from '$lib/components/dashboard/DocumentsSection.svelte';
   import { customCreateApplication } from '$lib/api/authApi';
 
+  import { user, logout as logoutStore } from '$lib/stores/userStore';
 
   import { onMount } from 'svelte';
 
-    let userData = {
+
+
+    // Use store value directly
+    $: userData = $user ? {
+      name: $user.name || "Guest User",
+      phone: $user.mobile || "",
+      username: $user.username || ""
+    } : {
       name: "Guest User",
       phone: "",
       username: ""
     };
 
-    onMount(() => {
-      if (typeof window !== 'undefined') {
-        const authUser = sessionStorage.getItem('authUser');
-        
-        if (!authUser) {
-          goto(`/${locale}/login`);
-          return;
-        }
 
-        const user = JSON.parse(authUser);
-        userData = {
-          name: user.name || "Guest User",
-          phone: user.mobile || "",
-          username: user.username || ""
-        };
-      }
-    });
+    $: console.log("User data is______:", userData);
   
+    // onMount(() => {
+    //   if (typeof window !== 'undefined') {
+    //     const authUser = sessionStorage.getItem('authUser');
+        
+    //     if (!authUser) {
+    //       goto(`/${locale}/login`);
+    //       return;
+    //     }
+
+    //     const user = JSON.parse(authUser);
+    //     userData = {
+    //       name: user.name || "Guest User",
+    //       phone: user.mobile || "",
+    //       username: user.username || ""
+    //     };
+    //   }
+    // });
+  
+    onMount(() => {
+  if (!$user) {
+    goto(`/${locale}/login`);
+  }
+});
 
   // Modal state
   let showProfileModal = false;
@@ -46,6 +62,8 @@
   function startNewApplication() {
     goto(`/${locale}/application/start`);
   }
+
+  
 
 //   async function startNewApplication() {
 //   try {
@@ -99,22 +117,33 @@
     showProfileModal = false;
   }
 
+  // function handleLogout() {
+  //   if (typeof window !== 'undefined') {
+  //     sessionStorage.removeItem('authUser');
+  //     sessionStorage.removeItem('accessToken');
+  //   }
+    
+  //   showProfileModal = false;
+    
+  //   // Show success message
+  //   showSuccessToast();
+    
+  //   // Redirect to login after a short delay
+  //   setTimeout(() => {
+  //     goto(`/${locale}/login`);
+  //   }, 1000);
+  // }
+
   function handleLogout() {
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('authUser');
-      sessionStorage.removeItem('accessToken');
-    }
-    
-    showProfileModal = false;
-    
-    // Show success message
-    showSuccessToast();
-    
-    // Redirect to login after a short delay
-    setTimeout(() => {
-      goto(`/${locale}/login`);
-    }, 1000);
-  }
+  logoutStore();
+  showProfileModal = false;
+  showSuccessToast();
+  
+  setTimeout(() => {
+    goto(`/${locale}/login`);
+  }, 1000);
+}
+
 
   function handleChangePassword() {
     showProfileModal = false;
