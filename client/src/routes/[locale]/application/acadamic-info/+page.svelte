@@ -8,30 +8,30 @@
   import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
   import academicInfoValidation from '$lib/validation/application/academicInfo';
 
-
+  import { user, logout as logoutStore, applicationId } from '$lib/stores/userStore';
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
 
-  let userData = null;
   let showProfileModal = false;
 
+  $: userData = $user ? {
+  name: $user.name || "Guest User",
+  phone: $user.mobile || "",
+  username: $user.username || "",
+  id: $user.id || null
+} : null;
 
-  onMount(() => {
-  if (typeof window !== 'undefined') {
-    const authUser = sessionStorage.getItem('authUser');
 
-    if (!authUser) {
-      goto(`/${locale}/login`);
-    }
-    else {
-       const user = JSON.parse(authUser);
-        userData = {
-          name: user.name || "Guest User",
-          phone: user.mobile || "",
-          username: user.username || ""
-        };
-    }
+onMount(() => {
+  if (!$user) {
+    goto(`/${locale}/login`);
+    return;
+  }
+
+  if (!$applicationId) {
+    goto(`/${locale}/dashboard`);
+    return;
   }
 });
 
@@ -39,7 +39,7 @@
   let isSubmitting = false;
   let errors = {};
   
-  // Form data structure - ready for backend integration
+ 
   let formData = {
     // Student Details
     studentName: '',
@@ -218,7 +218,7 @@ function validateForm() {
         bind:showProfileModal
         on:close={() => showProfileModal = false}
         on:logout={() => {
-          sessionStorage.removeItem('authUser');
+          logoutStore();
           goto(`/${locale}/login`);
         }}
       />

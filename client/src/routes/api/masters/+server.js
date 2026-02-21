@@ -73,6 +73,7 @@ export async function GET() {
         ORDER BY id
       `),
 
+      //For Occupation
       pool.query(`
         SELECT 
         id, 
@@ -82,6 +83,7 @@ export async function GET() {
         ORDER BY id
       `),
 
+      //for m_relation
       pool.query(`
         SELECT 
         id, 

@@ -243,7 +243,7 @@ async function handleProceed() {
     // Pass existing applicationId if it exists, otherwise null
     const saveResult = await customSaveApplicationStart({
       userId: userData.id,
-      applicationId: existingAppId || null, //CRITICAL: Pass existing ID
+      applicationId: existingAppId || null, 
       stepData: {
         religion:                        formData.community,
         district_id:                     formData.district,
@@ -255,6 +255,7 @@ async function handleProceed() {
         concent_for_aadhar_verification: formData.consent ? 1 : 0
       }
     });
+
 
     if (saveResult.error !== 0) {
       pageError = saveResult.errorMsg || 'Failed to save application';

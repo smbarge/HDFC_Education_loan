@@ -5,9 +5,9 @@
   import DashboardHeader from '$lib/components/dashboard/DashboardHeader.svelte';
   import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
   import DocumentsSection from '$lib/components/dashboard/DocumentsSection.svelte';
-  import { customCreateApplication } from '$lib/api/authApi';
+  import { customCreateApplication,getUserApplication } from '$lib/api/authApi';
 
-  import { user, logout as logoutStore } from '$lib/stores/userStore';
+  import { user, logout as logoutStore , applicationId } from '$lib/stores/userStore';
 
   import { onMount } from 'svelte';
 
@@ -44,16 +44,31 @@
     //     };
     //   }
     // });
-  
-    onMount(() => {
+
+  let hasExistingApplication = false;
+
+  onMount(async () => {
   if (!$user) {
     goto(`/${locale}/login`);
+  }
+
+  if ($applicationId) {
+    hasExistingApplication = true;
+  } else {
+    const result = await getUserApplication($user.id);
+    if (result.error === 0) {
+      applicationId.set(result.applicationId);
+      hasExistingApplication = true;
+    }
   }
 });
 
   // Modal state
   let showProfileModal = false;
   let documentsSection;
+
+  //For exiting application
+
 
 
   $: locale = $page.params.locale || 'en';
@@ -150,6 +165,10 @@
     goto(`/${locale}/change-password`);
   }
 
+  function continueApplication() {
+  goto(`/${locale}/application/start`);
+}
+
   function showSuccessToast() {
     // Create toast notification
     const toast = document.createElement('div');
@@ -211,18 +230,33 @@
           <p class="text-base sm:text-lg mb-6 text-gray-600 leading-relaxed max-w-2xl mx-auto">
             {t.welcome.newUserMessage || 'Start your education loan application journey today. Get financial support for your educational dreams.'}
           </p>
-          <button
-            on:click={startNewApplication}
-            class="inline-flex items-center gap-2 px-8 py-3.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-base rounded-lg transition-all duration-200 transform hover:scale-105 shadow-md"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-            </svg>
-            <span>{t.welcome.startApplication || 'Start New Application'}</span>
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-            </svg>
-          </button>
+          {#if hasExistingApplication}
+              <button
+                on:click={() => goto(`/${locale}/application/start`)}
+                class="inline-flex items-center gap-2 px-8 py-3.5 bg-green-600 hover:bg-green-700 text-white font-semibold text-base rounded-lg transition-all duration-200 transform hover:scale-105 shadow-md"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                <span>Continue Application</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                </svg>
+              </button>
+          {:else}
+            <button
+              on:click={startNewApplication}
+              class="inline-flex items-center gap-2 px-8 py-3.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-base rounded-lg transition-all duration-200 transform hover:scale-105 shadow-md"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+              <span>{t.welcome.startApplication || 'Start New Application'}</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+              </svg>
+            </button>
+          {/if}
         </div>
       </div>
     </section>

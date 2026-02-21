@@ -12,7 +12,7 @@
   import { customSendEmailOtp, customVerifyEmailOtp , customSendOtp, customVerifyOtp ,getVerifiedContacts, getPersonalDetailsData, customSavePersonalDetails } from '$lib/api/authApi';
 
   import { fetchMasters,fetchTalukas } from '$lib/api/auth';
-import { user, logout as logoutStore, applicationId } from '$lib/stores/userStore';
+  import { user, logout as logoutStore, applicationId } from '$lib/stores/userStore';
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
@@ -680,7 +680,7 @@ async function handleProceed() {
       }
     });
 
-    console.log('💾 Save result:', saveResult);
+    console.log('Save result:', saveResult);
 
     if (saveResult.error !== 0) {
       console.error('Save failed:', saveResult.errorMsg);
@@ -688,10 +688,11 @@ async function handleProceed() {
       return;
     }
 
-    console.log('✅ Personal details saved successfully');
-    console.log('🚀 Navigating to academic-info page');
+    console.log('Personal details saved successfully');
+    console.log('Navigating to academic-info page');
     
     // Navigate to next step
+    //goto(`/${locale}/application/acadamic-info`);
     goto(`/${locale}/application/acadamic-info`);
 
   } catch (error) {

@@ -411,6 +411,12 @@ async function getVerifiedContacts(applicationId) {
   }
 }
 
+//Exiting Appliction
+export async function getUserApplication(userId) {
+  const response = await fetch(`/api/createApplication/${userId}?action=getUserApplication`);
+  return response.json();
+}
+
 //Start Page__
 
 //put the start page data 
@@ -425,7 +431,7 @@ const customSaveApplicationStart = async ({ userId, applicationId, stepData }) =
             body: JSON.stringify({
                 action: 'saveApplicationStart',
                 userId,
-                applicationId, // ✅ Send existing applicationId or null
+                applicationId, 
                 stepData
             })
         });
@@ -477,7 +483,7 @@ const getApplicationData = async (applicationId) => {
 //personal detail page__ 
 
 //get the personal detail page data
-export const getPersonalDetailsData = async (applicationId) => {
+const getPersonalDetailsData = async (applicationId) => {
     console.log("getPersonalDetailsData called for applicationId:", applicationId);
 
     try {
@@ -503,8 +509,8 @@ export const getPersonalDetailsData = async (applicationId) => {
     }
 };
 
-////put the personal detail page data 
-export const customSavePersonalDetails = async ({ applicationId, personalDetails }) => {
+//put the personal detail page data 
+const customSavePersonalDetails = async ({ applicationId, personalDetails }) => {
     console.log("customSavePersonalDetails called for applicationId:", applicationId);
 
     try {
@@ -550,4 +556,6 @@ export {
   getVerifiedContacts,
   customSaveApplicationStart,
   getApplicationData,
+  getPersonalDetailsData,
+  customSavePersonalDetails
 };

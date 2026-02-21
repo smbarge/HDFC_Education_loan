@@ -138,12 +138,12 @@ Content-Type: application/json
 
 
 ### Save Personal Details (Step 2)
-POST http://localhost:5173/api/createApplication/1
+POST http://localhost:5173/api/createApplication/2
 Content-Type: application/json
 
 {
   "action": "savePersonalDetails",
-  "applicationId": 1,
+  "applicationId": 2,
   "personalDetails": {
     "mobile": "7777777777",
     "email": "test@example.com",
@@ -180,7 +180,7 @@ Content-Type: application/json
 }
 
 ### 15. Get Personal Details (Step 2)
-GET http://localhost:5173/api/createApplication/1?action=getPersonalDetails
+GET http://localhost:5173/api/createApplication/2?action=getPersonalDetails
 Content-Type: application/json
 
 
@@ -188,3 +188,48 @@ Content-Type: application/json
 GET http://localhost:5173/api/getVerifiedContacts?applicationId=1
 Content-Type: application/json
 
+
+
+
+
+### Save Personal Details (Step 2)
+POST http://localhost:5173/api/createApplication/2
+Content-Type: application/json
+
+{
+  "action": "savePersonalDetails",
+  "applicationId": 2,
+  "personalDetails": {
+    "mobile": "7777777777",
+    "email": "test@example.com",
+    "pan": "ABCDE1234F",
+    "current_address": "123 Main Street",
+    "current_district": "2734",
+    "current_taluka": 101,
+    "current_place": "Kothrud",
+    "current_area": "DP Road",
+    "current_pincode": "411038",
+    "permanent_address": "123 Main Street",
+    "permanent_district": "2734",
+    "permanent_taluka": 102,
+    "permanent_place": "Kothrud",
+    "permanent_area": "DP Road",
+    "permanent_pincode": "411038",
+    "marital_status": 1,
+    "education_qualification": 1,
+    "guardian_name": "Ashok Sangale",
+    "occupation": 5,
+    "income": "500000",
+    "past_surety_commitment": "No",
+    "ration_card_number": null,
+    "past_surety_commitment_detail": null,
+    "occupationtype": null,
+    "riot_victim": 0,
+    "natural_calamity_victim": 0,
+    "disabled_person": 0,
+    "guarantor": 0,
+    "literate": 0,
+    "details": null,
+    "relation" : 1
+  }
+}
