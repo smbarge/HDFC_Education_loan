@@ -722,7 +722,7 @@ export const mr = {
   districtRequired: "जिल्हा आवश्यक आहे",
 
   talukaLabel: "तालुका",
-  talukaPlaceholder: "तालुका प्रविष्ट करा",
+  talukaPlaceholder: "-- तालुका निवडा --",
   talukaRequired: "तालुका आवश्यक आहे",
 
   placeLabel: "ठिकाण",

@@ -10,6 +10,10 @@ const personalDetailsValidation = create((data, t) => {
     enforce(data.mobileNumber).matches(/^[6-9]\d{9}$/);
   });
 
+  test('emailId', t?.personalDetails?.emailFormat || 'Email id is required', () => {
+    enforce(data.emailId).isNotEmpty();
+  });
+
   // Email - OPTIONAL
   if (data.emailId) {
     test('emailId', t?.personalDetails?.emailFormat || 'Please enter a valid email address', () => {
@@ -23,11 +27,6 @@ const personalDetailsValidation = create((data, t) => {
       enforce(data.panCard).matches(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/);
     });
   }
-
-  // Ration Card - REQUIRED
-  test('rationCard', t?.personalDetails?.rationRequired || 'Ration card number is required', () => {
-    enforce(data.rationCard).isNotEmpty();
-  });
 
   // Current Address Fields - ALL REQUIRED
   test('currentStreetAddress', t?.personalDetails?.streetRequired || 'Current street address is required', () => {

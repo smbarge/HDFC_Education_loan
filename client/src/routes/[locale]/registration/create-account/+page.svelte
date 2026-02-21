@@ -27,6 +27,9 @@
     confirmPassword: ''
   };
 
+  let pageError = '';
+
+
   let validationResult = null;
 
   onMount(() => {
@@ -102,7 +105,7 @@
       });
 
       if (result.error !== 0) {
-        alert(result.errorMsg || 'Registration failed');
+        pageError = result.errorMsg || 'Registration failed';
         return;
       }
 
@@ -111,7 +114,7 @@
 
     } catch (err) {
       console.error(err);
-      alert('Something went wrong. Please try again.');
+      pageError = 'Something went wrong. Please try again.';
     }
   }
 
@@ -173,6 +176,15 @@
       <p class="text-gray-600 mb-8">
         {t.step3.Set_up_your_account_credentials}
       </p>
+
+      {#if pageError}
+        <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
+          <p class="text-sm text-red-700 font-medium">
+            {pageError}
+          </p>
+        </div>
+      {/if}
+
 
       <form on:submit|preventDefault={handleCreateAccount} class="space-y-6">
         

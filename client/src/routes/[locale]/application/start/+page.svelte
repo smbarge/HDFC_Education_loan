@@ -8,7 +8,7 @@
   import { onMount } from 'svelte';
   import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
   import { fetchMasters } from '$lib/api/auth';
-  import { customCreateApplication } from '$lib/api/authApi';
+  import { customSaveApplicationStart,getApplicationData } from '$lib/api/authApi';
   import { user, logout as logoutStore, applicationId } from '$lib/stores/userStore';
 
 
@@ -23,15 +23,16 @@
   phone: $user.mobile || "",
   username: $user.username || "",
   id: $user.id || null 
-} : null;
+  } : null;
 
   //Distrct Dropdown
   let districts = [];
   let isLoadingDistricts = false;
   let districtError = null;
 
-  //gender
+  //gender and religion
   let genders = [];
+  let religions =[];
 
 //  let applicationId = null;
 
@@ -66,6 +67,22 @@ onMount(async () => {
   }
 
   console.log('Loaded user data:', userData);
+  
+  //Load existing application data if applicationId exists
+  if ($applicationId) {
+    const appData = await getApplicationData($applicationId);
+    
+    if (appData.error === 0 && appData.data) {
+      // Pre-fill form with existing data
+      formData = {
+        ...formData,
+        ...appData.data
+      };
+      console.log('Pre-filled form data:', formData);
+       formData = formData;
+    }
+  }
+
   await loadMasters();
 });
 
@@ -79,12 +96,18 @@ onMount(async () => {
     if (result.error === 0) {
       // District dropdown
       districts = result.masters.m_district.map(row => ({
-        value: row.dist_id,
+        value: String(row.dist_id),
         label: `${row.eng_name} - ${row.dev_name}`
       }));
 
       // Gender dropdown
       genders = result.masters.m_gender.map(row => ({
+        value: row.id,
+        label: `${row.eng_name} - ${row.dev_name}`
+      }));
+
+      // Religion dropdown
+      religions = result.masters.m_religion.map(row => ({
         value: row.id,
         label: `${row.eng_name} - ${row.dev_name}`
       }));
@@ -104,6 +127,7 @@ onMount(async () => {
   let currentStep = 1;
   let isSubmitting = false;
   let errors = {};
+  let pageError ='';
   
   let formData = {
     community: '',
@@ -115,6 +139,8 @@ onMount(async () => {
     gender: '',
     consent: false
   };
+  
+
 
   // Community options
   const communities = [
@@ -195,55 +221,63 @@ onMount(async () => {
   // }
 
 async function handleProceed() {
-   const result = applicationStartValidation(formData, t);
-    errors = result.getErrors();
-    
-    if (!result.isValid()) {
-      const firstErrorElement = document.querySelector('.error-message');
-      if (firstErrorElement) {
-        firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-      return;
+  const result = applicationStartValidation(formData, t);
+  errors = result.getErrors();
+  
+  if (!result.isValid()) {
+    const firstErrorElement = document.querySelector('.error-message');
+    if (firstErrorElement) {
+      firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+    return;
+  }
 
   isSubmitting = true;
 
   try {
-    //CREATE APPLICATION HERE (not on dashboard)
-    const createResult = await customCreateApplication({
-      userId: userData.id  // Use user_id from user1 table
+    // Check if applicationId exists in store
+    const existingAppId = $applicationId;
+    
+    console.log('Existing Application ID:', existingAppId);
+    
+    // Pass existing applicationId if it exists, otherwise null
+    const saveResult = await customSaveApplicationStart({
+      userId: userData.id,
+      applicationId: existingAppId || null, //CRITICAL: Pass existing ID
+      stepData: {
+        religion:                        formData.community,
+        district_id:                     formData.district,
+        aadhar:                          formData.aadharNumber,
+        name:                            formData.fullName,
+        dob:                             formData.dateOfBirth,
+        gender:                          formData.gender,
+        resident:                        formData.isResident === 'Yes' ? 1 : 0,
+        concent_for_aadhar_verification: formData.consent ? 1 : 0
+      }
     });
 
-    if (createResult.error !== 0) {
-      alert(createResult.errorMsg || 'Failed to create application');
+    if (saveResult.error !== 0) {
+      pageError = saveResult.errorMsg || 'Failed to save application';
       return;
     }
 
-    const newApplicationId = createResult.applicationId;
-    
-    //Store application ID in session
-    // sessionStorage.setItem('currentApplicationId', newApplicationId);
-    applicationId.set(newApplicationId);
-    
-    console.log('Application created with ID:', newApplicationId);
-    console.log('For user ID:', userData.id);
-    
-    // // Store form data with application ID
-    // sessionStorage.setItem('applicationFormData', JSON.stringify({
-    //   ...formData,
-    //   applicationId: newApplicationId
-    // }));
-    
+    // Store application ID in store (will be same if updating)
+    applicationId.set(saveResult.applicationId);
+
+    console.log('Application saved with ID:', saveResult.applicationId);
+
     // Navigate to next step
     goto(`/${locale}/application/personal-details`);
-    
+
   } catch (error) {
     console.error('Error submitting form:', error);
-    alert('Failed to submit form. Please try again.');
+    pageError = 'Failed to submit form. Please try again.';
   } finally {
     isSubmitting = false;
   }
 }
+
+
   // Navigate back to home
   function handleBackToHome() {
     goto(`/${locale}/dashboard`);
@@ -277,6 +311,15 @@ async function handleProceed() {
 
 
   <ApplicationStepper {currentStep} {locale} />
+
+  {#if pageError}
+    <div class="mb-4 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
+      <p class="text-sm text-red-700 font-medium">
+        {pageError}
+      </p>
+    </div>
+  {/if}
+
 
   <div class="w-full px-2 sm:px-4 md:px-6 lg:px-8 pb-12 overflow-x-hidden">
     <div class="max-w-[1400px] mx-auto">
@@ -327,7 +370,7 @@ async function handleProceed() {
       </h3>
       
       <div class="flex flex-wrap gap-4">
-        {#each communities as community}
+        {#each religions as community}
           <label class="flex items-center cursor-pointer">
            <input 
               type="radio" 
@@ -338,7 +381,7 @@ async function handleProceed() {
               class="w-4 h-4 text-purple-600 focus:ring-purple-500"
             />
            <span class="ml-2 text-sm text-gray-700">
-            {t.applicationStart?.communities?.[community.label] || community.value}
+            {t.applicationStart?.communities?.[community.label] || community.label}
           </span>
           </label>
         {/each}
@@ -423,6 +466,7 @@ async function handleProceed() {
             <option value={district.value}>{district.label}</option>
           {/each}
         </select>
+
     
         {#if errors.district}
           <p class="error-message mt-2 text-sm text-red-600">{errors.district}</p>

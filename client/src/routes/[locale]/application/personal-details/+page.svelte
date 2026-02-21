@@ -9,9 +9,9 @@
   import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
   import personalDetailsValidation from '$lib/validation/application/personalDetails';
 
-  import { customSendEmailOtp, customVerifyEmailOtp , customSendOtp, customVerifyOtp ,getVerifiedContacts } from '$lib/api/authApi';
+  import { customSendEmailOtp, customVerifyEmailOtp , customSendOtp, customVerifyOtp ,getVerifiedContacts, getPersonalDetailsData, customSavePersonalDetails } from '$lib/api/authApi';
 
-  import { fetchMasters } from '$lib/api/auth';
+  import { fetchMasters,fetchTalukas } from '$lib/api/auth';
 import { user, logout as logoutStore, applicationId } from '$lib/stores/userStore';
 
   $: locale = $page.params.locale || 'en';
@@ -32,9 +32,20 @@ import { user, logout as logoutStore, applicationId } from '$lib/stores/userStor
   let isLoadingDistricts = false;
   let districtError = null;
 
+  //Taluka
+  let currentTalukas = [];
+  let permanentTalukas = [];
+  let isLoadingCurrentTalukas = false;
+  let isLoadingPermanentTalukas = false;
+
+
 
   //gender
   let genders = [];
+  let mstatus = [];
+  let educationq = [];
+  let occupations = [];
+  let relations = [];
   let otpError = '';
   
 //   onMount(async () => {
@@ -76,24 +87,45 @@ import { user, logout as logoutStore, applicationId } from '$lib/stores/userStor
 //   }
 // });
 
-
 onMount(async () => {
   if (!$user) {
     goto(`/${locale}/login`);
     return;
   }
 
-  // Check if application ID exists in store
   if (!$applicationId) {
     goto(`/${locale}/dashboard`);
     return;
   }
 
-  // Add application ID to userData
   userData = {
     ...userData,
     applicationId: $applicationId
   };
+
+  // Load masters first
+  await loadMasters();
+
+  // Load existing personal details
+  const personalDetailsData = await getPersonalDetailsData($applicationId);
+  
+  if (personalDetailsData.error === 0 && personalDetailsData.data) {
+    formData = {
+      ...formData,
+      ...personalDetailsData.data
+    };
+    console.log('Pre-filled personal details:', formData);
+
+    console.log("Distrct Id _____:",formData.currentDistrict);
+
+    if (formData.currentDistrict) {
+      await loadTalukasForDistrict(formData.currentDistrict, 'current');
+    }
+
+    if (formData.permanentDistrict) {
+      await loadTalukasForDistrict(formData.permanentDistrict, 'permanent');
+    }
+  }
 
   // Load verified contacts
   const verifiedContacts = await getVerifiedContacts($applicationId);
@@ -103,7 +135,6 @@ onMount(async () => {
     isMobileVerified = true;
     isMobileEditable = false;
   } else if (userData.phone) {
-    // Fallback to user registration mobile
     formData.mobileNumber = userData.phone;
     isMobileVerified = true;
     isMobileEditable = false;
@@ -114,9 +145,57 @@ onMount(async () => {
     isEmailVerified = true;
     isEmailEditable = false;
   }
-
-  await loadMasters();
 });
+
+async function loadTalukasForDistrict(districtId, type = 'current') {
+  const district = districts.find(d => d.value == districtId);
+
+  console.log("Distrcts _id_Selected :",district);
+
+  if (!district) return;  
+
+  if (type === 'current') {
+    isLoadingCurrentTalukas = true;
+  } else {
+    isLoadingPermanentTalukas = true;
+  }
+
+  try {
+    const result = await fetchTalukas({
+      district_id: district.value, 
+      state_id: district.state_id,
+      country_id: district.country_id
+    });
+
+    console.log("Taluka result:", result);
+
+    if (result.error === 0 && Array.isArray(result.talukas)) {
+
+      const talukaList = result.talukas.map(row => ({
+        value: row.taluka_id,
+        label: `${row.eng_name} - ${row.dev_name}`
+      }));
+
+      if (type === 'current') {
+        currentTalukas = talukaList;
+      } else {
+        permanentTalukas = talukaList;
+      }
+
+    } else {
+      console.error("Invalid taluka response:", result);
+    }
+
+  } catch (error) {
+    console.error('Failed to load talukas:', error);
+  } finally {
+    if (type === 'current') {
+      isLoadingCurrentTalukas = false;
+    } else {
+      isLoadingPermanentTalukas = false;
+    }
+  }
+}
 
 // Final
 // onMount(async () => {
@@ -170,14 +249,38 @@ onMount(async () => {
       // District dropdown
       districts = result.masters.m_district.map(row => ({
         value: row.dist_id,
-        label: `${row.eng_name} - ${row.dev_name}`
+        label: `${row.eng_name} - ${row.dev_name}`,
+        state_id: row.state_id,     
+        country_id: row.country_id   
       }));
 
       // Gender dropdown
       genders = result.masters.m_gender.map(row => ({
         value: row.id,
-        label: row.eng_name
+        label: `${row.eng_name} - ${row.dev_name}`,
       }));
+
+      mstatus = result.masters.m_marital_status.map(row => ({
+        value: row.id,
+        label: `${row.eng_name} - ${row.dev_name}`,
+      }));
+
+      educationq = result.masters.m_educational_qualification.map(row => ({
+        value: row.id,
+        label: `${row.eng_name} - ${row.dev_name}`,
+      }));
+
+      occupations = result.masters.m_occupation.map(row => ({
+        value: row.id,
+        label: `${row.eng_name} - ${row.dev_name}`,
+      }));
+
+      relations = result.masters.m_relation.map(row => ({
+        value: row.id,
+        label: `${row.eng_name} - ${row.dev_name}`,
+      }));
+
+      
 
     } else {
       districtError = 'Failed to load masters';
@@ -189,6 +292,8 @@ onMount(async () => {
     isLoadingDistricts = false;
   }
 }
+
+
 
   let currentStep = 2;
   let isSubmitting = false;
@@ -246,18 +351,18 @@ onMount(async () => {
     suretyDetails: ''
   };
 
-  const maritalStatusOptions = [
-    { value: 'Single', label: { en: 'Single', hi: 'अविवाहित', mr: 'अविवाहित' } },
-    { value: 'Married', label: { en: 'Married', hi: 'विवाहित', mr: 'विवाहित' } },
-    { value: 'Divorced', label: { en: 'Divorced', hi: 'तलाकशुदा', mr: 'घटस्फोटित' } },
-    { value: 'Widowed', label: { en: 'Widowed', hi: 'विधवा', mr: 'विधुर' } }
-  ];
+  // const maritalStatusOptions = [
+  //   { value: 'Single', label: { en: 'Single', hi: 'अविवाहित', mr: 'अविवाहित' } },
+  //   { value: 'Married', label: { en: 'Married', hi: 'विवाहित', mr: 'विवाहित' } },
+  //   { value: 'Divorced', label: { en: 'Divorced', hi: 'तलाकशुदा', mr: 'घटस्फोटित' } },
+  //   { value: 'Widowed', label: { en: 'Widowed', hi: 'विधवा', mr: 'विधुर' } }
+  // ];
 
-  const relationshipOptions = [
-    { value: 'Father', label: { en: 'Father', hi: 'पिता', mr: 'वडील' } },
-    { value: 'Mother', label: { en: 'Mother', hi: 'माता', mr: 'आई' } },
-    { value: 'Guardian', label: { en: 'Guardian', hi: 'अभिभावक', mr: 'पालक' } }
-  ];
+  // const relationshipOptions = [
+  //   { value: 'Father', label: { en: 'Father', hi: 'पिता', mr: 'वडील' } },
+  //   { value: 'Mother', label: { en: 'Mother', hi: 'माता', mr: 'आई' } },
+  //   { value: 'Guardian', label: { en: 'Guardian', hi: 'अभिभावक', mr: 'पालक' } }
+  // ];
 
   function handleMobileEdit() {
     isMobileEditable = true;
@@ -384,7 +489,7 @@ onMount(async () => {
     showVerificationModal = false;
   }
 
-function handleSameAddressChange() {
+async function handleSameAddressChange() {
   if (formData.sameAsCurrentAddress) {
     // Copy current address to permanent address
     formData.permanentStreetAddress = formData.currentStreetAddress;
@@ -393,6 +498,10 @@ function handleSameAddressChange() {
     formData.permanentPlace = formData.currentPlace;
     formData.permanentArea = formData.currentArea;
     formData.permanentPinCode = formData.currentPinCode;
+
+    await loadTalukasForDistrict(formData.currentDistrict, 'permanent');
+
+    formData.permanentTaluka = formData.currentTaluka;
     
     // Clear all permanent address errors
     const newErrors = { ...errors };
@@ -411,75 +520,197 @@ function handleSameAddressChange() {
     formData.permanentPlace = '';
     formData.permanentArea = '';
     formData.permanentPinCode = '';
+
+    permanentTalukas = [];
   }
 }
+
 function validateField(fieldName) {
   const result = personalDetailsValidation(formData, t);
   const fieldErrors = result.getErrors();
   
+  // console.log(`Validating ${fieldName}:`, {
+  //   value: formData[fieldName],
+  //   error: fieldErrors[fieldName]
+  // });
+  
   if (fieldErrors[fieldName]) {
-    // Set error if validation fails for this field
     errors = { ...errors, [fieldName]: fieldErrors[fieldName] };
   } else {
-    // Clear error if validation passes for this field
     const { [fieldName]: _, ...rest } = errors;
     errors = rest;
   }
 }
 
-  function validateForm() {
+function validateForm() {
   const result = personalDetailsValidation(formData, t);
   errors = result.getErrors();
   return result.isValid();
-  }
+}
 
 
-  async function handleProceed() {
-     const result = personalDetailsValidation(formData, t);
-      errors = result.getErrors();
+// async function handleProceed() {
+//      const result = personalDetailsValidation(formData, t);
+//       errors = result.getErrors();
       
-      if (!result.isValid()) {
-        const firstErrorElement = document.querySelector('.error-message');
-        if (firstErrorElement) {
-          firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        return;
-      }
+//       if (!result.isValid()) {
+//         const firstErrorElement = document.querySelector('.error-message');
+//         if (firstErrorElement) {
+//           firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+//         }
+//         return;
+//       }
 
-    isSubmitting = true;
+//     isSubmitting = true;
 
-    try {
-      // TODO: Replace with actual API endpoint
-      // const response = await fetch('/api/application/start', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData)
-      // });
-      
-      // if (!response.ok) throw new Error('Submission failed');
-      // const data = await response.json();
-      
-      // Simulate API call for now
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Navigate to next step
-      goto(`/${locale}/application/acadamic-info`);
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      errors.general = 'Failed to submit form. Please try again.';
-    } finally {
-      isSubmitting = false;
+//     try {
+//       const saveResult = await customSavePersonalDetails({
+//       applicationId: $applicationId,
+//       personalDetails: {
+//         mobile: formData.mobileNumber,
+//         email: formData.emailId,
+//         pan: formData.panCard || null,
+//         current_address: formData.currentStreetAddress,
+//         current_district: formData.currentDistrict,
+//         current_taluka: formData.currentTaluka,
+//         current_place: formData.currentPlace,
+//         current_area: formData.currentArea,
+//         current_pincode: formData.currentPinCode,
+//         permanent_address: formData.permanentStreetAddress,
+//         permanent_district: formData.permanentDistrict,
+//         permanent_taluka: formData.permanentTaluka,
+//         permanent_place: formData.permanentPlace,
+//         permanent_area: formData.permanentArea,
+//         permanent_pincode: formData.permanentPinCode,
+//         marital_status: formData.maritalStatus,
+//         education_qualification: formData.educationalQualification,
+//         guardian_name: formData.parentName,
+//         relation: formData.relationship,
+//         occupation: formData.occupation,
+//         income: formData.annualIncome,
+//         past_surety_commitment: formData.previousSurety,
+//         ration_card_number: null,
+//         past_surety_commitment_detail: null,
+//         occupationtype: null,
+//         riot_victim: 0,
+//         natural_calamity_victim: 0,
+//         disabled_person: 0,
+//         guarantor: 0,
+//         literate: 0,
+//         details: null
+//       }
+//     });
+
+//     if (saveResult.error !== 0) {
+//       alert(saveResult.errorMsg || 'Failed to save personal details');
+//       return;
+//     }
+
+//     console.log('Personal details saved successfully');
+    
+//     // Navigate to next step
+//     goto(`/${locale}/application/acadamic-info`);
+
+//     } catch (error) {
+//       console.error('Error submitting form:', error);
+//       errors.general = 'Failed to submit form. Please try again.';
+//     } finally {
+//       isSubmitting = false;
+//     }
+//   }
+
+
+async function handleProceed() {
+  console.log('handleProceed called');
+  
+  const result = personalDetailsValidation(formData, t);
+  errors = result.getErrors();
+  
+  if (!result.isValid()) {
+    console.log('Validation failed:', errors);
+    const firstErrorElement = document.querySelector('.error-message');
+    if (firstErrorElement) {
+      firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+    return;
   }
-  function handleBack() {
+
+  console.log('Validation passed');
+  isSubmitting = true;
+
+  try {
+    console.log('Saving personal details for application:', $applicationId);
+    console.log('Form data:', formData);
+    
+    // Save personal details to backend
+    const saveResult = await customSavePersonalDetails({
+      applicationId: $applicationId,
+      personalDetails: {
+        mobile: formData.mobileNumber,
+        email: formData.emailId,
+        pan: formData.panCard || null,
+        current_address: formData.currentStreetAddress,
+        current_district: formData.currentDistrict,
+        current_taluka: formData.currentTaluka,
+        current_place: formData.currentPlace,
+        current_area: formData.currentArea,
+        current_pincode: formData.currentPinCode,
+        permanent_address: formData.permanentStreetAddress,
+        permanent_district: formData.permanentDistrict,
+        permanent_taluka: formData.permanentTaluka,
+        permanent_place: formData.permanentPlace,
+        permanent_area: formData.permanentArea,
+        permanent_pincode: formData.permanentPinCode,
+        marital_status: formData.maritalStatus,
+        education_qualification: formData.educationalQualification,
+        guardian_name: formData.parentName,
+        relation: formData.relationship,
+        occupation: formData.occupation,
+        income: formData.annualIncome,
+        past_surety_commitment: formData.previousSurety,
+        ration_card_number: formData.rationCard || null,
+        past_surety_commitment_detail: formData.suretyDetails || null,
+        occupationtype: null,
+        riot_victim: 0,
+        natural_calamity_victim: 0,
+        disabled_person: 0,
+        guarantor: 0,
+        literate: 0,
+        details: null
+      }
+    });
+
+    console.log('💾 Save result:', saveResult);
+
+    if (saveResult.error !== 0) {
+      console.error('Save failed:', saveResult.errorMsg);
+      alert(saveResult.errorMsg || 'Failed to save personal details');
+      return;
+    }
+
+    console.log('✅ Personal details saved successfully');
+    console.log('🚀 Navigating to academic-info page');
+    
+    // Navigate to next step
+    goto(`/${locale}/application/acadamic-info`);
+
+  } catch (error) {
+    console.error('Error submitting form:', error);
+    alert('An error occurred while saving. Please try again.');
+  } finally {
+    isSubmitting = false;
+  }
+}
+
+function handleBack() {
     goto(`/${locale}/dashboard`);
-  }
+}
 
-  function handleCancel() {
+function handleCancel() {
     goto(`/${locale}/application/start`);
-  }
+}
 
-  function handleLogout() {
+function handleLogout() {
   logoutStore();
   goto(`/${locale}/login`);
 }
@@ -529,7 +760,7 @@ function validateField(fieldName) {
 
     <!-- Applicant Personal Details -->
    <section class="mb-6 bg-white rounded-xl shadow-md p-4 sm:p-6">
-  <div class="flex items-center gap-3 mb-4">
+    <div class="flex items-center gap-3 mb-4">
     <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
       <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -729,10 +960,16 @@ function validateField(fieldName) {
             </label>
            <select
               bind:value={formData.currentDistrict}
-              on:change={() => validateField('currentDistrict')}
+              on:change={() => {
+                validateField('currentDistrict');
+                loadTalukasForDistrict(formData.currentDistrict, 'current'); 
+                formData.currentTaluka = '';  
+              }}
               class="w-full px-2 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.currentDistrict ? 'border-red-500' : 'border-gray-300'}"
             >
-              <option value="">{t.personalDetails?.districtPlaceholder || 'Select'}</option>
+              <option value="">
+                {t.personalDetails?.districtPlaceholder || 'Select District'}
+              </option>
               {#each districts as district}
                 <option value={district.value}>{district.label}</option>
               {/each}
@@ -747,13 +984,23 @@ function validateField(fieldName) {
             <label class="block text-sm font-medium text-gray-700 mb-2">
               {t.personalDetails?.talukaLabel || 'Taluka'} <span class="text-red-500">*</span>
             </label>
-          <input
-              type="text"
+            
+            <select
               bind:value={formData.currentTaluka}
-              on:input={() => validateField('currentTaluka')}
-              placeholder={t.personalDetails?.talukaPlaceholder || 'Taluka'}
-              class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.currentTaluka ? 'border-red-500' : 'border-gray-300'}"
-            />
+              on:change={() => validateField('currentTaluka')}
+              disabled={!formData.currentDistrict || isLoadingCurrentTalukas}
+              class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm 
+              {errors.currentTaluka ? 'border-red-500' : 'border-gray-300'}
+              {!formData.currentDistrict || isLoadingCurrentTalukas ? 'bg-gray-100 cursor-not-allowed' : ''}"
+            >
+              <option value="">
+                {isLoadingCurrentTalukas ? 'Loading...' : (t.personalDetails?.talukaPlaceholder || 'Select taluka')}
+              </option>
+              {#each currentTalukas as taluka}
+                <option value={taluka.value}>{taluka.label}</option>
+              {/each}
+            </select>
+            
             {#if errors.currentTaluka}
               <p class="error-message mt-1 text-xs text-red-600">{errors.currentTaluka}</p>
             {/if}
@@ -872,7 +1119,11 @@ function validateField(fieldName) {
            
                 <select
                   bind:value={formData.permanentDistrict}
-                  on:change={() => validateField('permanentDistrict')}
+                  on:change={() => {
+                    validateField('permanentDistrict');
+                    loadTalukasForDistrict(formData.permanentDistrict, 'permanent');  // ✅ ADD THIS
+                    formData.permanentTaluka = '';  // ✅ Reset taluka
+                  }}
                   disabled={formData.sameAsCurrentAddress}
                   class="w-full px-2 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed text-sm {errors.permanentDistrict ? 'border-red-500' : 'border-gray-300'}"
                 >
@@ -887,23 +1138,29 @@ function validateField(fieldName) {
           </div>
 
           <!-- Taluka -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              {t.personalDetails?.talukaLabel || 'Taluka'}<span class="text-red-500">*</span>
-            </label>
-            <input
-                type="text"
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                {t.personalDetails?.talukaLabel || 'Taluka'}<span class="text-red-500">*</span>
+              </label>
+              
+              <select
                 bind:value={formData.permanentTaluka}
                 on:input={() => validateField('permanentTaluka')}
-                placeholder={t.personalDetails?.talukaPlaceholder || 'Taluka'}
-                disabled={formData.sameAsCurrentAddress}
+                disabled={formData.sameAsCurrentAddress || !formData.permanentDistrict || isLoadingPermanentTalukas}
                 class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed text-sm {errors.permanentTaluka ? 'border-red-500' : 'border-gray-300'}"
-              />
-            {#if errors.permanentTaluka}
-              <p class="error-message mt-1 text-xs text-red-600">{errors.permanentTaluka}</p>
-            {/if}
-          </div>
-
+              >
+                <option value="">
+                  {isLoadingPermanentTalukas ? 'Loading...' : (t.personalDetails?.talukaPlaceholder || 'Select taluka')}
+                </option>
+                {#each permanentTalukas as taluka}
+                  <option value={taluka.value}>{taluka.label}</option>
+                {/each}
+              </select>
+              
+              {#if errors.permanentTaluka}
+                <p class="error-message mt-1 text-xs text-red-600">{errors.permanentTaluka}</p>
+              {/if}
+            </div>
           <!-- Place -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -978,6 +1235,7 @@ function validateField(fieldName) {
 
       <div class="grid md:grid-cols-2 gap-4">
         <!-- Marital Status -->
+         
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {t.personalDetails?.maritalStatusLabel || 'Marital Status'} <span class="text-red-500">*</span>
@@ -988,8 +1246,8 @@ function validateField(fieldName) {
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.maritalStatus ? 'border-red-500' : 'border-gray-300'}"
           >
             <option value="">{t.personalDetails?.maritalPlaceholder || 'Select'}</option>
-            {#each maritalStatusOptions as status}
-              <option value={status.value}>{status.label[locale] || status.label.en}</option>
+            {#each mstatus as status}
+              <option value={status.value}>{status.label}</option>
             {/each}
           </select>
           {#if errors.maritalStatus}
@@ -998,21 +1256,35 @@ function validateField(fieldName) {
         </div>
 
         <!-- Educational Qualification -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            {t.personalDetails?.educationLabel || 'Educational Qualification'} <span class="text-red-500">*</span>
-          </label>
-         <input
-            type="text"
-            bind:value={formData.educationalQualification}
-            on:input={() => validateField('educationalQualification')}
-            placeholder={t.personalDetails?.educationPlaceholder || 'Last passed exam'}
-            class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.educationalQualification ? 'border-red-500' : 'border-gray-300'}"
-          />
-          {#if errors.educationalQualification}
-            <p class="error-message mt-1 text-xs text-red-600">{errors.educationalQualification}</p>
-          {/if}
-        </div>
+       <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          {t.personalDetails?.educationLabel || 'Educational Qualification'} 
+          <span class="text-red-500">*</span>
+        </label>
+
+        <select
+          bind:value={formData.educationalQualification}
+          on:change={() => validateField('educationalQualification')}
+          class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.educationalQualification ? 'border-red-500' : 'border-gray-300'}"
+        >
+          <option value="">
+            {t.personalDetails?.EducationPlaceholder || 'Select Qualification'}
+          </option>
+
+          {#each educationq as education}
+            <option value={education.value}>
+              {education.label}
+            </option>
+          {/each}
+        </select>
+
+        {#if errors.educationalQualification}
+          <p class="error-message mt-1 text-xs text-red-600">
+            {errors.educationalQualification}
+          </p>
+        {/if}
+      </div>
+
       </div>
     </section>
 
@@ -1060,8 +1332,8 @@ function validateField(fieldName) {
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.relationship ? 'border-red-500' : 'border-gray-300'}"
           >
             <option value="">{t.personalDetails?.relationshipPlaceholder || 'Select'}</option>
-            {#each relationshipOptions as relation}
-              <option value={relation.value}>{relation.label[locale] || relation.label.en}</option>
+            {#each relations as relation}
+              <option value={relation.value}>{relation.label}</option>
             {/each}
           </select>
           {#if errors.relationship}
@@ -1074,13 +1346,17 @@ function validateField(fieldName) {
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {t.personalDetails?.occupationLabel || 'Occupation'} <span class="text-red-500">*</span>
           </label>
-          <input
-            type="text"
+
+          <select
             bind:value={formData.occupation}
-            on:input={() => validateField('occupation')}
-            placeholder={t.personalDetails?.occupationPlaceholder || 'Enter occupation'}
-            class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.occupation ? 'border-red-500' : 'border-gray-300'}"
-          />
+            on:change={() => validateField('occupation')}
+            class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.maritalStatus ? 'border-red-500' : 'border-gray-300'}"
+          >
+            <option value="">{t.personalDetails?.occupationPlaceholder || 'Select occupation'}</option>
+            {#each occupations as occupation}
+              <option value={occupation.value}>{occupation.label}</option>
+            {/each}
+          </select>
           {#if errors.occupation}
             <p class="error-message mt-1 text-xs text-red-600">{errors.occupation}</p>
           {/if}

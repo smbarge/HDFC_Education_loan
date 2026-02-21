@@ -2,66 +2,136 @@ import { json } from '@sveltejs/kit';
 import pool from '$lib/db.js';
 
 export async function GET() {
-  let client;
+
   
   try {
-    
-    client = await pool.connect();
-    
-    //District from master table
-    let result = await client.query(
-      `SELECT 
+    //client = await pool.connect();
+
+    const [districtRes, 
+            genderRes, 
+            religionRes,
+            maritalStatusRes,
+            educationalqualificationRes,
+            occupationRes,
+            relationRes] = await Promise.all([
+      
+      //for the district Master
+      pool.query(`
+        SELECT 
         dist_id, 
         eng_name, 
         dev_name, 
         state_id, 
-        country_id, 
+        country_id,
         status, 
-        short_name,
-        seq_no,
-        division,
-        created,
+        short_name, 
+        seq_no, 
+        division, 
+        created, 
         modify
-      FROM public.m_district
-      WHERE status = 1
-      ORDER BY eng_name`
-    );
-    
-    const m_district = result.rows;
+        FROM public.m_district
+        WHERE status = 1
+        ORDER BY eng_name
+      `),
 
-    //Gender master table
-    result = await client.query(
-      `SELECT id, eng_name, dev_name FROM public.m_gender`
-    );
+      //for the gender master
+      pool.query(`
+        SELECT 
+        id, 
+        eng_name, 
+        dev_name
+        FROM public.m_gender
+      `),
 
-    const m_gender = result.rows;
-    
-    // Return the result as JSON
+      //for the religion master
+      pool.query(`
+        SELECT 
+        id, 
+        eng_name, 
+        dev_name
+        FROM public.m_religion
+        ORDER BY id
+      `),
+
+      //For the marital status
+      pool.query(`
+        SELECT 
+        id, 
+        eng_name, 
+        dev_name
+        FROM public.m_marital_status
+        ORDER BY id
+      `),
+
+      //For Educational qualification
+      pool.query(`
+        SELECT 
+        id, 
+        eng_name, 
+        dev_name
+        FROM public.m_educational_qualification
+        ORDER BY id
+      `),
+
+      pool.query(`
+        SELECT 
+        id, 
+        eng_name, 
+        dev_name
+        FROM public.m_occupation
+        ORDER BY id
+      `),
+
+      pool.query(`
+        SELECT 
+        id, 
+        eng_name, 
+        dev_name
+        FROM public.m_relation
+        ORDER BY id
+      `)
+
+    ]);
+
     return json({
       error: 0,
-      errorMsg: "Districts fetched successfully",
+      errorMsg: "Master Data fetched successfully",
       masters: {
-        m_district,
-        m_gender
+        m_district: districtRes.rows,
+        m_gender: genderRes.rows,
+        m_religion: religionRes.rows,
+        m_marital_status : maritalStatusRes.rows,
+        m_educational_qualification : educationalqualificationRes.rows,
+        m_occupation : occupationRes.rows,
+        m_relation : relationRes.rows
       },
-      count: m_district.length,
-      count1 : m_gender.length
+      counts: {
+        district: districtRes.rowCount,
+        gender: genderRes.rowCount,
+        religion: religionRes.rowCount,
+        maritalstatus : maritalStatusRes.rowCount,
+        educationalqualification :educationalqualificationRes.rowCount,
+        occupation : occupationRes.rowCount,
+        relation: relationRes.rowCount
+      }
     });
-    
+
   } catch (err) {
-    console.error("Error executing query", err);
-    return json({ 
-      error: -1, 
+    console.error("Error executing query:", err);
+
+    return json({
+      error: -1,
       errorMsg: "Database query failed",
       masters: {
         m_district: [],
-        m_gender: []
+        m_gender: [],
+        m_religion: [],
+        m_marital_status:[],
+        m_educational_qualification :[],
+        m_occupation :[],
+        m_relation : []
       }
     }, { status: 500 });
-    
-  } finally {
-    if (client) {
-      await client.release();
-    }
+
   }
 }

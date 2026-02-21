@@ -522,7 +522,7 @@ export const en = {
       districtRequired: "District is required",
       
       talukaLabel: "Taluka",
-      talukaPlaceholder: "Enter taluka",
+      talukaPlaceholder: "Select taluka",
       talukaRequired: "Taluka is required",
       
       placeLabel: "Place",
@@ -700,7 +700,7 @@ export const en = {
       districtRequired: "District is required",
       
       talukaLabel: "Taluka",
-      talukaPlaceholder: "Enter taluka",
+      talukaPlaceholder: "Select taluka",
       talukaRequired: "Taluka is required",
       
       placeLabel: "Place",

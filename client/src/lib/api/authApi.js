@@ -411,6 +411,129 @@ async function getVerifiedContacts(applicationId) {
   }
 }
 
+//Start Page__
+
+//put the start page data 
+const customSaveApplicationStart = async ({ userId, applicationId, stepData }) => {
+    
+    console.log("customSaveApplicationStart - userId:", userId, "applicationId:", applicationId);
+
+    try {
+        const response = await fetch(`/api/createApplication/${userId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'saveApplicationStart',
+                userId,
+                applicationId, // ✅ Send existing applicationId or null
+                stepData
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log("Save application start response:", result);
+        return result;
+
+    } catch (e) {
+        console.error("customSaveApplicationStart failed:", e);
+        return {
+            error: -2,
+            errorMsg: e.message || 'Failed to save application start data'
+        };
+    }
+};
+
+//get start page data 
+const getApplicationData = async (applicationId) => {
+    console.log("getApplicationData called for applicationId:", applicationId);
+
+    try {
+        const response = await fetch(`/api/createApplication/${applicationId}?action=getApplicationData`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log("Get application data response:", result);
+        return result;
+
+    } catch (e) {
+        console.error("getApplicationData failed:", e);
+        return {
+            error: -2,
+            errorMsg: e.message || 'Failed to get application data'
+        };
+    }
+};
+
+//personal detail page__ 
+
+//get the personal detail page data
+export const getPersonalDetailsData = async (applicationId) => {
+    console.log("getPersonalDetailsData called for applicationId:", applicationId);
+
+    try {
+        const response = await fetch(`/api/createApplication/${applicationId}?action=getPersonalDetails`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log("Get personal details response:", result);
+        return result;
+
+    } catch (e) {
+        console.error("getPersonalDetailsData failed:", e);
+        return {
+            error: -2,
+            errorMsg: e.message || 'Failed to get personal details'
+        };
+    }
+};
+
+////put the personal detail page data 
+export const customSavePersonalDetails = async ({ applicationId, personalDetails }) => {
+    console.log("customSavePersonalDetails called for applicationId:", applicationId);
+
+    try {
+        const response = await fetch(`/api/createApplication/${applicationId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'savePersonalDetails',
+                applicationId,
+                personalDetails
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log("Save personal details response:", result);
+        return result;
+
+    } catch (e) {
+        console.error("customSavePersonalDetails failed:", e);
+        return {
+            error: -2,
+            errorMsg: e.message || 'Failed to save personal details'
+        };
+    }
+};
 
 export {
   customVerifyApplicantAndSendOtp,
@@ -424,5 +547,7 @@ export {
   customChangePassword,
   customSendPasswordResetOtp,
   customCreateApplication,
-  getVerifiedContacts
+  getVerifiedContacts,
+  customSaveApplicationStart,
+  getApplicationData,
 };

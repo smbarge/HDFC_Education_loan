@@ -18,6 +18,9 @@
     mobile: ''
   };
 
+  let pageError = '';
+
+
   currentLang.subscribe(value => {
     lang = value;
   });
@@ -59,6 +62,7 @@
   }
 
   async function handleSubmit() {
+    pageError = '';
   const isNameValid = validateName();
   const isMobileValid = validateMobile();
 
@@ -68,7 +72,7 @@
     const res = await customVerifyApplicantAndSendOtp({ mobile: formData.mobile, name: formData.name });
     
     if (res.error !== 0) {
-      alert(res.errorMsg); // Show error
+      pageError = res.errorMsg || 'Registration failed';
       return;
     }
 
@@ -83,7 +87,7 @@
 
   } catch (err) {
     console.error(err);
-    alert('Something went wrong');
+    pageError = 'Something went wrong. Please try again.';
   }
 }
 
@@ -156,6 +160,15 @@
          
           {t('step1.Register_to_apply_for_an_education_loan')}
         </p>
+
+        {#if pageError}
+          <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
+            <p class="text-sm text-red-700 font-medium">
+              {pageError}
+            </p>
+          </div>
+        {/if}
+
 
         <!-- Form -->
         <form on:submit|preventDefault={handleSubmit} class="space-y-6">
