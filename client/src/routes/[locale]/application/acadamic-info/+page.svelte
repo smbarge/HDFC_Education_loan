@@ -9,7 +9,9 @@
   import academicInfoValidation from '$lib/validation/application/academicInfo';
 
   import { user, logout as logoutStore, applicationId } from '$lib/stores/userStore';
-  import { fetchMasters,fetchTalukas } from '$lib/api/auth';
+  import { fetchMasters,fetchTalukas,featchStreams } from '$lib/api/auth';
+  import { getEducationDetailsData, customSaveEducationDetails } from '$lib/api/authApi';
+
 
 
   $: locale = $page.params.locale || 'en';
@@ -24,7 +26,6 @@
   id: $user.id || null
 } : null;
 
-
 onMount(async () => {
   if (!$user) {
     goto(`/${locale}/login`);
@@ -38,13 +39,35 @@ onMount(async () => {
 
   await loadMasters();
 
-  if (formData.currentDistrict) {
-      await loadTalukasForDistrict(formData.currentDistrict, 'current');
+  const educationData = await getEducationDetailsData($applicationId);
+  
+  if (educationData.error === 0 && educationData.data) {
+
+    const savedCourseType = educationData.data.courseType;
+    const savedStreamSpecialization = educationData.data.streamSpecialization;
+    const savedDistrict = educationData.data.currentDistrict;
+    const savedTaluka = educationData.data.currentTaluka;
+
+    formData = {
+      ...formData,
+      ...educationData.data
+    };
+
+    // Load streams first, THEN set selected stream value
+    if (savedCourseType) {
+      await loadStreamsForCourse(savedCourseType);
+      formData.streamSpecialization = String(savedStreamSpecialization);
     }
 
-    if (formData.permanentDistrict) {
-      await loadTalukasForDistrict(formData.permanentDistrict, 'permanent');
+    // Load talukas first, THEN set selected taluka value
+    if (savedDistrict) {
+      await loadTalukasForDistrict(String(savedDistrict), 'current');
+      formData.currentTaluka = String(savedTaluka);
     }
+
+    // Force Svelte reactivity
+    formData = formData;
+  }
 });
 
   let currentStep = 3;
@@ -65,23 +88,12 @@ onMount(async () => {
     instituteName: '',
     universityName: '',
     instituteAddress: '',
+    place:'',
+    pinCode: '',
 
     // Current Address
-    currentStreetAddress: '',
     currentDistrict: '',
     currentTaluka: '',
-    currentPlace: '',
-    currentArea: '',
-    currentPinCode: '',
-    
-    // Permanent Address
-    sameAsCurrentAddress: false,
-    permanentStreetAddress: '',
-    permanentDistrict: '',
-    permanentTaluka: '',
-    permanentPlace: '',
-    permanentArea: '',
-    permanentPinCode: '',
     
     // Admission & Fee Details
     admissionStatus: '',
@@ -120,6 +132,15 @@ onMount(async () => {
   let educationq = [];
   let occupations = [];
   let relations = [];
+  let courses = [];
+  let streams = [];
+
+
+  let isLoadingStreams = false;
+  let modesOfStudys = [];
+  let loanPurposes = [];
+  let admissionStatuses =[];
+
   let otpError = '';
 
 
@@ -165,7 +186,27 @@ onMount(async () => {
         label: `${row.eng_name} - ${row.dev_name}`,
       }));
 
+      courses = result.masters.m_course_type.map(row => ({
+        value: row.course_id,
+        label: `${row.eng_name} - ${row.dev_name}`,
+      }));
+
+      modesOfStudys = result.masters.m_mode_of_study.map(row => ({
+        value: row.id,
+        label: `${row.eng_name} - ${row.dev_name}`,
+      }));
+
+      loanPurposes = result.masters.m_perpose_loan.map(row => ({
+        value: row.id,
+        label: `${row.eng_name} - ${row.dev_name}`,
+      }));
+
       
+      admissionStatuses = result.masters.m_admission_status.map(row => ({
+        value: row.id,
+        label: `${row.eng_name} - ${row.dev_name}`,
+      }));
+
 
     } else {
       districtError = 'Failed to load masters';
@@ -217,6 +258,8 @@ async function loadTalukasForDistrict(districtId, type = 'current') {
       console.error("Invalid taluka response:", result);
     }
 
+
+
   } catch (error) {
     console.error('Failed to load talukas:', error);
   } finally {
@@ -228,58 +271,31 @@ async function loadTalukasForDistrict(districtId, type = 'current') {
   }
 }
 
+async function loadStreamsForCourse(courseId) {
+  if (!courseId) {
+    streams = [];
+    return;
+  }
 
-  // Options
-  const courseTypes = [
-    { value: 'UG', label: { en: 'UG (Undergraduate)', hi: 'पदवी', mr: 'पदवी' } },
-    { value: 'PG', label: { en: 'PG (Postgraduate)', hi: 'पदव्युत्तर', mr: 'पदव्युत्तर' } },
-    { value: 'PhD', label: { en: 'PhD', hi: 'पीएचडी', mr: 'पीएचडी' } },
-    { value: 'Diploma', label: { en: 'Diploma', hi: 'डिप्लोमा', mr: 'डिप्लोमा' } },
-    { value: 'Certificate', label: { en: 'Certificate', hi: 'प्रमाणपत्र', mr: 'प्रमाणपत्र' } }
-  ];
+  isLoadingStreams = true;
+  try {
+    const result = await featchStreams({ course_id: courseId });
+    if (result.error === 0 && Array.isArray(result.streams)) {
+      streams = result.streams.map(row => ({
+        value: row.stream_id,
+        label: `${row.eng_name} - ${row.dev_name}`
+      }));
+    } else {
+      streams = [];
+    }
+  } catch (error) {
+    console.error('Failed to load streams:', error);
+    streams = [];
+  } finally {
+    isLoadingStreams = false;
+  }
+}
 
-  const streams = [
-    { value: 'Engineering', label: { en: 'Engineering', hi: 'अभियांत्रिकी', mr: 'अभियांत्रिकी' } },
-    { value: 'Medical', label: { en: 'Medical', hi: 'वैद्यकीय', mr: 'वैद्यकीय' } },
-    { value: 'Commerce', label: { en: 'Commerce', hi: 'वाणिज्य', mr: 'वाणिज्य' } },
-    { value: 'Arts', label: { en: 'Arts', hi: 'कला', mr: 'कला' } },
-    { value: 'Science', label: { en: 'Science', hi: 'विज्ञान', mr: 'विज्ञान' } },
-    { value: 'Law', label: { en: 'Law', hi: 'कायदा', mr: 'कायदा' } },
-    { value: 'Management', label: { en: 'Management', hi: 'व्यवस्थापन', mr: 'व्यवस्थापन' } },
-    { value: 'Other', label: { en: 'Other', hi: 'इतर', mr: 'इतर' } }
-  ];
-
-  const modesOfStudy = [
-    { value: 'Full-time', label: { en: 'Full-time', hi: 'पूर्णकालिक', mr: 'पूर्णवेळ' } },
-    { value: 'Part-time', label: { en: 'Part-time', hi: 'अंशकालिक', mr: 'अंशकालिक' } },
-    { value: 'Distance', label: { en: 'Distance Learning', hi: 'दूरस्थ शिक्षण', mr: 'दूरस्थ शिक्षण' } }
-  ];
-
-  const admissionStatuses = [
-    { value: 'Confirmed', label: { en: 'Confirmed', hi: 'पुष्टी केलेली', mr: 'पुष्टी केलेली' } },
-    { value: 'Provisional', label: { en: 'Provisional', hi: 'तात्पुरती', mr: 'तात्पुरती' } }
-  ];
-
-  const loanPurposes = [
-    { value: 'Tuition Fee', label: { en: 'Tuition Fee', hi: 'शिकवणी शुल्क', mr: 'शिकवणी शुल्क' } },
-    { value: 'Hostel Fee', label: { en: 'Hostel Fee', hi: 'वसतिगृह शुल्क', mr: 'वसतिगृह शुल्क' } },
-    { value: 'Books & Study Material', label: { en: 'Books & Study Material', hi: 'पुस्तके आणि अभ्यास साहित्य', mr: 'पुस्तके आणि अभ्यास साहित्य' } },
-    { value: 'Equipment/Laptop', label: { en: 'Equipment/Laptop', hi: 'उपकरणे/लॅपटॉप', mr: 'उपकरणे/लॅपटॉप' } },
-    { value: 'Other', label: { en: 'Other', hi: 'इतर', mr: 'इतर' } }
-  ];
-
-  // const districts = [
-  //   { value: 'AHMEDNAGAR', label: 'AHMEDNAGAR - अहमदनगर' },
-  //   { value: 'AKOLA', label: 'AKOLA - अकोला' },
-  //   { value: 'AMRAVATI', label: 'AMRAVATI - अमरावती' },
-  //   { value: 'BEED', label: 'BEED - बीड' },
-  //   { value: 'BHANDARA', label: 'BHANDARA - भंडारा' },
-  //   { value: 'BULDHANA', label: 'BULDHANA - बुलडाणा' },
-  //   { value: 'CHANDRAPUR', label: 'CHANDRAPUR - चंद्रपूर' },
-  //   { value: 'PUNE', label: 'PUNE - पुणे' },
-  //   { value: 'MUMBAI', label: 'MUMBAI - मुंबई' },
-  //   { value: 'NAGPUR', label: 'NAGPUR - नागपूर' }
-  // ];
 
   // Auto-calculate remaining fee
   $: if (formData.totalCourseFee && formData.feePaid) {
@@ -309,34 +325,107 @@ function validateForm() {
 }
 
   // Handle form submission
- async function handleProceed() {
+//  async function handleProceed() {
+//   const result = academicInfoValidation(formData, t);
+//   errors = result.getErrors();
+  
+//   if (!result.isValid()) {
+//     const firstErrorElement = document.querySelector('.error-message');
+//     if (firstErrorElement) {
+//       firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+//     }
+//     return;
+//   }
+//   await loadTalukasForDistrict(formData.currentDistrict, 'permanent');
+
+//   isSubmitting = true;
+
+//   try {
+//     // TODO: Replace with actual API endpoint
+//     // const response = await fetch('/api/application/academic-info', {
+//     //   method: 'POST',
+//     //   headers: { 'Content-Type': 'application/json' },
+//     //   body: JSON.stringify(formData)
+//     // });
+    
+//     await new Promise(resolve => setTimeout(resolve, 1000));
+//     goto(`/${locale}/application/guarantor-details`);
+//   } catch (error) {
+//     console.error('Error submitting form:', error);
+//     alert('Failed to submit form. Please try again.');
+//   } finally {
+//     isSubmitting = false;
+//   }
+// }
+
+
+async function handleProceed() {
+
   const result = academicInfoValidation(formData, t);
   errors = result.getErrors();
   
   if (!result.isValid()) {
+    console.log('Validation failed:', errors);
     const firstErrorElement = document.querySelector('.error-message');
     if (firstErrorElement) {
       firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
     return;
   }
-  await loadTalukasForDistrict(formData.currentDistrict, 'permanent');
 
   isSubmitting = true;
 
   try {
-    // TODO: Replace with actual API endpoint
-    // const response = await fetch('/api/application/academic-info', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(formData)
-    // });
+    console.log('Saving education details for application:', $applicationId);
     
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    const saveResult = await customSaveEducationDetails({
+      applicationId: $applicationId,
+      educationDetails: {
+        institution_name: formData.instituteName,
+        university: formData.universityName,
+        institution_address: formData.instituteAddress,
+        institution_district: formData.currentDistrict,
+        institution_taluka: formData.currentTaluka,
+        institution_place: formData.place,
+        institution_pincode: formData.pinCode,
+        bank_name: formData.bankName,
+        branch_name: formData.branchName,
+        ifsc_code: formData.ifscCode,
+        account_number: formData.accountNumber,
+        bank_address: formData.bankAddress,
+        loan_required_amount: formData.loanRequired,
+        purpose_of_loan: formData.purposeOfLoan,
+        gst_number: formData.gstNumber || null,
+        admission_status: formData.admissionStatus,
+        admission_year: formData.admissionYear,
+        total_course_fee: formData.totalCourseFee,
+        fee_paid: formData.feePaid || 0,
+        remaining_fee: formData.remainingFee,
+        course_name: formData.courseName,
+        course_type: formData.courseType,
+        stream_specialization: formData.streamSpecialization,
+        course_duration: formData.courseDuration,
+        mode_of_study: formData.modeOfStudy,
+        student_name: formData.studentName
+      }
+    });
+
+    console.log('Save result:', saveResult);
+
+    if (saveResult.error !== 0) {
+      console.error('Save failed:', saveResult.errorMsg);
+      alert(saveResult.errorMsg || 'Failed to save education details');
+      return;
+    }
+
+    console.log('Education details saved successfully');
+    console.log('Navigating to guarantor-details page');
+    
     goto(`/${locale}/application/guarantor-details`);
+
   } catch (error) {
     console.error('Error submitting form:', error);
-    alert('Failed to submit form. Please try again.');
+    alert('An error occurred while saving. Please try again.');
   } finally {
     isSubmitting = false;
   }
@@ -456,12 +545,16 @@ function validateForm() {
           </label>
           <select
               bind:value={formData.courseType}
-              on:change={() => validateField('courseType')}
+              on:change={() => {
+                validateField('courseType');
+                loadStreamsForCourse(formData.courseType);
+                formData.streamSpecialization = '';
+              }}
               class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.courseType ? 'border-red-500' : 'border-gray-300'}"
             >
             <option value="">{t.academicInfo?.courseTypePlaceholder}</option>
-            {#each courseTypes as type}
-              <option value={type.value}>{type.label[locale] || type.label.en}</option>
+            {#each courses as type}
+              <option value={type.value}>{type.label}</option>
             {/each}
           </select>
           {#if errors.courseType}
@@ -474,15 +567,18 @@ function validateForm() {
             {t.academicInfo?.streamLabel} <span class="text-red-500">*</span>
           </label>
           <select
-            bind:value={formData.streamSpecialization}
+              bind:value={formData.streamSpecialization}
               on:change={() => validateField('streamSpecialization')}
-            class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.streamSpecialization ? 'border-red-500' : 'border-gray-300'}"
-          >
-            <option value="">{t.academicInfo?.streamPlaceholder}</option>
-            {#each streams as stream}
-              <option value={stream.value}>{stream.label[locale] || stream.label.en}</option>
-            {/each}
-          </select>
+              disabled={!formData.courseType || isLoadingStreams}
+              class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm
+              {errors.streamSpecialization ? 'border-red-500' : 'border-gray-300'}
+              {!formData.courseType || isLoadingStreams ? 'bg-gray-100 cursor-not-allowed' : ''}"
+            >
+              <option value="">{isLoadingStreams ? 'Loading...' : (t.academicInfo?.streamPlaceholder || 'Select Stream')}</option>
+              {#each streams as stream}
+                <option value={stream.value}>{stream.label}</option>
+              {/each}
+            </select>
           {#if errors.streamSpecialization}
             <p class="error-message mt-1 text-xs text-red-600">{errors.streamSpecialization}</p>
           {/if}
@@ -514,8 +610,8 @@ function validateForm() {
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.modeOfStudy ? 'border-red-500' : 'border-gray-300'}"
           >
             <option value="">{t.academicInfo?.modeOfStudyPlaceholder}</option>
-            {#each modesOfStudy as mode}
-              <option value={mode.value}>{mode.label[locale] || mode.label.en}</option>
+            {#each modesOfStudys as mode}
+              <option value={mode.value}>{mode.label}</option>
             {/each}
           </select>
           {#if errors.modeOfStudy}
@@ -606,12 +702,11 @@ function validateForm() {
             <select
               bind:value={formData.currentDistrict}
               on:change={() => {
-              validateField('district');
+              validateField('currentDistrict');
               loadTalukasForDistrict(formData.currentDistrict,'current'); 
               formData.currentTaluka = '';  
               }}              
-              class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.district ? 'border-red-500' : 'border-gray-300'}"
-            >
+              class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm border-gray-300"            >
               <option value="">
                 {t.personalDetails?.districtPlaceholder || 'Select District'}
               </option>
@@ -620,7 +715,7 @@ function validateForm() {
               {/each}
             </select>
             {#if errors.currentDistrict}
-              <p class="error-message mt-1 text-xs text-red-600">{errors.district}</p>
+              <p class="error-message mt-1 text-xs text-red-600">{errors.currentDistrict}</p>
             {/if}
           </div>
 
@@ -648,20 +743,20 @@ function validateForm() {
             </label>
 
             <select
-              bind:value={formData.currentDistrict}
-              on:input={() => validateField('taluka')}
-              disabled={!formData.currentDistrict || isLoadingCurrentTalukas}
-              class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm 
-              {errors.currentTaluka ? 'border-red-500' : 'border-gray-300'}
-              {!formData.currentDistrict || isLoadingCurrentTalukas ? 'bg-gray-100 cursor-not-allowed' : ''}"
-            >
-              <option value="">
-                {isLoadingCurrentTalukas ? 'Loading...' : (t.personalDetails?.talukaPlaceholder || 'Select taluka')}
-              </option>
-              {#each currentTalukas as taluka}
-                <option value={taluka.value}>{taluka.label}</option>
-              {/each}
-            </select>
+            bind:value={formData.currentTaluka}
+            on:change={() => validateField('currentTaluka')}
+            disabled={!formData.currentDistrict || isLoadingCurrentTalukas}
+            class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm 
+            {errors.currentTaluka ? 'border-red-500' : 'border-gray-300'}
+            {!formData.currentDistrict || isLoadingCurrentTalukas ? 'bg-gray-100 cursor-not-allowed' : ''}"
+          >
+            <option value="">
+              {isLoadingCurrentTalukas ? 'Loading...' : (t.personalDetails?.talukaPlaceholder || 'Select taluka')}
+            </option>
+            {#each currentTalukas as taluka}
+              <option value={taluka.value}>{taluka.label}</option>
+            {/each}
+          </select>
             
             {#if errors.currentTaluka}
               <p class="error-message mt-1 text-xs text-red-600">{errors.currentTaluka}</p>
@@ -734,7 +829,7 @@ function validateForm() {
           >
             <option value="">{t.academicInfo?.admissionStatusPlaceholder}</option>
             {#each admissionStatuses as status}
-              <option value={status.value}>{status.label[locale] || status.label.en}</option>
+              <option value={status.value}>{status.label}</option>
             {/each}
           </select>
           {#if errors.admissionStatus}
@@ -853,7 +948,7 @@ function validateForm() {
           >
             <option value="">{t.academicInfo?.purposeOfLoanPlaceholder}</option>
             {#each loanPurposes as purpose}
-              <option value={purpose.value}>{purpose.label[locale] || purpose.label.en}</option>
+              <option value={purpose.value}>{purpose.label}</option>
             {/each}
           </select>
           {#if errors.purposeOfLoan}

@@ -104,6 +104,11 @@ Content-Type: application/json
 GET http://localhost:5173/api/getTalukas?district_id=2707&state_id=27&country_id=1
 Content-Type: application/json
 
+### Get Stream by course
+GET http://localhost:5173/api/getStream?course_id=4
+Content-Type: application/json
+
+
 
 ### Create New Application
 POST http://localhost:5173/api/createApplication
@@ -179,10 +184,49 @@ Content-Type: application/json
   }
 }
 
-### 15. Get Personal Details (Step 2)
+### Get Personal Details (Step 2)
 GET http://localhost:5173/api/createApplication/2?action=getPersonalDetails
 Content-Type: application/json
 
+### STEP 3: Save Education Details
+POST http://localhost:5173/api/createApplication/1
+Content-Type: application/json
+
+{
+  "action": "saveEducationDetails",
+  "applicationId": 1,
+  "educationDetails": {
+    "student_name": "Test Student",
+    "course_name": "Computer Science",
+    "course_type": 1,
+    "stream_specialization": 1,
+    "course_duration": 4,
+    "mode_of_study": 1,
+    "institution_name": "ABC College",
+    "university": "Pune University",
+    "institution_address": "456 College Road",
+    "institution_district": 25,
+    "institution_taluka": 1,
+    "institution_place": "Pune",
+    "institution_pincode": "411038",
+    "admission_status": 1,
+    "admission_year": 2024,
+    "total_course_fee": 500000,
+    "fee_paid": 100000,
+    "remaining_fee": 400000,
+    "loan_required_amount": 400000,
+    "purpose_of_loan": 1,
+    "gst_number": "27AABCU9603R1ZM",
+    "bank_name": "HDFC Bank",
+    "ifsc_code": "HDFC0001234",
+    "branch_name": "Pune Branch",
+    "account_number": "12345678901234",
+    "bank_address": "Pune, Maharashtra"
+  }
+}
+
+### STEP 3: Get Education Details
+GET http://localhost:5173/api/createApplication/1?action=getEducationDetails
 
 ### Fetch Verified Contacts
 GET http://localhost:5173/api/getVerifiedContacts?applicationId=1
