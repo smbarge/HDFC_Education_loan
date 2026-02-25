@@ -11,6 +11,8 @@
 
   import { onMount } from 'svelte';
 
+  import { slide } from 'svelte/transition';
+
 
 
     // Use store value directly
@@ -185,6 +187,21 @@
       toast.remove();
     }, 3000);
   }
+
+  let showEligibility = false;
+
+  function toggleEligibility(event) {
+    event.stopPropagation();
+    showEligibility = !showEligibility;
+  }
+
+
+  let showSupport = false;
+
+  function toggleSupport(event) {
+    event.stopPropagation();
+    showSupport = !showSupport;
+  }
 </script>
 
 <svelte:head>
@@ -358,12 +375,11 @@
 
     <!-- Quick Info Cards -->
     <section class="mb-12">
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto items-start">
         
         <button
-          on:click={viewEligibility}
-          class="bg-white rounded-xl shadow-md p-6 text-left hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
-        >
+        on:click={viewEligibility}
+        class="bg-white rounded-xl shadow-md p-6 text-left hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 min-h-[220px]"        >
           <div class="flex items-start gap-4">
             <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
               <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -377,21 +393,83 @@
               <p class="text-sm text-gray-600 mb-3">
                 {t.welcome.eligibilityDesc || 'See if you qualify for the education loan program'}
               </p>
-              <span class="text-purple-600 font-semibold text-sm flex items-center gap-1">
+              <!-- <span class="text-purple-600 font-semibold text-sm flex items-center gap-1">
                 {t.welcome.learnMore || 'Learn More'}
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                 </svg>
-              </span>
+              </span> -->
+              <span 
+              on:click|stopPropagation={toggleEligibility}
+              class="text-purple-600 font-semibold text-sm flex items-center gap-1 cursor-pointer"
+            >
+              {t.welcome.learnMore || 'Learn More'}
+              <svg 
+                class="w-4 h-4 transition-transform duration-300 {showEligibility ? 'rotate-90' : ''}" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </span>
             </div>
           </div>
+          {#if showEligibility}
+  <div transition:slide class="mt-4 pt-4 border-t border-gray-200">
+    
+    <div>
+      <h4 class="font-semibold text-purple-700 mb-1">
+        {t.eligibility.community.title}
+      </h4>
+      <ul class="list-disc list-inside space-y-1">
+        {#each t.eligibility.community.items as item}
+          <li>{item}</li>
+        {/each}
+      </ul>
+    </div>
+
+    <div>
+      <h4 class="font-semibold text-purple-700 mb-1">
+        {t.eligibility.age.title}
+      </h4>
+      <ul class="list-disc list-inside space-y-1">
+        {#each t.eligibility.age.items as item}
+          <li>{item}</li>
+        {/each}
+      </ul>
+    </div>
+
+    <div>
+      <h4 class="font-semibold text-purple-700 mb-1">
+        {t.eligibility.income.title}
+      </h4>
+      <ul class="list-disc list-inside space-y-1">
+        {#each t.eligibility.income.items as item}
+          <li>{item}</li>
+        {/each}
+      </ul>
+    </div>
+
+    <div>
+      <h4 class="font-semibold text-purple-700 mb-1">
+        {t.eligibility.documents.title}
+      </h4>
+      <ul class="list-disc list-inside space-y-1">
+        {#each t.eligibility.documents.items as item}
+          <li>{item}</li>
+        {/each}
+      </ul>
+    </div>
+
+  </div>
+  {/if}
         </button>
 
         <!-- Required Documents Card -->
         <button
           on:click={viewDocuments}
-          class="bg-white rounded-xl shadow-md p-6 text-left hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
-        >
+          class="bg-white rounded-xl shadow-md p-6 text-left hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 min-h-[220px]"        >
           <div class="flex items-start gap-4">
             <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
               <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -417,34 +495,84 @@
 
         <!-- Contact Support Card -->
         <button
-          on:click={contactSupport}
-          class="bg-white rounded-xl shadow-md p-6 text-left hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+  on:click={contactSupport}
+  class="bg-white rounded-xl shadow-md p-6 text-left hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 min-h-[220px]"
+>
+  <div class="flex items-start gap-4">
+    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+      <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+      </svg>
+    </div>
+
+    <div class="w-full">
+      <h3 class="text-lg font-bold text-gray-900 mb-2">
+        {t.welcome.needHelp || 'Need Help?'}
+      </h3>
+
+      <p class="text-sm text-gray-600 mb-3">
+        {t.welcome.supportDesc || 'Our support team is here to assist you'}
+      </p>
+
+      <!-- Toggle -->
+      <span
+        on:click|stopPropagation={toggleSupport}
+        class="text-purple-600 font-semibold text-sm flex items-center gap-1 cursor-pointer"
+      >
+        {t.welcome.contactUs || 'Contact Us'}
+
+        <svg
+          class="w-4 h-4 transition-transform duration-300"
+          class:rotate-90={showSupport}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
         >
-          <div class="flex items-start gap-4">
-            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-              </svg>
-            </div>
-            <div>
-              <h3 class="text-lg font-bold text-gray-900 mb-2">
-                {t.welcome.needHelp || 'Need Help?'}
-              </h3>
-              <p class="text-sm text-gray-600 mb-3">
-                {t.welcome.supportDesc || 'Our support team is here to assist you'}
-              </p>
-              <span class="text-purple-600 font-semibold text-sm flex items-center gap-1">
-                {t.welcome.contactUs || 'Contact Us'}
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                </svg>
-              </span>
-            </div>
-          </div>
-        </button>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 5l7 7-7 7"/>
+        </svg>
+      </span>
+    </div>
+  </div>
+
+  {#if showSupport}
+    <div
+      transition:slide={{ duration: 250 }}
+      class="mt-4 pt-4 border-t border-gray-200 text-sm text-gray-700 space-y-4"
+    >
+      <!-- Call -->
+      <div>
+        <h4 class="font-semibold text-purple-700">
+          {t.support.call.title}
+        </h4>
+        <p>{t.support.call.number}</p>
+        <p class="text-xs text-gray-500">{t.support.call.hours}</p>
+      </div>
+
+      <!-- Email -->
+      <div>
+        <h4 class="font-semibold text-purple-700">
+          {t.support.email.title}
+        </h4>
+        <p>{t.support.email.address}</p>
+        <p class="text-xs text-gray-500">{t.support.email.response}</p>
+      </div>
+
+      <!-- Office -->
+      <div>
+        <h4 class="font-semibold text-purple-700">
+          {t.support.office.title}
+        </h4>
+        <p>{t.support.office.location}</p>
+        <p class="text-xs text-gray-500">{t.support.office.address}</p>
+      </div>
+    </div>
+    {/if}
+  </button>
       </div>
     </section>
-  </div>
+  </div>  
 </div>
 
 <!-- Profile Modal Component -->

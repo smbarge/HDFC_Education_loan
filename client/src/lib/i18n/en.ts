@@ -334,7 +334,9 @@ export const en = {
     logout: "Logout",
     welcome: "Dashboard",
     welcomeMessage: "Welcome back! Track your loan application progress and manage your account.",
-    
+    contactUs:"Contact Us",
+    supportDesc:"Our support team is here to assist you",
+
     // New User
     welcomeNewUser: "Welcome to MAMFDC!",
     newUserMessage: "Start your education loan application journey today. Get financial support for your educational dreams.",
