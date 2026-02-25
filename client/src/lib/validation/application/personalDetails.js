@@ -121,6 +121,12 @@ const personalDetailsValidation = create((data, t) => {
     enforce(data.annualIncome).matches(/^\d+$/);
   });
 
+  test('annualIncome', t?.personalDetails?.incomeMaxLimit || 'Annual income must not exceed ₹8,00,000', () => {
+    const income = parseInt(data.annualIncome);
+    enforce(income).lessThanOrEquals(800000);
+  });
+
+
   // Surety Declaration - REQUIRED
   test('previousSurety', t?.personalDetails?.suretyRequired || 'Please select surety status', () => {
     enforce(data.previousSurety).isNotEmpty();

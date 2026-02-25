@@ -12,46 +12,47 @@
   import { onMount } from 'svelte';
   import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
   import collateralDetailsValidation from '$lib/validation/collateral/collateralDetails';
+  import { user, logout as logoutStore, applicationId } from '$lib/stores/userStore';
+
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
 
 
-  let userData = null;
   let showProfileModal = false;
 
   let errors = {};
 
 
+$: userData = $user ? {
+  name: $user.name || "Guest User",
+  phone: $user.mobile || "",
+  username: $user.username || "",
+  id: $user.id || null
+} : null; 
+
+
 
   onMount(() => {
-  if (typeof window !== 'undefined') {
-    const authUser = sessionStorage.getItem('authUser');
-
-    if (!authUser) {
+    if (!$user) {
       goto(`/${locale}/login`);
+      return;
     }
-    else {
-       const user = JSON.parse(authUser);
-        userData = {
-          name: user.name || "Guest User",
-          phone: user.mobile || "",
-          username: user.username || ""
-        };
-    }
-  }
 
-  const savedCollaterals = sessionStorage.getItem('collateralItems');
+    if (!$applicationId) {
+      goto(`/${locale}/dashboard`);
+      return;
+    }
+
+    const savedCollaterals = sessionStorage.getItem('collateralItems');
     if (savedCollaterals) {
       try {
         collateralItems = JSON.parse(savedCollaterals);
-        console.log('Loaded existing collateral items:', collateralItems);
       } catch (error) {
-        console.error('Error parsing collateral items:', error);
         collateralItems = [];
       }
     }
-});
+  });
 
   let currentStep = 5;
   let isSubmitting = false;
@@ -262,7 +263,7 @@ async function handleProceed() {
         bind:showProfileModal
         on:close={() => showProfileModal = false}
         on:logout={() => {
-          sessionStorage.removeItem('authUser');
+          logoutStore();
           goto(`/${locale}/login`);
         }}
       />

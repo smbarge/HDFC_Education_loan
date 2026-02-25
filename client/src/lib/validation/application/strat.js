@@ -48,6 +48,36 @@ const applicationStartValidation = create((data, t, fieldName) => {
     test('dateOfBirth', t?.applicationStart?.dobRequired || 'Date of birth is required', () => {
       enforce(data.dateOfBirth).isNotEmpty();
     });
+
+    test('dateOfBirth', t?.applicationStart?.dobAgeMin || 'You must be at least 16 years old', () => {
+      if (!data.dateOfBirth) return;
+      
+      const birthDate = new Date(data.dateOfBirth);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      const dayDiff = today.getDate() - birthDate.getDate();
+      
+      // Adjust age if birthday hasn't occurred this year yet
+      const actualAge = (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) ? age - 1 : age;
+      
+      enforce(actualAge).greaterThanOrEquals(16);
+    });
+
+    test('dateOfBirth', t?.applicationStart?.dobAgeMax || 'You must be 32 years old or younger', () => {
+      if (!data.dateOfBirth) return;
+      
+      const birthDate = new Date(data.dateOfBirth);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      const dayDiff = today.getDate() - birthDate.getDate();
+      
+      // Adjust age if birthday hasn't occurred this year yet
+      const actualAge = (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) ? age - 1 : age;
+      
+      enforce(actualAge).lessThanOrEquals(32);
+    });
   }
 
   if (only('gender')) {

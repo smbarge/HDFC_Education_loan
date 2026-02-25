@@ -9,6 +9,8 @@
   import academicInfoValidation from '$lib/validation/application/academicInfo';
 
   import { user, logout as logoutStore, applicationId } from '$lib/stores/userStore';
+  import { fetchMasters,fetchTalukas } from '$lib/api/auth';
+
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
@@ -23,7 +25,7 @@
 } : null;
 
 
-onMount(() => {
+onMount(async () => {
   if (!$user) {
     goto(`/${locale}/login`);
     return;
@@ -33,6 +35,16 @@ onMount(() => {
     goto(`/${locale}/dashboard`);
     return;
   }
+
+  await loadMasters();
+
+  if (formData.currentDistrict) {
+      await loadTalukasForDistrict(formData.currentDistrict, 'current');
+    }
+
+    if (formData.permanentDistrict) {
+      await loadTalukasForDistrict(formData.permanentDistrict, 'permanent');
+    }
 });
 
   let currentStep = 3;
@@ -53,10 +65,23 @@ onMount(() => {
     instituteName: '',
     universityName: '',
     instituteAddress: '',
-    district: '',
-    taluka: '',
-    place: '',
-    pinCode: '',
+
+    // Current Address
+    currentStreetAddress: '',
+    currentDistrict: '',
+    currentTaluka: '',
+    currentPlace: '',
+    currentArea: '',
+    currentPinCode: '',
+    
+    // Permanent Address
+    sameAsCurrentAddress: false,
+    permanentStreetAddress: '',
+    permanentDistrict: '',
+    permanentTaluka: '',
+    permanentPlace: '',
+    permanentArea: '',
+    permanentPinCode: '',
     
     // Admission & Fee Details
     admissionStatus: '',
@@ -77,6 +102,132 @@ onMount(() => {
     accountNumber: '',
     bankAddress: ''
   };
+
+  //Distrct Dropdown
+  let districts = [];
+  let isLoadingDistricts = false;
+  let districtError = null;
+
+  //Taluka
+  let currentTalukas = [];
+  let permanentTalukas = [];
+  let isLoadingCurrentTalukas = false;
+  let isLoadingPermanentTalukas = false;
+
+  //gender
+  let genders = [];
+  let mstatus = [];
+  let educationq = [];
+  let occupations = [];
+  let relations = [];
+  let otpError = '';
+
+
+  async function loadMasters() {
+  isLoadingDistricts = true;
+  districtError = null;
+
+  try {
+    const result = await fetchMasters();
+
+    if (result.error === 0) {
+      // District dropdown
+      districts = result.masters.m_district.map(row => ({
+        value: row.dist_id,
+        label: `${row.eng_name} - ${row.dev_name}`,
+        state_id: row.state_id,     
+        country_id: row.country_id   
+      }));
+
+      // Gender dropdown
+      genders = result.masters.m_gender.map(row => ({
+        value: row.id,
+        label: `${row.eng_name} - ${row.dev_name}`,
+      }));
+
+      mstatus = result.masters.m_marital_status.map(row => ({
+        value: row.id,
+        label: `${row.eng_name} - ${row.dev_name}`,
+      }));
+
+      educationq = result.masters.m_educational_qualification.map(row => ({
+        value: row.id,
+        label: `${row.eng_name} - ${row.dev_name}`,
+      }));
+
+      occupations = result.masters.m_occupation.map(row => ({
+        value: row.id,
+        label: `${row.eng_name} - ${row.dev_name}`,
+      }));
+
+      relations = result.masters.m_relation.map(row => ({
+        value: row.id,
+        label: `${row.eng_name} - ${row.dev_name}`,
+      }));
+
+      
+
+    } else {
+      districtError = 'Failed to load masters';
+    }
+
+  } catch (error) {
+    districtError = 'Failed to load masters';
+  } finally {
+    isLoadingDistricts = false;
+  }
+}
+
+async function loadTalukasForDistrict(districtId, type = 'current') {
+  const district = districts.find(d => d.value == districtId);
+
+  console.log("Distrcts _id_Selected :",district);
+
+  if (!district) return;  
+
+  if (type === 'current') {
+    isLoadingCurrentTalukas = true;
+  } else {
+    isLoadingPermanentTalukas = true;
+  }
+
+  try {
+    const result = await fetchTalukas({
+      district_id: district.value, 
+      state_id: district.state_id,
+      country_id: district.country_id
+    });
+
+    console.log("Taluka result:", result);
+
+    if (result.error === 0 && Array.isArray(result.talukas)) {
+
+      const talukaList = result.talukas.map(row => ({
+        value: row.taluka_id,
+        label: `${row.eng_name} - ${row.dev_name}`
+      }));
+
+      if (type === 'current') {
+        currentTalukas = talukaList;
+      } else {
+        permanentTalukas = talukaList;
+      }
+
+    } else {
+      console.error("Invalid taluka response:", result);
+    }
+
+  } catch (error) {
+    console.error('Failed to load talukas:', error);
+  } finally {
+    if (type === 'current') {
+      isLoadingCurrentTalukas = false;
+    } else {
+      isLoadingPermanentTalukas = false;
+    }
+  }
+}
+
 
   // Options
   const courseTypes = [
@@ -117,18 +268,18 @@ onMount(() => {
     { value: 'Other', label: { en: 'Other', hi: 'इतर', mr: 'इतर' } }
   ];
 
-  const districts = [
-    { value: 'AHMEDNAGAR', label: 'AHMEDNAGAR - अहमदनगर' },
-    { value: 'AKOLA', label: 'AKOLA - अकोला' },
-    { value: 'AMRAVATI', label: 'AMRAVATI - अमरावती' },
-    { value: 'BEED', label: 'BEED - बीड' },
-    { value: 'BHANDARA', label: 'BHANDARA - भंडारा' },
-    { value: 'BULDHANA', label: 'BULDHANA - बुलडाणा' },
-    { value: 'CHANDRAPUR', label: 'CHANDRAPUR - चंद्रपूर' },
-    { value: 'PUNE', label: 'PUNE - पुणे' },
-    { value: 'MUMBAI', label: 'MUMBAI - मुंबई' },
-    { value: 'NAGPUR', label: 'NAGPUR - नागपूर' }
-  ];
+  // const districts = [
+  //   { value: 'AHMEDNAGAR', label: 'AHMEDNAGAR - अहमदनगर' },
+  //   { value: 'AKOLA', label: 'AKOLA - अकोला' },
+  //   { value: 'AMRAVATI', label: 'AMRAVATI - अमरावती' },
+  //   { value: 'BEED', label: 'BEED - बीड' },
+  //   { value: 'BHANDARA', label: 'BHANDARA - भंडारा' },
+  //   { value: 'BULDHANA', label: 'BULDHANA - बुलडाणा' },
+  //   { value: 'CHANDRAPUR', label: 'CHANDRAPUR - चंद्रपूर' },
+  //   { value: 'PUNE', label: 'PUNE - पुणे' },
+  //   { value: 'MUMBAI', label: 'MUMBAI - मुंबई' },
+  //   { value: 'NAGPUR', label: 'NAGPUR - नागपूर' }
+  // ];
 
   // Auto-calculate remaining fee
   $: if (formData.totalCourseFee && formData.feePaid) {
@@ -169,6 +320,7 @@ function validateForm() {
     }
     return;
   }
+  await loadTalukasForDistrict(formData.currentDistrict, 'permanent');
 
   isSubmitting = true;
 
@@ -391,6 +543,8 @@ function validateForm() {
 
       <div class="space-y-4">
         <div class="grid md:grid-cols-2 gap-4">
+        
+          <!-- Institute Name -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
               {t.academicInfo?.instituteNameLabel}<span class="text-red-500">*</span>
@@ -407,6 +561,7 @@ function validateForm() {
             {/if}
           </div>
 
+          <!-- universityName -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
              {t.academicInfo?.universityNameLabel} <span class="text-red-500">*</span>
@@ -424,6 +579,7 @@ function validateForm() {
           </div>
         </div>
 
+        <!-- Institute Address Current -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
              {t.academicInfo?.instituteAddressLabel} <span class="text-red-500">*</span>
@@ -440,6 +596,7 @@ function validateForm() {
           {/if}
         </div>
 
+        <!-- District -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -447,21 +604,28 @@ function validateForm() {
              
             </label>
             <select
-              bind:value={formData.district}
-              on:change={() => validateField('district')}
+              bind:value={formData.currentDistrict}
+              on:change={() => {
+              validateField('district');
+              loadTalukasForDistrict(formData.currentDistrict,'current'); 
+              formData.currentTaluka = '';  
+              }}              
               class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.district ? 'border-red-500' : 'border-gray-300'}"
             >
-              <option value="">{t.academicInfo?.districtPlaceholder}</option>
+              <option value="">
+                {t.personalDetails?.districtPlaceholder || 'Select District'}
+              </option>
               {#each districts as district}
                 <option value={district.value}>{district.label}</option>
               {/each}
             </select>
-            {#if errors.district}
+            {#if errors.currentDistrict}
               <p class="error-message mt-1 text-xs text-red-600">{errors.district}</p>
             {/if}
           </div>
 
-          <div>
+          <!-- Taluka -->
+          <!-- <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
               {t.academicInfo?.talukaLabel}<span class="text-red-500">*</span>
               
@@ -476,8 +640,35 @@ function validateForm() {
             {#if errors.taluka}
               <p class="error-message mt-1 text-xs text-red-600">{errors.taluka}</p>
             {/if}
+          </div> -->
+
+          <div>
+             <label class="block text-sm font-medium text-gray-700 mb-2">
+              {t.academicInfo?.talukaLabel}<span class="text-red-500">*</span>
+            </label>
+
+            <select
+              bind:value={formData.currentDistrict}
+              on:input={() => validateField('taluka')}
+              disabled={!formData.currentDistrict || isLoadingCurrentTalukas}
+              class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm 
+              {errors.currentTaluka ? 'border-red-500' : 'border-gray-300'}
+              {!formData.currentDistrict || isLoadingCurrentTalukas ? 'bg-gray-100 cursor-not-allowed' : ''}"
+            >
+              <option value="">
+                {isLoadingCurrentTalukas ? 'Loading...' : (t.personalDetails?.talukaPlaceholder || 'Select taluka')}
+              </option>
+              {#each currentTalukas as taluka}
+                <option value={taluka.value}>{taluka.label}</option>
+              {/each}
+            </select>
+            
+            {#if errors.currentTaluka}
+              <p class="error-message mt-1 text-xs text-red-600">{errors.currentTaluka}</p>
+            {/if}
           </div>
 
+          <!-- Place -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
               {t.academicInfo?.placeLabel} <span class="text-red-500">*</span>
@@ -494,6 +685,7 @@ function validateForm() {
             {/if}
           </div>
 
+          <!-- pinCode -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
               {t.academicInfo?.pinCodeLabel}<span class="text-red-500">*</span>

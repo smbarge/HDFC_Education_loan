@@ -202,6 +202,8 @@
                   on:blur={() => runValidation('username')}
                   on:input={() => errors.username = ''}
                   placeholder={t.login.usernamePlaceholder}
+                  maxlength="10"
+                  inputmode="numeric"
                   class="block w-full h-12 pl-12 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 {errors.username ? 'border-red-500 bg-red-50' : 'bg-white hover:border-purple-300'}"
                 />
               </div>

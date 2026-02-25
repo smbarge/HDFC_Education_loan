@@ -7,6 +7,8 @@
   import { onMount } from 'svelte';
   import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
   import guarantorDetailsValidation from '$lib/validation/application/guarantorDetails';
+  import { user, logout as logoutStore, applicationId } from '$lib/stores/userStore';
+
 
 
   $: locale = $page.params.locale || 'en';
@@ -16,23 +18,23 @@
   let userData = null;
   let showProfileModal = false;
 
+  $: userData = $user ? {
+  name: $user.name || "Guest User",
+  phone: $user.mobile || "",
+  username: $user.username || "",
+  id: $user.id || null
+} : null;
 
 
   onMount(() => {
-  if (typeof window !== 'undefined') {
-    const authUser = sessionStorage.getItem('authUser');
+  if (!$user) {
+    goto(`/${locale}/login`);
+    return;
+  }
 
-    if (!authUser) {
-      goto(`/${locale}/login`);
-    }
-    else {
-       const user = JSON.parse(authUser);
-        userData = {
-          name: user.name || "Guest User",
-          phone: user.mobile || "",
-          username: user.username || ""
-        };
-    }
+  if (!$applicationId) {
+    goto(`/${locale}/dashboard`);
+    return;
   }
 });
 
@@ -290,10 +292,10 @@ async function handleProceed() {
         {locale}
         bind:showProfileModal
         on:close={() => showProfileModal = false}
-        on:logout={() => {
-          sessionStorage.removeItem('authUser');
-          goto(`/${locale}/login`);
-        }}
+         on:logout={() => {
+            logoutStore();
+            goto(`/${locale}/login`);
+          }}
       />
 
   <ApplicationStepper {currentStep} {locale} />

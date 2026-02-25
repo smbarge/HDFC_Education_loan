@@ -11,6 +11,9 @@
   import CollateralDocumentsSection from '$lib/components/upload-documents/CollateralDocumentsSection.svelte';
   import ApplicantInfoSummary from '$lib/components/upload-documents/ApplicantInfoSummary.svelte';
   import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
+
+  import { user, logout as logoutStore, applicationId } from '$lib/stores/userStore';
+
   
   import documentUploadValidation, { 
     validateDocumentFile, 
@@ -30,58 +33,50 @@
   let submitError = ''; 
   let missingDocuments = [];
     
-  let userData = {
-    name: '',
-    phone: '',
-    username: ''
-  };
+
 
   let showProfileModal = false;
+
+  $: userData = $user ? {
+  name: $user.name || "Guest User",
+  phone: $user.mobile || "",
+  username: $user.username || "",
+  id: $user.id || null
+} : null;
   
   // Get data from session storage
   let collateralItems = [];
   let guarantorData = null;
 
-  onMount(() => {
-    if (typeof window !== 'undefined') {
-      const authUser = sessionStorage.getItem('authUser');
+ onMount(() => {
+  if (!$user) {
+    goto(`/${locale}/login`);
+    return;
+  }
 
-      if (!authUser) {
-        goto(`/${locale}/login`);
-      } else {
-        const user = JSON.parse(authUser);
-        userData = {
-          name: user.name || "Guest User",
-          phone: user.mobile || "",
-          username: user.username || ""
-        };
-      }
+  if (!$applicationId) {
+    goto(`/${locale}/dashboard`);
+    return;
+  }
 
-      // Retrieve collateral items from session storage
-      const savedCollaterals = sessionStorage.getItem('collateralItems');
-      if (savedCollaterals) {
-        try {
-          collateralItems = JSON.parse(savedCollaterals);
-          console.log('Loaded collateral items:', collateralItems);
-        } catch (error) {
-          console.error('Error parsing collateral items:', error);
-          collateralItems = [];
-        }
-      }
-
-      // Retrieve guarantor data from session storage
-      const savedGuarantor = sessionStorage.getItem('guarantorData');
-      if (savedGuarantor) {
-        try {
-          guarantorData = JSON.parse(savedGuarantor);
-          console.log('Loaded guarantor data:', guarantorData);
-        } catch (error) {
-          console.error('Error parsing guarantor data:', error);
-          guarantorData = null;
-        }
-      }
+  const savedCollaterals = sessionStorage.getItem('collateralItems');
+  if (savedCollaterals) {
+    try {
+      collateralItems = JSON.parse(savedCollaterals);
+    } catch (error) {
+      collateralItems = [];
     }
-  });
+  }
+
+  const savedGuarantor = sessionStorage.getItem('guarantorData');
+  if (savedGuarantor) {
+    try {
+      guarantorData = JSON.parse(savedGuarantor);
+    } catch (error) {
+      guarantorData = null;
+    }
+  }
+});
 
   function handleUpload(docId, file) {
     console.log('Uploading document:', docId, file);
@@ -242,8 +237,8 @@
     {locale}
     bind:showProfileModal
     on:close={() => showProfileModal = false}
-    on:logout={() => {
-      sessionStorage.removeItem('authUser');
+      on:logout={() => {
+      logoutStore();
       goto(`/${locale}/login`);
     }}
   />

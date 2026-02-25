@@ -559,6 +559,7 @@ async function handleProceed() {
               type="date"
               bind:value={formData.dateOfBirth}
               on:change={() => validateField('dateOfBirth')}
+              max={new Date().toISOString().split('T')[0]}
               class="w-full pl-10 pr-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.dateOfBirth ? 'border-red-500' : 'border-gray-300'}"
             />
             </div>
