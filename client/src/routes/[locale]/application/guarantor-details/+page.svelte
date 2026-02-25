@@ -8,7 +8,7 @@
   import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
   import guarantorDetailsValidation from '$lib/validation/application/guarantorDetails';
   import { user, logout as logoutStore, applicationId } from '$lib/stores/userStore';
-
+  import { fetchMasters, fetchTalukas } from '$lib/api/auth';
 
 
   $: locale = $page.params.locale || 'en';
@@ -25,8 +25,19 @@
   id: $user.id || null
 } : null;
 
+// Master 
+  let districts = [];
+  let isLoadingDistricts = false;
+  let districtError = null;
 
-  onMount(() => {
+  let currentTalukas = [];
+  let permanentTalukas = [];
+  
+  let communities = [];
+  let isLoadingCurrentTalukas = false;
+  let isLoadingPermanentTalukas = false;
+
+  onMount(async () => {
   if (!$user) {
     goto(`/${locale}/login`);
     return;
@@ -36,6 +47,8 @@
     goto(`/${locale}/dashboard`);
     return;
   }
+
+  await loadMasters();
 });
 
   let currentStep = 4;
@@ -43,6 +56,73 @@
   let errors = {};
   
   let selectedTab = 'guarantor';
+
+  async function loadMasters() {
+  isLoadingDistricts = true;
+  districtError = null;
+  try {
+    const result = await fetchMasters();
+    if (result.error === 0) {
+      districts = result.masters.m_district.map(row => ({
+        value: row.dist_id,
+        label: `${row.eng_name} - ${row.dev_name}`,
+        state_id: row.state_id,
+        country_id: row.country_id
+      }));
+
+      communities = result.masters.m_religion.map(row => ({
+        value: row.id,
+        label: `${row.eng_name} - ${row.dev_name}`
+      }));
+
+    } else {
+      districtError = 'Failed to load districts';
+    }
+  } catch (error) {
+    districtError = 'Failed to load districts';
+  } finally {
+    isLoadingDistricts = false;
+  }
+}
+
+async function loadTalukasForDistrict(districtId, type = 'current') {
+  const district = districts.find(d => d.value == districtId);
+  if (!district) return;
+
+  if (type === 'current') {
+    isLoadingCurrentTalukas = true;
+  } else {
+    isLoadingPermanentTalukas = true;
+  }
+
+  try {
+    const result = await fetchTalukas({
+      district_id: district.value,
+      state_id: district.state_id,
+      country_id: district.country_id
+    });
+
+    if (result.error === 0 && Array.isArray(result.talukas)) {
+      const talukaList = result.talukas.map(row => ({
+        value: row.taluka_id,
+        label: `${row.eng_name} - ${row.dev_name}`
+      }));
+      if (type === 'current') {
+        currentTalukas = talukaList;
+      } else {
+        permanentTalukas = talukaList;
+      }
+    }
+  } catch (error) {
+    console.error('Failed to load talukas:', error);
+  } finally {
+    if (type === 'current') {
+      isLoadingCurrentTalukas = false;
+    } else {
+      isLoadingPermanentTalukas = false;
+    }
+  }
+}
   
   let formData = {
     guarantorCommunity: '',
@@ -74,40 +154,6 @@
     suretyDetails: ''
   };
 
-  const communities = [
-    { value: 'Muslim', label: { en: 'Muslim', hi: 'मुस्लिम', mr: 'मुस्लिम' } },
-    { value: 'Christian', label: { en: 'Christian', hi: 'ईसाई', mr: 'ख्रिश्चन' } },
-    { value: 'Sikh', label: { en: 'Sikh', hi: 'शीख', mr: 'शीख' } },
-    { value: 'Buddhist', label: { en: 'Buddhist', hi: 'बौद्ध', mr: 'बौद्ध' } },
-    { value: 'Jain', label: { en: 'Jain', hi: 'जैन', mr: 'जैन' } },
-    { value: 'Parsi', label: { en: 'Parsi', hi: 'पारसी', mr: 'पारशी' } },
-    { value: 'Hindu', label: { en: 'Hindu', hi: 'हिन्दू', mr: 'हिंदू' } },
-    { value: 'Others', label: { en: 'Others', hi: 'अन्य', mr: 'अन्य' } },
-    { value: 'Jew', label: { en: 'Jew', hi: 'ज्यू', mr: 'ज्यू' } }
-  ];
-
-  const districts = [
-    { value: '', label: 'Select District' },
-    { value: 'AHMEDNAGAR', label: 'AHMEDNAGAR - अहमदनगर' },
-    { value: 'AKOLA', label: 'AKOLA - अकोला' },
-    { value: 'AMRAVATI', label: 'AMRAVATI - अमरावती' },
-    { value: 'BEED', label: 'BEED - बीड' },
-    { value: 'PUNE', label: 'PUNE - पुणे' },
-    { value: 'MUMBAI', label: 'MUMBAI - मुंबई' },
-    { value: 'NAGPUR', label: 'NAGPUR - नागपूर' }
-  ];
-
-  const talukas = [
-    { value: '', label: 'Select taluka' },
-    { value: 'AMBAJOGAI', label: 'AMBAJOGAI - अंबाजोगाई' },
-    { value: 'ASHTI', label: 'ASHTI - आष्टी' },
-    { value: 'BEED', label: 'BEED - बीड' },
-    { value: 'DHARUR', label: 'DHARUR - धारूर' },
-    { value: 'GEORAI', label: 'GEORAI - गेवराई' },
-    { value: 'KAIJ', label: 'KAIJ - काईज' },
-    { value: 'MAJALGAON', label: 'MAJALGAON - मांजळगाव' },
-    { value: 'PARLI', label: 'PARLI - परळी' }
-  ];
 
   const areas = [
     { value: '', label: { en: 'Select Area', hi: 'क्षेत्र चुनें', mr: 'परिसर निवडा' } },
@@ -154,14 +200,26 @@
     { value: 'Other', label: { en: 'Other', hi: 'इतर', mr: 'इतर' } }
   ];
 
-  $: if (formData.sameAsCurrentAddress) {
+async function handleSameAddressChange() {
+  if (formData.sameAsCurrentAddress) {
     formData.permanentStreetAddress = formData.currentStreetAddress;
     formData.permanentDistrict = formData.currentDistrict;
-    formData.permanentTaluka = formData.currentTaluka;
     formData.permanentPlace = formData.currentPlace;
     formData.permanentArea = formData.currentArea;
     formData.permanentPinCode = formData.currentPinCode;
+
+    await loadTalukasForDistrict(formData.currentDistrict, 'permanent');
+    formData.permanentTaluka = formData.currentTaluka;
+  } else {
+    formData.permanentStreetAddress = '';
+    formData.permanentDistrict = '';
+    formData.permanentTaluka = '';
+    formData.permanentPlace = '';
+    formData.permanentArea = '';
+    formData.permanentPinCode = '';
+    permanentTalukas = [];
   }
+}
 
  function validateField(fieldName) {
   const result = guarantorDetailsValidation(formData, t);
@@ -344,15 +402,15 @@ async function handleProceed() {
           {#each communities as community}
             <label class="flex items-center cursor-pointer">
               <input 
-                  type="radio" 
-                  name="guarantorCommunity" 
-                  value={community.value}
-                  bind:group={formData.guarantorCommunity}
-                  on:change={() => validateField('guarantorCommunity')}  
-                  class="w-4 h-4 text-purple-600 focus:ring-purple-500"
-                />
+                type="radio" 
+                name="guarantorCommunity" 
+                value={community.value}
+                bind:group={formData.guarantorCommunity}
+                on:change={() => validateField('guarantorCommunity')}  
+                class="w-4 h-4 text-purple-600 focus:ring-purple-500"
+              />
               <span class="ml-2 text-sm text-gray-700">
-                {community.label[locale] || community.label.en}
+                {community.label}
               </span>
             </label>
           {/each}
@@ -577,9 +635,14 @@ async function handleProceed() {
             </label>
             <select
               bind:value={formData.currentDistrict}
-              on:change={() => validateField('currentDistrict')}
+              on:change={() => {
+                validateField('currentDistrict');
+                loadTalukasForDistrict(formData.currentDistrict, 'current');
+                formData.currentTaluka = '';
+              }}
               class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.currentDistrict ? 'border-red-500' : 'border-gray-300'}"
             >
+              <option value="">{t.personalDetails?.districtPlaceholder || 'Select District'}</option>
               {#each districts as district}
                 <option value={district.value}>{district.label}</option>
               {/each}
@@ -597,9 +660,13 @@ async function handleProceed() {
             <select
               bind:value={formData.currentTaluka}
               on:change={() => validateField('currentTaluka')}
-              class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.currentTaluka ? 'border-red-500' : 'border-gray-300'}"
+              disabled={!formData.currentDistrict || isLoadingCurrentTalukas}
+              class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm
+              {errors.currentTaluka ? 'border-red-500' : 'border-gray-300'}
+              {!formData.currentDistrict || isLoadingCurrentTalukas ? 'bg-gray-100 cursor-not-allowed' : ''}"
             >
-              {#each talukas as taluka}
+              <option value="">{isLoadingCurrentTalukas ? 'Loading...' : 'Select Taluka'}</option>
+              {#each currentTalukas as taluka}
                 <option value={taluka.value}>{taluka.label}</option>
               {/each}
             </select>
@@ -669,10 +736,11 @@ async function handleProceed() {
     <div class="mb-6">
       <label class="flex items-start cursor-pointer">
         <input 
-          type="checkbox" 
-          bind:checked={formData.sameAsCurrentAddress}
-          class="w-4 h-4 text-purple-600 focus:ring-purple-500 rounded mt-1"
-        />
+            type="checkbox" 
+            bind:checked={formData.sameAsCurrentAddress}
+            on:change={handleSameAddressChange}
+            class="w-4 h-4 text-purple-600 focus:ring-purple-500 rounded mt-1"
+          />
         <span class="ml-2 text-sm text-gray-700">
           <p class="font-medium">{t.guarantorDetails?.sameAddressLabel}</p>
         </span>
@@ -728,10 +796,15 @@ async function handleProceed() {
             </label>
             <select
               bind:value={formData.permanentDistrict}
-              on:change={() => validateField('permanentDistrict')}
+              on:change={() => {
+                validateField('permanentDistrict');
+                loadTalukasForDistrict(formData.permanentDistrict, 'permanent');
+                formData.permanentTaluka = '';
+              }}
               disabled={formData.sameAsCurrentAddress}
               class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 text-sm {errors.permanentDistrict ? 'border-red-500' : 'border-gray-300'}"
             >
+              <option value="">{t.personalDetails?.districtPlaceholder || 'Select District'}</option>
               {#each districts as district}
                 <option value={district.value}>{district.label}</option>
               {/each}
@@ -749,10 +822,12 @@ async function handleProceed() {
             <select
               bind:value={formData.permanentTaluka}
               on:change={() => validateField('permanentTaluka')}
-              disabled={formData.sameAsCurrentAddress}
-              class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 text-sm {errors.permanentTaluka ? 'border-red-500' : 'border-gray-300'}"
+              disabled={formData.sameAsCurrentAddress || !formData.permanentDistrict || isLoadingPermanentTalukas}
+              class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 text-sm
+              {errors.permanentTaluka ? 'border-red-500' : 'border-gray-300'}"
             >
-              {#each talukas as taluka}
+              <option value="">{isLoadingPermanentTalukas ? 'Loading...' : 'Select Taluka'}</option>
+              {#each permanentTalukas as taluka}
                 <option value={taluka.value}>{taluka.label}</option>
               {/each}
             </select>

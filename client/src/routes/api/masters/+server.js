@@ -13,7 +13,12 @@ export async function GET() {
             maritalStatusRes,
             educationalqualificationRes,
             occupationRes,
-            relationRes] = await Promise.all([
+            relationRes,
+            coursetypeRes,
+            modeofstudyRes,
+            addmissionstatusRes,
+            perposeloanRes
+            ] = await Promise.all([
       
       //for the district Master
       pool.query(`
@@ -91,8 +96,43 @@ export async function GET() {
         dev_name
         FROM public.m_relation
         ORDER BY id
-      `)
+      `),
 
+      pool.query(`
+        SELECT
+        course_id,
+        eng_name,
+        dev_name
+        FROM public.m_course_type
+        ORDER BY course_id
+        `),
+  
+        pool.query(`
+        SELECT
+        id,
+        eng_name,
+        dev_name
+        FROM public.m_mode_of_study
+        ORDER BY id
+        `),
+
+        pool.query(`
+        SELECT
+        id,
+        eng_name,
+        dev_name
+        FROM public.m_admission_status
+        ORDER BY id
+        `),
+
+        pool.query(`
+        SELECT
+        id,
+        eng_name,
+        dev_name
+        FROM public.m_perpose_loan
+        ORDER BY id
+        `)
     ]);
 
     return json({
@@ -105,7 +145,11 @@ export async function GET() {
         m_marital_status : maritalStatusRes.rows,
         m_educational_qualification : educationalqualificationRes.rows,
         m_occupation : occupationRes.rows,
-        m_relation : relationRes.rows
+        m_relation : relationRes.rows,
+        m_course_type :coursetypeRes.rows,
+        m_mode_of_study : modeofstudyRes.rows,
+        m_admission_status : addmissionstatusRes.rows,
+        m_perpose_loan : perposeloanRes.rows
       },
       counts: {
         district: districtRes.rowCount,
@@ -114,7 +158,11 @@ export async function GET() {
         maritalstatus : maritalStatusRes.rowCount,
         educationalqualification :educationalqualificationRes.rowCount,
         occupation : occupationRes.rowCount,
-        relation: relationRes.rowCount
+        relation: relationRes.rowCount,
+        coursetype : coursetypeRes.rowCount,
+        modeofstudy : modeofstudyRes.rowCount,
+        addmissionstatus : addmissionstatusRes.rowCount,
+        perposeloan : perposeloanRes.rowCount
       }
     });
 
@@ -131,7 +179,11 @@ export async function GET() {
         m_marital_status:[],
         m_educational_qualification :[],
         m_occupation :[],
-        m_relation : []
+        m_relation : [],
+        m_course_type :[],
+        m_mode_of_study :[],
+        m_admission_status :[],
+        m_perpose_loan: []
       }
     }, { status: 500 });
 

@@ -47,12 +47,12 @@ const academicInfoValidation = create((data, t) => {
     enforce(data.instituteAddress).isNotEmpty();
   });
 
-  test('district', t?.academicInfo?.districtRequired || 'District is required', () => {
-    enforce(data.district).isNotEmpty();
+  test('currentDistrict', t?.academicInfo?.districtRequired || 'District is required', () => {
+    enforce(data.currentDistrict).isNotEmpty();
   });
 
-  test('taluka', t?.academicInfo?.talukaRequired || 'Taluka is required', () => {
-    enforce(data.taluka).isNotEmpty();
+  test('currentTaluka', t?.academicInfo?.talukaRequired || 'Taluka is required', () => {
+    enforce(data.currentTaluka).isNotEmpty();
   });
 
   test('place', t?.academicInfo?.placeRequired || 'Place is required', () => {

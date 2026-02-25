@@ -351,13 +351,7 @@ async function loadTalukasForDistrict(districtId, type = 'current') {
     suretyDetails: ''
   };
 
-  // const maritalStatusOptions = [
-  //   { value: 'Single', label: { en: 'Single', hi: 'अविवाहित', mr: 'अविवाहित' } },
-  //   { value: 'Married', label: { en: 'Married', hi: 'विवाहित', mr: 'विवाहित' } },
-  //   { value: 'Divorced', label: { en: 'Divorced', hi: 'तलाकशुदा', mr: 'घटस्फोटित' } },
-  //   { value: 'Widowed', label: { en: 'Widowed', hi: 'विधवा', mr: 'विधुर' } }
-  // ];
-
+  
   // const relationshipOptions = [
   //   { value: 'Father', label: { en: 'Father', hi: 'पिता', mr: 'वडील' } },
   //   { value: 'Mother', label: { en: 'Mother', hi: 'माता', mr: 'आई' } },

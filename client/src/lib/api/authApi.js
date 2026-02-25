@@ -541,6 +541,67 @@ const customSavePersonalDetails = async ({ applicationId, personalDetails }) => 
     }
 };
 
+//Education detail page ___
+
+// Get education details
+const getEducationDetailsData = async (applicationId) => {
+    console.log("getEducationDetailsData called for applicationId:", applicationId);
+
+    try {
+        const response = await fetch(`/api/createApplication/${applicationId}?action=getEducationDetails`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log("Get education details response:", result);
+        return result;
+
+    } catch (e) {
+        console.error("getEducationDetailsData failed:", e);
+        return {
+            error: -2,
+            errorMsg: e.message || 'Failed to get education details'
+        };
+    }
+};
+
+// Save education details
+const customSaveEducationDetails = async ({ applicationId, educationDetails }) => {
+    console.log("customSaveEducationDetails called for applicationId:", applicationId);
+
+    try {
+        const response = await fetch(`/api/createApplication/${applicationId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'saveEducationDetails',
+                applicationId,
+                educationDetails
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log("Save education details response:", result);
+        return result;
+
+    } catch (e) {
+        console.error("customSaveEducationDetails failed:", e);
+        return {
+            error: -2,
+            errorMsg: e.message || 'Failed to save education details'
+        };
+    }
+};
+
 export {
   customVerifyApplicantAndSendOtp,
   customVerifyOtp,
@@ -557,5 +618,7 @@ export {
   customSaveApplicationStart,
   getApplicationData,
   getPersonalDetailsData,
-  customSavePersonalDetails
+  customSavePersonalDetails,
+  getEducationDetailsData,
+  customSaveEducationDetails
 };

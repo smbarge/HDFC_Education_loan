@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import pool from '$lib/db';
 import { DateTime } from 'luxon';
 
-//GET
+//GET----------------------------------------------------
 
 // Get user's latest application
 async function getUserApplicationQuery(client, userId) {
@@ -93,7 +93,54 @@ async function checkPersonalDetailsExistsQuery(client, applicationId) {
     return result.rows;
 }
 
-//INSERT
+
+//Get Education details
+async function getEducationDetailsQuery(client, applicationId) {
+    const result = await client.query(
+        `SELECT 
+            institution_name,
+            university,
+            institution_address,
+            institution_district,
+            institution_taluka,
+            institution_place,
+            institution_pincode,
+            bank_name,
+            branch_name,
+            ifsc_code,
+            account_number,
+            bank_address,
+            loan_required_amount,
+            purpose_of_loan,
+            gst_number,
+            admission_status,
+            admission_year,
+            total_course_fee,
+            fee_paid,
+            remaining_fee,
+            course_name,
+            course_type,
+            stream_specialization,
+            course_duration,
+            mode_of_study,
+            student_name
+        FROM education_details 
+        WHERE id = $1`,
+        [applicationId]
+    );
+    return result.rows;
+}
+
+// Check if education details record exists
+async function checkEducationDetailsExistsQuery(client, applicationId) {
+    const result = await client.query(
+        'SELECT id FROM education_details WHERE id = $1',
+        [applicationId]
+    );
+    return result.rows;
+}
+
+//INSERT------------------------------------------------------------
 
 // Insert new personal details (Step 1)
 async function insertPersonalDetailsStep1Query(client, applicationId, stepData) {
@@ -142,6 +189,99 @@ async function insertContactQuery(client, applicationId, userPhone) {
         VALUES ($1, $2)
         ON CONFLICT (id) DO NOTHING`,
         [applicationId, userPhone]
+    );
+}
+
+// Insert education details 
+async function insertEducationDetailsQuery(client, applicationId, educationDetails) {
+    const {
+        institution_name,
+        university,
+        institution_address,
+        institution_district,
+        institution_taluka,
+        institution_place,
+        institution_pincode,
+        bank_name,
+        branch_name,
+        ifsc_code,
+        account_number,
+        bank_address,
+        loan_required_amount,
+        purpose_of_loan,
+        gst_number,
+        admission_status,
+        admission_year,
+        total_course_fee,
+        fee_paid,
+        remaining_fee,
+        course_name,
+        course_type,
+        stream_specialization,
+        course_duration,
+        mode_of_study,
+        student_name
+    } = educationDetails;
+
+    await client.query(
+        `INSERT INTO education_details (
+            id,
+            institution_name,
+            university,
+            institution_address,
+            institution_district,
+            institution_taluka,
+            institution_place,
+            institution_pincode,
+            bank_name,
+            branch_name,
+            ifsc_code,
+            account_number,
+            bank_address,
+            loan_required_amount,
+            purpose_of_loan,
+            gst_number,
+            admission_status,
+            admission_year,
+            total_course_fee,
+            fee_paid,
+            remaining_fee,
+            course_name,
+            course_type,
+            stream_specialization,
+            course_duration,
+            mode_of_study,
+            student_name
+        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27)`,
+        [
+            applicationId,
+            institution_name,
+            university,
+            institution_address,
+            institution_district || null,
+            institution_taluka || null,
+            institution_place || null,
+            institution_pincode || null,
+            bank_name,
+            branch_name,
+            ifsc_code,
+            account_number,
+            bank_address,
+            loan_required_amount || 0,
+            purpose_of_loan,
+            gst_number || null,
+            admission_status,
+            admission_year,
+            total_course_fee || 0,
+            fee_paid || 0,
+            remaining_fee || 0,
+            course_name,
+            course_type,
+            stream_specialization,
+            course_duration,
+            mode_of_study,
+            student_name
+        ]
     );
 }
 
@@ -283,6 +423,98 @@ async function updatePersonalDetailsStep2Query(client, applicationId, personalDe
     );
 }
 
+// Update education details (Step 3)
+async function updateEducationDetailsQuery(client, applicationId, educationDetails) {
+    const {
+        institution_name,
+        university,
+        institution_address,
+        institution_district,
+        institution_taluka,
+        institution_place,
+        institution_pincode,
+        bank_name,
+        branch_name,
+        ifsc_code,
+        account_number,
+        bank_address,
+        loan_required_amount,
+        purpose_of_loan,
+        gst_number,
+        admission_status,
+        admission_year,
+        total_course_fee,
+        fee_paid,
+        remaining_fee,
+        course_name,
+        course_type,
+        stream_specialization,
+        course_duration,
+        mode_of_study,
+        student_name
+    } = educationDetails;
+
+    await client.query(
+        `UPDATE education_details SET
+            institution_name = $2,
+            university = $3,
+            institution_address = $4,
+            institution_district = $5,
+            institution_taluka = $6,
+            institution_place = $7,
+            institution_pincode = $8,
+            bank_name = $9,
+            branch_name = $10,
+            ifsc_code = $11,
+            account_number = $12,
+            bank_address = $13,
+            loan_required_amount = $14,
+            purpose_of_loan = $15,
+            gst_number = $16,
+            admission_status = $17,
+            admission_year = $18,
+            total_course_fee = $19,
+            fee_paid = $20,
+            remaining_fee = $21,
+            course_name = $22,
+            course_type = $23,
+            stream_specialization = $24,
+            course_duration = $25,
+            mode_of_study = $26,
+            student_name = $27
+        WHERE id = $1`,
+        [
+            applicationId,
+            institution_name,
+            university,
+            institution_address,
+            institution_district || null,
+            institution_taluka || null,
+            institution_place || null,
+            institution_pincode || null,
+            bank_name,
+            branch_name,
+            ifsc_code,
+            account_number,
+            bank_address,
+            loan_required_amount || 0,
+            purpose_of_loan,
+            gst_number || null,
+            admission_status,
+            admission_year,
+            total_course_fee || 0,
+            fee_paid || 0,
+            remaining_fee || 0,
+            course_name,
+            course_type,
+            stream_specialization,
+            course_duration,
+            mode_of_study,
+            student_name
+        ]
+    );
+}
+
 
 //API_____
 
@@ -373,6 +605,52 @@ export async function GET({ params, url }) {
                     annualIncome: data.income || '',
                     previousSurety: data.past_surety_commitment || '',
                     relationship: data.relation || ''
+                }
+            });
+        }
+
+        //Get Educational detail (step 3)
+        if (action === 'getEducationDetails') {
+            const rows = await getEducationDetailsQuery(client, user);
+            
+            if (rows.length === 0) {
+                return json({
+                    error: -1,
+                    errorMsg: "Education details not found"
+                });
+            }
+
+            const data = rows[0];
+           // console.log("Data is_____________-- :",data);
+            return json({
+                error: 0,
+                data: {
+                    studentName: data.student_name || '',
+                    courseName: data.course_name || '',
+                    courseType: data.course_type || '',
+                    streamSpecialization: data.stream_specialization ? String(data.stream_specialization) : '',
+                    courseDuration: data.course_duration ? String(data.course_duration) : '',
+                    modeOfStudy: data.mode_of_study || '',
+                    instituteName: data.institution_name || '',
+                    universityName: data.university || '',
+                    instituteAddress: data.institution_address || '',
+                    currentDistrict: data.institution_district ? String(data.institution_district) : '',
+                    currentTaluka: data.institution_taluka ? String(data.institution_taluka) : '',
+                    place: data.institution_place || '',
+                    pinCode: data.institution_pincode || '',
+                    admissionStatus: data.admission_status || '',
+                    admissionYear: data.admission_year ? String(data.admission_year) : '',
+                    totalCourseFee: data.total_course_fee ? String(data.total_course_fee) : '',
+                    feePaid: data.fee_paid ? String(data.fee_paid) : '',
+                    remainingFee: data.remaining_fee ? String(data.remaining_fee) : '',
+                    loanRequired: data.loan_required_amount ? String(data.loan_required_amount) : '',
+                    purposeOfLoan: data.purpose_of_loan ||  '',
+                    gstNumber: data.gst_number || '',
+                    bankName: data.bank_name || '',
+                    ifscCode: data.ifsc_code || '',
+                    branchName: data.branch_name || '',
+                    accountNumber: data.account_number || '',
+                    bankAddress: data.bank_address || ''
                 }
             });
         }
@@ -504,6 +782,41 @@ export async function POST({ request, params }) {
             return json({
                 error: 0,
                 errorMsg: "Personal details saved successfully",
+                applicationId: applicationId
+            });
+        }
+
+        //Save Education Detail (Step 3)
+        if (action === 'saveEducationDetails') {
+            const { applicationId, educationDetails } = body;
+
+            // console.log('Received saveEducationDetails request:', {
+            //     applicationId,
+            //     educationDetails
+            // });
+
+            if (!applicationId || !educationDetails) {
+                await client.query('ROLLBACK');
+                return json(
+                    { error: -1, errorMsg: "Application ID and education details are required" },
+                    { status: 400 }
+                );
+            }
+
+            // Check if record exists
+            const existingRows = await checkEducationDetailsExistsQuery(client, applicationId);
+
+            if (existingRows.length > 0) {
+                await updateEducationDetailsQuery(client, applicationId, educationDetails);
+            } else {
+                await insertEducationDetailsQuery(client, applicationId, educationDetails);
+            }
+
+            await client.query('COMMIT');
+
+            return json({
+                error: 0,
+                errorMsg: "Education details saved successfully",
                 applicationId: applicationId
             });
         }
