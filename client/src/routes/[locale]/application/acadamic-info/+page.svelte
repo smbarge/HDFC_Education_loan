@@ -420,6 +420,8 @@ async function handleProceed() {
 
     console.log('Education details saved successfully');
     console.log('Navigating to guarantor-details page');
+
+    // sessionStorage.setItem('purposeOfLoan', formData.purposeOfLoan);
     
     goto(`/${locale}/application/guarantor-details`);
 

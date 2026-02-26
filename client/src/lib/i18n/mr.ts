@@ -613,7 +613,7 @@ export const mr = {
     },
 
     occupationLabel: "पालक / संरक्षकाचा व्यवसाय",
-    occupationPlaceholder: "व्यवसाय टाका",
+    occupationPlaceholder: "व्यवसाय निवडा",
     occupationRequired: "व्यवसाय आवश्यक आहे",
 
     annualIncomeLabel: "कुटुंबाचे वार्षिक उत्पन्न",
@@ -947,6 +947,7 @@ export const mr = {
     proceedButton: "पुढे जा",
     processing: "प्रक्रिया सुरू आहे..."
   },  
+
 
   collateralDetails: {
   // Page Header
@@ -1357,6 +1358,15 @@ GuarantorDocument: {
     // No Guarantor Message
     noGuarantorFound: "जामीनदाराची माहिती आढळली नाही. कृपया जामीनदार तपशील पूर्ण करा."
   },
+
+  StudyAbroadDocument: {
+  sectionTitle: "परदेशात शिक्षण - आवश्यक कागदपत्रे",
+  documentsName: "कागदपत्राचे नाव",
+  uploadView: "अपलोड / पहा",
+  delete: "हटवा",
+  passport: "संपूर्ण पासपोर्टच्या छायांकित प्रत (सर्व पाने)",
+  visa: "वैध व्हिसाची छायांकित प्रत"
+},
 
 CollateralDocuments: {
     // Header

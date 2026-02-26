@@ -582,7 +582,7 @@ export const en = {
       },
       
       occupationLabel: "Occupation of Parent / Guardian",
-      occupationPlaceholder: "Enter occupation",
+      occupationPlaceholder: "Select occupation",
       occupationRequired: "Occupation is required",
       
       annualIncomeLabel: "Annual Income of Family",
@@ -1397,6 +1397,16 @@ export const en = {
         // No Guarantor Message
         noGuarantorFound: "No guarantor information found. Please complete the guarantor details step."
       },
+
+    StudyAbroadDocument: {
+      sectionTitle: "STUDY ABROAD DOCUMENTS",
+      documentsName: "DOCUMENTS NAME",
+      uploadView: "UPLOAD / VIEW",
+      delete: "DELETE",
+      passport: "Complete Passport (All Pages)",
+      visa: "Valid Visa"
+    },
+
 
     CollateralDocuments: {
       // Header

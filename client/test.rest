@@ -228,6 +228,44 @@ Content-Type: application/json
 ### STEP 3: Get Education Details
 GET http://localhost:5173/api/createApplication/1?action=getEducationDetails
 
+### Save Guarantor Details
+POST http://localhost:5173/api/guarantorDetails/1
+Content-Type: application/json
+
+{
+  "action": "saveGuarantorDetails",
+  "applicationId": 1,
+  "guarantorDetails": {
+    "name": "John Doe",
+    "dob": "1980-05-15",
+    "gender": 1,
+    "aadhar": "123456789012",
+    "mobile": "9876543210",
+    "email": "john@example.com",
+    "pan": "ABCDE1234F",
+    "current_address": "123 Main Street",
+    "current_district": 25,
+    "current_taluka": 1,
+    "current_place": "Pune",
+    "current_area": "Kothrud",
+    "current_pincode": "411038",
+    "permanent_address": "123 Main Street",
+    "permanent_district": 25,
+    "permanent_taluka": 1,
+    "permanent_place": "Pune",
+    "permanent_area": "Kothrud",
+    "permanent_pincode": "411038",
+    "marital_status": 1,
+    "education_qualification": 3,
+    "occupation": 2,
+    "income": "600000",
+    "past_surety_commitment": "No"
+  }
+}
+
+### Get Guarantor Details
+GET http://localhost:5173/api/guarantorDetails/1?action=getGuarantorDetails
+
 ### Fetch Verified Contacts
 GET http://localhost:5173/api/getVerifiedContacts?applicationId=1
 Content-Type: application/json

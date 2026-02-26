@@ -9,6 +9,8 @@
   import guarantorDetailsValidation from '$lib/validation/application/guarantorDetails';
   import { user, logout as logoutStore, applicationId } from '$lib/stores/userStore';
   import { fetchMasters, fetchTalukas } from '$lib/api/auth';
+  import { getGuarantorDetailsData, customSaveGuarantorDetails } from '$lib/api/authApi';
+
 
 
   $: locale = $page.params.locale || 'en';
@@ -32,12 +34,16 @@
 
   let currentTalukas = [];
   let permanentTalukas = [];
-  
-  let communities = [];
+  // let communities = [];
+  let genders = [];
+  let mstatus = [];
+  let educationq = []; 
+  let occupations = [];
+
   let isLoadingCurrentTalukas = false;
   let isLoadingPermanentTalukas = false;
 
-  onMount(async () => {
+onMount(async () => {
   if (!$user) {
     goto(`/${locale}/login`);
     return;
@@ -49,8 +55,31 @@
   }
 
   await loadMasters();
-});
 
+  const guarantorData = await getGuarantorDetailsData($applicationId);
+  
+  if (guarantorData.error === 0 && guarantorData.data) {
+
+    const savedCurrentDistrict = guarantorData.data.currentDistrict;
+    const savedCurrentTaluka = guarantorData.data.currentTaluka;
+    const savedPermanentDistrict = guarantorData.data.permanentDistrict;
+    const savedPermanentTaluka = guarantorData.data.permanentTaluka;
+
+    formData = { ...formData, ...guarantorData.data };
+
+    if (savedCurrentDistrict) {
+      await loadTalukasForDistrict(savedCurrentDistrict, 'current');
+      formData.currentTaluka = String(savedCurrentTaluka);
+    }
+
+    if (savedPermanentDistrict) {
+      await loadTalukasForDistrict(savedPermanentDistrict, 'permanent');
+      formData.permanentTaluka = String(savedPermanentTaluka);
+    }
+
+    formData = formData;
+  }
+});
   let currentStep = 4;
   let isSubmitting = false;
   let errors = {};
@@ -70,10 +99,32 @@
         country_id: row.country_id
       }));
 
-      communities = result.masters.m_religion.map(row => ({
+      // communities = result.masters.m_religion.map(row => ({
+      //   value: row.id,
+      //   label: `${row.eng_name} - ${row.dev_name}`
+      // }));
+
+      genders = result.masters.m_gender.map(row => ({
         value: row.id,
-        label: `${row.eng_name} - ${row.dev_name}`
+        label: `${row.eng_name} - ${row.dev_name}`,
       }));
+
+      mstatus = result.masters.m_marital_status.map(row => ({
+        value: row.id,
+        label: `${row.eng_name} - ${row.dev_name}`,
+      }));
+
+      educationq = result.masters.m_educational_qualification.map(row => ({
+        value: row.id,
+        label: `${row.eng_name} - ${row.dev_name}`,
+      }));
+
+      occupations = result.masters.m_occupation.map(row => ({
+        value: row.id,
+        label: `${row.eng_name} - ${row.dev_name}`,
+      }));
+
+
 
     } else {
       districtError = 'Failed to load districts';
@@ -125,7 +176,6 @@ async function loadTalukasForDistrict(districtId, type = 'current') {
 }
   
   let formData = {
-    guarantorCommunity: '',
     guarantorFullName: '',
     guarantorDOB: '',
     guarantorGender: '',
@@ -155,50 +205,6 @@ async function loadTalukasForDistrict(districtId, type = 'current') {
   };
 
 
-  const areas = [
-    { value: '', label: { en: 'Select Area', hi: 'क्षेत्र चुनें', mr: 'परिसर निवडा' } },
-    { value: 'Urban', label: { en: 'Urban', hi: 'शहरी', mr: 'शहरी' } },
-    { value: 'Rural', label: { en: 'Rural', hi: 'ग्रामीण', mr: 'ग्रामीण' } }
-  ];
-
-  const maritalStatusOptions = [
-    { value: '', label: { en: 'Select status', hi: 'स्थिति चुनें', mr: 'स्थिती निवडा' } },
-    { value: 'Unmarried', label: { en: 'Unmarried', hi: 'अविवाहित', mr: 'अविवाहित' } },
-    { value: 'Married', label: { en: 'Married', hi: 'विवाहित', mr: 'विवाहित' } },
-    { value: 'Divorced', label: { en: 'Divorced', hi: 'तलाकशुदा', mr: 'घटस्फोटित' } },
-    { value: 'Separated', label: { en: 'Separated', hi: 'वेगळे राहणारे', mr: 'वेगळे राहणारे' } },
-    { value: 'Widow', label: { en: 'Widow', hi: 'विधवा', mr: 'विधवा' } },
-    { value: 'Widower', label: { en: 'Widower', hi: 'विधुर', mr: 'विधुर' } }
-  ];
-
-  const educationalQualifications = [
-    { value: '', label: { en: 'Select status', hi: 'स्थिति चुनें', mr: 'स्थिती निवडा' } },
-    { value: 'No Formal Education', label: { en: 'No Formal Education', hi: 'कोई औपचारिक शिक्षा नहीं', mr: 'कोणतीही औपचारिक शिक्षा नाही' } },
-    { value: 'Primary Education', label: { en: 'Primary Education', hi: 'प्राथमिक शिक्षा', mr: 'प्राथमिक शिक्षण' } },
-    { value: 'Secondary Education', label: { en: 'Secondary Education', hi: 'माध्यमिक शिक्षा', mr: 'माध्यमिक शिक्षण' } },
-    { value: 'Higher Secondary Education', label: { en: 'Higher Secondary Education', hi: 'उच्च माध्यमिक शिक्षा', mr: 'उच्च माध्यमिक शिक्षण' } },
-    { value: 'Diploma', label: { en: 'Diploma', hi: 'डिप्लोमा', mr: 'डिप्लोमा' } },
-    { value: "Bachelor's Degree", label: { en: "Bachelor's Degree", hi: 'स्नातक', mr: 'स्नातक' } },
-    { value: "Master's Degree", label: { en: "Master's Degree", hi: "मास्टर्स डिग्री", mr: "मास्टर्स डिग्री" } },
-    { value: 'Doctorate (PhD)', label: { en: 'Doctorate (PhD)', hi: 'डॉक्टरेट (पीएचडी)', mr: 'डॉक्टरेट (पीएचडी)' } },
-    { value: 'Post-Doctoral', label: { en: 'Post-Doctoral', hi: 'पोस्ट-डॉक्टरल', mr: 'पोस्ट-डॉक्टरल' } },
-    { value: 'Vocational Training', label: { en: 'Vocational Training', hi: 'व्यावसायिक प्रशिक्षण', mr: 'व्यावसायिक प्रशिक्षण' } }
-  ];
-
-  const occupations = [
-    { value: '', label: { en: 'Select occupation', hi: 'व्यवसाय चुनें', mr: 'व्यवसाय निवडा' } },
-    { value: 'Salaried Employee', label: { en: 'Salaried Employee', hi: 'नौकरी कर्मचारी', mr: 'नोकरी कर्मचारी' } },
-    { value: 'Self-Employed Professional', label: { en: 'Self-Employed Professional', hi: 'स्वरोजगार व्यावसायिक', mr: 'स्वयंरोजगार व्यावसायिक' } },
-    { value: 'Business Owner', label: { en: 'Business Owner', hi: 'व्यवसाय मालिक', mr: 'व्यवसाय मालक' } },
-    { value: 'Government Employee', label: { en: 'Government Employee', hi: 'शासकीय कर्मचारी', mr: 'शासकीय कर्मचारी' } },
-    { value: 'Farmer', label: { en: 'Farmer', hi: 'शेतकरी', mr: 'शेतकरी' } },
-    { value: 'Daily Wage Worker', label: { en: 'Daily Wage Worker', hi: 'दिहाड़ी काम करणारे मजदूर', mr: 'दिवसाचा काम करणारे मजूर' } },
-    { value: 'Retired', label: { en: 'Retired', hi: 'निवृत्त', mr: 'निवृत्त' } },
-    { value: 'Housewife / Homemaker', label: { en: 'Housewife / Homemaker', hi: 'गृहिणी', mr: 'गृहिणी' } },
-    { value: 'Student', label: { en: 'Student', hi: 'विद्यार्थी', mr: 'विद्यार्थी' } },
-    { value: 'Unemployed', label: { en: 'Unemployed', hi: 'बेकार', mr: 'बेकार' } },
-    { value: 'Other', label: { en: 'Other', hi: 'इतर', mr: 'इतर' } }
-  ];
 
 async function handleSameAddressChange() {
   if (formData.sameAsCurrentAddress) {
@@ -306,19 +312,54 @@ async function handleProceed() {
   isSubmitting = true;
 
   try {
-    // Save guarantor data to session storage WITH DISPLAY INFO
-    const guarantorData = {
-      type: 'guarantor',
-      ...formData,
-      displayName: `${formData.guarantorFullName} - ${formData.guarantorMobile}` // For error messages
-    };
-    sessionStorage.setItem('guarantorData', JSON.stringify(guarantorData));
+    console.log('💾 Saving guarantor details for application:', $applicationId);
     
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    const saveResult = await customSaveGuarantorDetails({
+      applicationId: $applicationId,
+      guarantorDetails: {
+        name: formData.guarantorFullName,
+        dob: formData.guarantorDOB,
+        gender: formData.guarantorGender,
+        aadhar: formData.guarantorAadhar || null,
+        mobile: formData.guarantorMobile,
+        email: formData.guarantorEmail || null,
+        pan: formData.guarantorPAN || null,
+        current_address: formData.currentStreetAddress,
+        current_district: formData.currentDistrict,
+        current_taluka: formData.currentTaluka,
+        current_place: formData.currentPlace,
+        current_area: formData.currentArea,
+        current_pincode: formData.currentPinCode || null,
+        permanent_address: formData.permanentStreetAddress,
+        permanent_district: formData.permanentDistrict,
+        permanent_taluka: formData.permanentTaluka,
+        permanent_place: formData.permanentPlace,
+        permanent_area: formData.permanentArea,
+        permanent_pincode: formData.permanentPinCode || null,
+        marital_status: formData.maritalStatus,
+        education_qualification: formData.educationalQualification,
+        occupation: formData.guardianOccupation,
+        income: formData.annualIncome,
+        past_surety_commitment: formData.previousSurety
+      }
+    });
+
+    console.log('Save result:', saveResult);
+
+    if (saveResult.error !== 0) {
+      console.error('Save failed:', saveResult.errorMsg);
+      alert(saveResult.errorMsg || 'Failed to save guarantor details');
+      return;
+    }
+
+    console.log('Guarantor details saved successfully');
+    console.log('Navigating to collateral-details page');
+    
     goto(`/${locale}/application/Collateral-details`);
+
   } catch (error) {
     console.error('Error submitting form:', error);
-    alert('Failed to submit form. Please try again.');
+    alert('An error occurred while saving. Please try again.');
   } finally {
     isSubmitting = false;
   }
@@ -394,7 +435,7 @@ async function handleProceed() {
         </div>
       </div>
 
-      <div class="mb-6">
+      <!-- <div class="mb-6">
         <label class="block text-sm font-medium text-gray-700 mb-3">
           {t.guarantorDetails?.guarantorCommunityLabel}
         </label>
@@ -418,7 +459,7 @@ async function handleProceed() {
         {#if errors.guarantorCommunity}
           <p class="error-message mt-2 text-xs text-red-600">{errors.guarantorCommunity}</p>
         {/if}
-      </div>
+      </div> -->
 
       <div class="grid md:grid-cols-3 gap-4">
         <div>
@@ -471,16 +512,16 @@ async function handleProceed() {
           <label class="block text-sm font-medium text-gray-700 mb-2">
             {t.guarantorDetails?.guarantorGenderLabel} <span class="text-red-500">*</span>
           </label>
-          <select
+          <select 
             bind:value={formData.guarantorGender}
             on:change={() => validateField('guarantorGender')}
-            class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.guarantorGender ? 'border-red-500' : 'border-gray-300'}"
+            class="w-full max-w-md px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.district ? 'border-red-500' : ''}"
           >
-            <option value="">{t.guarantorDetails?.guarantorGenderPlaceholder}</option>
-            <option value="Male">{t.guarantorDetails?.genderOptions.male}</option>
-            <option value="Female">{t.guarantorDetails?.genderOptions.female}</option>
-            <option value="Other">{t.guarantorDetails?.genderOptions.other}</option>
-          </select>
+          <option value="">{t.guarantorDetails?.genderPlaceholder || 'Choose your gender'}</option>
+          {#each genders as gender}
+            <option value={gender.value}>{gender.label}</option>
+          {/each}
+         </select>
           {#if errors.guarantorGender}
             <p class="error-message mt-1 text-xs text-red-600">{errors.guarantorGender}</p>
           {/if}
@@ -693,23 +734,23 @@ async function handleProceed() {
           </div>
 
           <!-- Area -->
+
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
+           <label class="block text-sm font-medium text-gray-700 mb-2">
               {t.guarantorDetails?.currentAreaLabel} <span class="text-red-500">*</span>
             </label>
-            <select
-              bind:value={formData.currentArea}
-              on:change={() => validateField('currentArea')}
-              class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.currentArea ? 'border-red-500' : 'border-gray-300'}"
-            >
-              {#each areas as area}
-                <option value={area.value}>{area.label[locale] || area.label.en}</option>
-              {/each}
-            </select>
+           <input
+            type="text"
+            bind:value={formData.currentArea}
+            on:input={() => validateField('currentArea')}
+            placeholder={t.guarantorDetails?.areaPlaceholder || 'Area'}
+            class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.currentArea ? 'border-red-500' : 'border-gray-300'}"
+          />
             {#if errors.currentArea}
               <p class="error-message mt-1 text-xs text-red-600">{errors.currentArea}</p>
             {/if}
           </div>
+
         </div>
 
         <!-- Pin Code -->
@@ -856,23 +897,22 @@ async function handleProceed() {
 
           <!-- Area -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
+             <label class="block text-sm font-medium text-gray-700 mb-2">
               {t.guarantorDetails?.permanentAreaLabel} <span class="text-red-500">*</span>
             </label>
-            <select
+            <input
+              type="text"
               bind:value={formData.permanentArea}
-              on:change={() => validateField('permanentArea')}
+              placeholder={t.guarantorDetails?.areaPlaceholder || 'Area'}
               disabled={formData.sameAsCurrentAddress}
-              class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 text-sm {errors.permanentArea ? 'border-red-500' : 'border-gray-300'}"
-            >
-              {#each areas as area}
-                <option value={area.value}>{area.label[locale] || area.label.en}</option>
-              {/each}
-            </select>
+              class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed text-sm {errors.permanentArea ? 'border-red-500' : 'border-gray-300'}"
+            />
             {#if errors.permanentArea}
               <p class="error-message mt-1 text-xs text-red-600">{errors.permanentArea}</p>
             {/if}
           </div>
+
+
         </div>
 
         <!-- Pin Code -->
@@ -922,8 +962,9 @@ async function handleProceed() {
             on:change={() => validateField('maritalStatus')}
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.maritalStatus ? 'border-red-500' : 'border-gray-300'}"
           >
-            {#each maritalStatusOptions as status}
-              <option value={status.value}>{status.label[locale] || status.label.en}</option>
+          <option value="">{t.guarantorDetails?.maritalPlaceholder || 'Select'}</option>
+            {#each mstatus as status}
+              <option value={status.value}>{status.label}</option>
             {/each}
           </select>
           {#if errors.maritalStatus}
@@ -941,8 +982,11 @@ async function handleProceed() {
               on:change={() => validateField('educationalQualification')} 
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.educationalQualification ? 'border-red-500' : 'border-gray-300'}"
           >
-            {#each educationalQualifications as qual}
-              <option value={qual.value}>{qual.label[locale] || qual.label.en}</option>
+           <option value="">
+            {t.guarantorDetails?.EducationPlaceholder || 'Select Qualification'}
+          </option>
+            {#each educationq as qual}
+              <option value={qual.value}>{qual.label}</option>
             {/each}
           </select>
           {#if errors.educationalQualification}
@@ -978,8 +1022,9 @@ async function handleProceed() {
             on:change={() => validateField('guardianOccupation')}
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.guardianOccupation ? 'border-red-500' : 'border-gray-300'}"
           >
+          <option value="">{t.personalDetails?.occupationPlaceholder || 'Select occupation'}</option>
             {#each occupations as occupation}
-              <option value={occupation.value}>{occupation.label[locale] || occupation.label.en}</option>
+              <option value={occupation.value}>{occupation.label}</option>
             {/each}
           </select>
           {#if errors.guardianOccupation}

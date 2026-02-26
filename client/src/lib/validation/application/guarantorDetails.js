@@ -1,10 +1,6 @@
 import { create, test, enforce } from 'vest';
 
 const guarantorDetailsValidation = create((data, t) => {
-  // Community
-  test('guarantorCommunity', t?.guarantorDetails?.guarantorCommunityRequired || 'Community is required', () => {
-    enforce(data.guarantorCommunity).isNotEmpty();
-  });
 
   // Full Name
   test('guarantorFullName', t?.guarantorDetails?.guarantorFullNameRequired || 'Full name is required', () => {
@@ -85,6 +81,8 @@ const guarantorDetailsValidation = create((data, t) => {
   });
 
   // Permanent Address
+  if (!data.sameAsCurrentAddress) {
+
   test('permanentStreetAddress', t?.guarantorDetails?.permanentStreetAddressRequired || 'Street address is required', () => {
     enforce(data.permanentStreetAddress).isNotEmpty();
   });
@@ -113,6 +111,7 @@ const guarantorDetailsValidation = create((data, t) => {
     enforce(data.permanentPinCode).matches(/^\d{6}$/);
   });
 
+}
   // Marital Status
   test('maritalStatus', t?.guarantorDetails?.maritalStatusRequired || 'Marital status is required', () => {
     enforce(data.maritalStatus).isNotEmpty();

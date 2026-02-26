@@ -751,7 +751,7 @@ export async function POST({ request, params }) {
         if (action === 'savePersonalDetails') {
             const { applicationId, personalDetails } = body;
 
-            console.log('📥 Received savePersonalDetails request:', {
+            console.log('Received savePersonalDetails request:', {
                 applicationId,
                 personalDetails
             });

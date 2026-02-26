@@ -602,6 +602,72 @@ const customSaveEducationDetails = async ({ applicationId, educationDetails }) =
     }
 };
 
+
+
+
+//Guarantor detail 
+
+// Get guarantor details
+const getGuarantorDetailsData = async (applicationId) => {
+    console.log("getGuarantorDetailsData called for applicationId:", applicationId);
+
+    try {
+        const response = await fetch(`/api/guarantorDetails/${applicationId}?action=getGuarantorDetails`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log("Get guarantor details response:", result);
+        return result;
+
+    } catch (e) {
+        console.error("getGuarantorDetailsData failed:", e);
+        return {
+            error: -2,
+            errorMsg: e.message || 'Failed to get guarantor details'
+        };
+    }
+};
+
+// Save guarantor details
+const customSaveGuarantorDetails = async ({ applicationId, guarantorDetails }) => {
+    console.log("customSaveGuarantorDetails called for applicationId:", applicationId);
+
+    try {
+        const response = await fetch(`/api/guarantorDetails/${applicationId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'saveGuarantorDetails',
+                applicationId,
+                guarantorDetails
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log("Save guarantor details response:", result);
+        return result;
+
+    } catch (e) {
+        console.error("customSaveGuarantorDetails failed:", e);
+        return {
+            error: -2,
+            errorMsg: e.message || 'Failed to save guarantor details'
+        };
+    }
+};
+
+
+
 export {
   customVerifyApplicantAndSendOtp,
   customVerifyOtp,
@@ -620,5 +686,7 @@ export {
   getPersonalDetailsData,
   customSavePersonalDetails,
   getEducationDetailsData,
-  customSaveEducationDetails
+  customSaveEducationDetails,
+  getGuarantorDetailsData,
+  customSaveGuarantorDetails
 };

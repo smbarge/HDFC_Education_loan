@@ -9,15 +9,18 @@
   import CoApplicantDocumentsSection from '$lib/components/upload-documents/CoApplicantDocumentsSection.svelte';
   import GuarantorDocumentsSection from '$lib/components/upload-documents/GuarantorDocumentsSection.svelte';
   import CollateralDocumentsSection from '$lib/components/upload-documents/CollateralDocumentsSection.svelte';
+  import StudyAbroadDocumentsSection from '$lib/components/upload-documents/StudyAbroadDocumentsSection.svelte';
   import ApplicantInfoSummary from '$lib/components/upload-documents/ApplicantInfoSummary.svelte';
   import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
+  import { getEducationDetailsData } from '$lib/api/authApi';
+
 
   import { user, logout as logoutStore, applicationId } from '$lib/stores/userStore';
 
   
   import documentUploadValidation, { 
     validateDocumentFile, 
-    validateAllRequiredDocuments 
+    validateAllRequiredDocuments,
   } from '$lib/validation/application/uploaddocuments';
 
 
@@ -32,6 +35,8 @@
   let uploadErrors = {}; 
   let submitError = ''; 
   let missingDocuments = [];
+
+  let purposeOfLoan = '';
     
 
 
@@ -48,7 +53,7 @@
   let collateralItems = [];
   let guarantorData = null;
 
- onMount(() => {
+ onMount(async () => {
   if (!$user) {
     goto(`/${locale}/login`);
     return;
@@ -75,6 +80,13 @@
     } catch (error) {
       guarantorData = null;
     }
+  }
+
+  // Fetch education details to get purposeOfLoan
+  const educationData = await getEducationDetailsData($applicationId);
+  if (educationData.error === 0 && educationData.data) {
+    purposeOfLoan = educationData.data.purposeOfLoan || '';
+    console.log('purposeOfLoan value is:', purposeOfLoan); // ← CHECK THIS
   }
 });
 
@@ -163,7 +175,7 @@
     missingDocuments = [];
     
     // OPTION 1: Use the simple validation function (Current approach - RECOMMENDED)
-    const validation = validateAllRequiredDocuments(uploadedDocs, collateralItems);
+    const validation = validateAllRequiredDocuments(uploadedDocs, collateralItems,purposeOfLoan);
     
     if (!validation.valid) {
       const missingMsg = t.uploadDocuments?.validationMessages?.missingDocuments || 'missing document(s)';
@@ -281,6 +293,17 @@
         {uploadedDocs}
         uploadErrors={uploadErrors}
       />
+
+
+    {#if String(purposeOfLoan) === '7'}
+      <StudyAbroadDocumentsSection
+        onUpload={handleUpload}
+        onView={handleView}
+        onDelete={handleDelete}
+        {uploadedDocs}
+        uploadErrors={uploadErrors}
+      />
+    {/if}
 
       <!-- Co-Applicant Documents -->
       <CoApplicantDocumentsSection

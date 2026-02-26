@@ -1365,6 +1365,15 @@ export const hi = {
     noGuarantorFound: "गारंटर की जानकारी नहीं मिली। कृपया गारंटर विवरण चरण पूरा करें।"
   },
 
+  StudyAbroadDocument: {
+  sectionTitle: "विदेश में अध्ययन - आवश्यक दस्तावेज़",
+  documentsName: "दस्तावेज़ का नाम",
+  uploadView: "अपलोड / देखें",
+  delete: "हटाएं",
+  passport: "संपूर्ण पासपोर्ट की छायाप्रति (सभी पृष्ठ)",
+  visa: "वैध वीज़ा की छायाप्रति"
+},
+
   CollateralDocuments: {
     // Header
     sectionTitle: "संपार्श्विक दस्तावेज़",

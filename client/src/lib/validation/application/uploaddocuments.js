@@ -116,6 +116,14 @@ export function getRequiredGuarantorDocs() {
   ];
 }
 
+//get required study Abroad docs
+export function getRequiredStudyAbroadDocs() {
+  return [
+    'passport_abroad',
+    'visa_abroad'
+  ];
+}
+
 //  Get required collateral documents based on type
 export function getRequiredCollateralDocs(type, index) {
   const prefix = `collateral_${type}_${index}_`;
@@ -210,6 +218,31 @@ const documentUploadValidation = create((data, t, collateralItems = []) => {
     });
   });
 
+
+  skipWhen(!data.purposeOfLoan, () => {
+  const requiredStudyAbroad = getRequiredStudyAbroadDocs();
+
+  requiredStudyAbroad.forEach(docId => {
+    test(docId, t?.uploadDocuments?.validationMessages?.documentRequired || 'Document is required', () => {
+      enforce(data.uploadedDocs?.[docId]?.uploaded).isTruthy();
+    });
+
+    skipWhen(!data.uploadedDocs?.[docId]?.file, () => {
+      test(docId, t?.uploadDocuments?.validationMessages?.fileSizeError || 'File size must be less than 5MB', () => {
+        const MAX_SIZE = 5 * 1024 * 1024;
+        enforce(data.uploadedDocs[docId].file.size).lessThanOrEquals(MAX_SIZE);
+      });
+
+      test(docId, t?.uploadDocuments?.validationMessages?.fileTypeError || 'Invalid file type', () => {
+        const file = data.uploadedDocs[docId].file;
+        const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+        enforce(file.type).inside(ALLOWED_TYPES);
+      });
+    });
+  });
+});
+
+
  
   // GUARANTOR DOCUMENTS VALIDATION
 
@@ -275,7 +308,7 @@ const documentUploadValidation = create((data, t, collateralItems = []) => {
 });
 
 // Validate all required documents are uploaded
-export function validateAllRequiredDocuments(uploadedDocs, collateralItems) {
+export function validateAllRequiredDocuments(uploadedDocs, collateralItems,purposeOfLoan = null) {
   const missing = [];
 
   // Check applicant documents
@@ -301,6 +334,20 @@ export function validateAllRequiredDocuments(uploadedDocs, collateralItems) {
       });
     }
   });
+
+  // Check study abroad documents (only if purposeOfLoan is study abroad)
+    if (purposeOfLoan) {
+      const requiredStudyAbroad = getRequiredStudyAbroadDocs();
+      requiredStudyAbroad.forEach(docId => {
+        if (!uploadedDocs[docId]?.uploaded) {
+          missing.push({
+            section: 'Study Abroad Documents',
+            docId: docId,
+            displayName: formatDocumentName(docId)
+          });
+        }
+      });
+    }
 
   // Check guarantor documents
   const requiredGuarantor = getRequiredGuarantorDocs();
