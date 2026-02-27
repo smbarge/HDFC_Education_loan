@@ -38,7 +38,8 @@ const fetchMasters = async () => {
                 m_perpose_loan: [],
                 m_property_type : [],
                 m_document_type : [],
-                m_units : []
+                m_units : [],
+                m_required_documents : []
             }
         };
     }

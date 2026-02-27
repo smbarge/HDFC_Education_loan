@@ -15,7 +15,15 @@
   import { user, logout as logoutStore, applicationId } from '$lib/stores/userStore';
 
   
-  import { getCollateralProperties, customSaveCollateralProperties } from '$lib/api/authApi';
+  import { getCollateralProperties, 
+          customSaveCollateralProperties , 
+          getFDCollaterals, 
+          saveFDCollaterals,
+          getLICCollaterals, 
+          saveLICCollaterals,
+          getGovtCollaterals, 
+          saveGovtCollaterals
+          } from '$lib/api/authApi';
 
 
   $: locale = $page.params.locale || 'en';
@@ -37,35 +45,32 @@ $: userData = $user ? {
 
 
 onMount(async () => {
-  if (!$user) {
-    goto(`/${locale}/login`);
-    return;
-  }
+    if (!$user) { goto(`/${locale}/login`); return; }
+    if (!$applicationId) { goto(`/${locale}/dashboard`); return; }
 
-  if (!$applicationId) {
-    goto(`/${locale}/dashboard`);
-    return;
-  }
-
-  //Load property collaterals from database
-  const collateralData = await getCollateralProperties($user.id, $applicationId);
-  
-  if (collateralData.error === 0 && collateralData.properties) {
-    collateralItems = collateralData.properties;
-    console.log('Loaded property collaterals from DB:', collateralItems);
-  }
-
-  // Load non-property collaterals from session storage
-  const savedOtherCollaterals = sessionStorage.getItem('otherCollaterals');
-  if (savedOtherCollaterals) {
-    try {
-      const otherItems = JSON.parse(savedOtherCollaterals);
-      collateralItems = [...collateralItems, ...otherItems];
-      console.log('Loaded other collaterals from session:', otherItems);
-    } catch (error) {
-      console.error('Failed to parse otherCollaterals:', error);
+    // Load property collaterals from DB
+    const collateralData = await getCollateralProperties($user.id, $applicationId);
+    if (collateralData.error === 0 && collateralData.properties) {
+        collateralItems = [...collateralData.properties];
     }
-  }
+
+    // Load FD collaterals from DB
+    const fdData = await getFDCollaterals($user.id, $applicationId);
+    if (fdData.error === 0 && fdData.fdCollaterals) {
+        collateralItems = [...collateralItems, ...fdData.fdCollaterals];
+    }
+
+    // Load LIC collaterals from DB
+    const licData = await getLICCollaterals($user.id, $applicationId);
+    if (licData.error === 0 && licData.licCollaterals) {
+        collateralItems = [...collateralItems, ...licData.licCollaterals];
+    }
+
+    // Load Govt collaterals from DB
+    const govtData = await getGovtCollaterals($user.id, $applicationId);
+    if (govtData.error === 0 && govtData.govtCollaterals) {
+        collateralItems = [...collateralItems, ...govtData.govtCollaterals];
+    }
 });
 
   let currentStep = 5;
@@ -125,7 +130,6 @@ onMount(async () => {
       return;
     }
 
-    // Reload from DB to get real IDs
     const collateralData = await getCollateralProperties($user.id, $applicationId);
     if (collateralData.error === 0) {
       const otherItems = collateralItems.filter(i => i.type !== 'property');
@@ -136,67 +140,174 @@ onMount(async () => {
     errors = {};
   }
 
-  function saveFDCollateral(data) {
-      collateralItems = [...collateralItems, data];
-      showFDModal = false;
-      sessionStorage.setItem('collateralItems', JSON.stringify(collateralItems));
+
+  // Helper function to reload all collaterals from database
+  async function reloadAllCollaterals() {
+    collateralItems = []; // Clear first to avoid duplicates
+
+    // Load property collaterals
+    const propertyData = await getCollateralProperties($user.id, $applicationId);
+    if (propertyData.error === 0 && propertyData.properties) {
+      collateralItems = [...collateralItems, ...propertyData.properties];
+    }
+
+    // Load FD collaterals
+    const fdData = await getFDCollaterals($user.id, $applicationId);
+    if (fdData.error === 0 && fdData.fdCollaterals) {
+      collateralItems = [...collateralItems, ...fdData.fdCollaterals];
+    }
+
+    // Load LIC collaterals
+    const licData = await getLICCollaterals($user.id, $applicationId);
+    if (licData.error === 0 && licData.licCollaterals) {
+      collateralItems = [...collateralItems, ...licData.licCollaterals];
+    }
+
+    // Load Govt collaterals
+    const govtData = await getGovtCollaterals($user.id, $applicationId);
+    if (govtData.error === 0 && govtData.govtCollaterals) {
+      collateralItems = [...collateralItems, ...govtData.govtCollaterals];
+    }
+
+    console.log('Reloaded all collaterals:', collateralItems);
+  }
+
+
+  async function saveFDCollateral(data) {
+    const saveResult = await saveFDCollaterals(
+      $user.id,
+      $applicationId,
+      [...collateralItems.filter(i => i.type === 'fd'), data]
+    );
+
+    if (saveResult.error !== 0) {
+      alert(saveResult.errorMsg || 'Failed to save FD collateral');
+      return;
+    }
+
+    const fdData = await getFDCollaterals($user.id, $applicationId);
+    if (fdData.error === 0) {
+      const otherItems = collateralItems.filter(i => i.type !== 'fd');
+      collateralItems = [...otherItems, ...fdData.fdCollaterals];
+    }
+
+    showFDModal = false;
+    errors = {};
+  }
+
+  async function saveLICCollateral(data) {
+      const saveResult = await saveLICCollaterals(
+          $user.id,
+          $applicationId,
+          [...collateralItems.filter(i => i.type === 'lic'), data]
+      );
+
+      if (saveResult.error !== 0) {
+          alert(saveResult.errorMsg || 'Failed to save LIC collateral');
+          return;
+      }
+
+      const licData = await getLICCollaterals($user.id, $applicationId);
+      if (licData.error === 0) {
+          const otherItems = collateralItems.filter(i => i.type !== 'lic');
+          collateralItems = [...otherItems, ...licData.licCollaterals];
+      }
+
+      showLICModal = false;
       errors = {};
   }
 
-    function saveLICCollateral(data) {
-    collateralItems = [...collateralItems, data];
-    showLICModal = false;
-    sessionStorage.setItem('collateralItems', JSON.stringify(collateralItems));
-    errors = {};
-  }
+  async function saveGovtEmployee(data) {
+    console.log('saveGovtEmployee called with data:', data);
+    
+    try {
+     
+      const { id, ...dataWithoutId } = data;
+      
+      const saveResult = await saveGovtCollaterals(
+        $user.id,
+        $applicationId,
+        [...collateralItems.filter(i => i.type === 'govt-employee'), dataWithoutId]
+      );
 
-  function saveGovtEmployee(data) {
-    collateralItems = [...collateralItems, data];
-    showGovtEmployeeModal = false;
-    sessionStorage.setItem('collateralItems', JSON.stringify(collateralItems));
-    errors = {};
+      console.log('Save result:', saveResult);
+
+      if (saveResult.error !== 0) {
+        console.error('Save failed:', saveResult.errorMsg);
+        alert(saveResult.errorMsg || 'Failed to save govt collateral');
+        return;
+      }
+
+      console.log('Govt collateral saved successfully');
+
+      await reloadAllCollaterals();
+
+      showGovtEmployeeModal = false;
+      errors = {};
+    } catch (error) {
+      console.error('Error in saveGovtEmployee:', error);
+      alert('Failed to save govt collateral');
+    }
   }
 
 //Delete Functions
 
-  async function deleteCollateral(id) {
-    const itemToDelete = collateralItems.find(item => item.id === id);
+  async function deleteCollateral(item) {
     const confirmMsg = t.collateralDetails?.deleteConfirm || 'Are you sure you want to delete this collateral?';
-
     if (!confirm(confirmMsg)) return;
 
-    collateralItems = collateralItems.filter(item => item.id !== id);
+    console.log('Deleting collateral:', item);
 
-    if (itemToDelete?.type === 'property') {
-      // Re-save remaining property collaterals to DB (your API does delete-all + re-insert)
+    // Remove from local array first
+    collateralItems = collateralItems.filter(i => !(i.id === item.id && i.type === item.type));
+
+    // Delete from database
+    if (item.type === 'property') {
       const remainingProperties = collateralItems.filter(i => i.type === 'property');
       await customSaveCollateralProperties($user.id, $applicationId, remainingProperties);
-    } else {
-      const otherCollaterals = collateralItems.filter(item => item.type !== 'property');
-      if (otherCollaterals.length > 0) {
-        sessionStorage.setItem('otherCollaterals', JSON.stringify(otherCollaterals));
-      } else {
-        sessionStorage.removeItem('otherCollaterals');
-      }
+
+    } else if (item.type === 'fd') {
+      const remainingFDs = collateralItems.filter(i => i.type === 'fd');
+      await saveFDCollaterals($user.id, $applicationId, remainingFDs);
+
+    } else if (item.type === 'lic') {
+      const remainingLICs = collateralItems.filter(i => i.type === 'lic');
+      await saveLICCollaterals($user.id, $applicationId, remainingLICs);
+
+    } else if (item.type === 'govt-employee') {
+      const remainingGovts = collateralItems.filter(i => i.type === 'govt-employee');
+      await saveGovtCollaterals($user.id, $applicationId, remainingGovts);
     }
+
+    await reloadAllCollaterals();
   }
 
-//Edit Functions
-  async function editCollateral(item) {
-    collateralItems = collateralItems.filter(i => i.id !== item.id);
 
-    if (item.type === 'property') {
-      // Remove from DB (re-save remaining)
-      const remainingProperties = collateralItems.filter(i => i.type === 'property');
-      await customSaveCollateralProperties($user.id, $applicationId, remainingProperties);
-      showPropertyModal = true;
-    } else if (item.type === 'fd') {
-      showFDModal = true;
-    } else if (item.type === 'lic') {
-      showLICModal = true;
-    } else if (item.type === 'govt-employee') {
-      showGovtEmployeeModal = true;
-    }
+//Edit Functions
+
+  async function editCollateral(item) {
+      collateralItems = collateralItems.filter(i => i.id !== item.id);
+
+      if (item.type === 'property') {
+          const remainingProperties = collateralItems.filter(i => i.type === 'property');
+          await customSaveCollateralProperties($user.id, $applicationId, remainingProperties);
+          showPropertyModal = true;
+
+      } else if (item.type === 'fd') {
+          const remainingFDs = collateralItems.filter(i => i.type === 'fd');
+          await saveFDCollaterals($user.id, $applicationId, remainingFDs);
+          showFDModal = true;
+
+      } else if (item.type === 'lic') {
+          const remainingLICs = collateralItems.filter(i => i.type === 'lic');
+          await saveLICCollaterals($user.id, $applicationId, remainingLICs);
+          showLICModal = true;
+
+      } else if (item.type === 'govt-employee') {
+          const remainingGovts = collateralItems.filter(i => i.type === 'govt-employee');
+          await saveGovtCollaterals($user.id, $applicationId, remainingGovts);
+          showGovtEmployeeModal = true;
+      }
   }
 
 //Validate Functions 
@@ -262,27 +373,20 @@ onMount(async () => {
 // }
 
 
-  async function handleProceed() {
+async function handleProceed() {
     if (!validateCollateralList()) return;
 
     isSubmitting = true;
     try {
-      // Save non-property collaterals to session storage
-      const otherCollaterals = collateralItems.filter(item => item.type !== 'property');
-      if (otherCollaterals.length > 0) {
-        sessionStorage.setItem('otherCollaterals', JSON.stringify(otherCollaterals));
-      } else {
         sessionStorage.removeItem('otherCollaterals');
-      }
-
-      goto(`/${locale}/application/upload-documents`);
+        goto(`/${locale}/application/upload-documents`);
     } catch (error) {
-      console.error('Error:', error);
-      alert(t.collateralDetails?.submitError || 'Failed to submit. Please try again.');
+        console.error('Error:', error);
+        alert(t.collateralDetails?.submitError || 'Failed to submit. Please try again.');
     } finally {
-      isSubmitting = false;
+        isSubmitting = false;
     }
-  }
+}
 
 </script>
 
@@ -392,10 +496,10 @@ onMount(async () => {
     <!-- Collateral Items Display -->
     {#if collateralItems.length > 0}
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        {#each collateralItems as item (item.id)}
+          {#each collateralItems as item (`${item.type}-${item.id}`)}
           <div class="bg-white rounded-xl shadow-md p-4 relative hover:shadow-lg transition-shadow">
             <button
-              on:click={() => deleteCollateral(item.id)}
+              on:click={() => deleteCollateral(item)}
               class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center bg-red-100 hover:bg-red-200 text-red-600 rounded-full transition-colors"
               title={t.collateralDetails?.deleteTooltip}
             >

@@ -10,33 +10,15 @@
   let errors = {};
   
   let formData = {
-    fullName: '',
-    relationship: '',
-    aadharNumber: '',
-    mobileNumber: '',
-    residentialAddress: '',
     departmentName: '',
     designation: '',
     employeeID: '',
+    retirementDate: '',
     hasSalaryCertificate: false,
     hasIdentityCard: false,
-    retirementDate: '',
     hasForm24B: false,
     isPermanent: false
   };
-
-  $: relationships = [
-    { value: '', label: t.collateralDetails?.govtEmployeeModal?.relationshipPlaceholder || 'Select Relationship' },
-    { value: 'father', label: t.collateralDetails?.govtEmployeeModal?.father || 'Father' },
-    { value: 'mother', label: t.collateralDetails?.govtEmployeeModal?.mother || 'Mother' },
-    { value: 'spouse', label: t.collateralDetails?.govtEmployeeModal?.spouse || 'Spouse' },
-    { value: 'brother', label: t.collateralDetails?.govtEmployeeModal?.brother || 'Brother' },
-    { value: 'sister', label: t.collateralDetails?.govtEmployeeModal?.sister || 'Sister' },
-    { value: 'uncle', label: t.collateralDetails?.govtEmployeeModal?.uncle || 'Uncle' },
-    { value: 'aunt', label: t.collateralDetails?.govtEmployeeModal?.aunt || 'Aunt' },
-    { value: 'friend', label: t.collateralDetails?.govtEmployeeModal?.friend || 'Friend' },
-    { value: 'other', label: t.collateralDetails?.govtEmployeeModal?.other || 'Other' }
-  ];
 
   function validateField(fieldName) {
     const result = govtEmployeeValidation(formData, t);
@@ -57,7 +39,10 @@
   }
 
   function handleAdd() {
+    console.log('🔵 handleAdd called with formData:', formData);
+    
     if (!validateForm()) {
+      console.log('❌ Validation failed:', errors);
       const firstErrorElement = document.querySelector('.error-message');
       if (firstErrorElement) {
         firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -65,6 +50,7 @@
       return;
     }
 
+    console.log('✅ Validation passed, calling onSave');
     onSave({ ...formData, id: Date.now(), type: 'govt-employee' });
     resetForm();
   }
@@ -76,17 +62,12 @@
 
   function resetForm() {
     formData = {
-      fullName: '',
-      relationship: '',
-      aadharNumber: '',
-      mobileNumber: '',
-      residentialAddress: '',
       departmentName: '',
       designation: '',
       employeeID: '',
+      retirementDate: '',
       hasSalaryCertificate: false,
       hasIdentityCard: false,
-      retirementDate: '',
       hasForm24B: false,
       isPermanent: false
     };
@@ -113,94 +94,6 @@
       </div>
 
       <div class="p-6 space-y-6">
-   
-        <!-- <div>
-          <h4 class="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            {t.collateralDetails?.govtEmployeeModal?.personalDetailsTitle || 'Guarantor Personal Details'}
-          </h4>
-          <div class="grid md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                {t.collateralDetails?.govtEmployeeModal?.fullName || 'Full Name of Guarantor'} <span class="text-red-500">{t.collateralDetails?.govtEmployeeModal?.required || '*'}</span>
-              </label>
-              <input
-                type="text"
-                bind:value={formData.fullName}
-                placeholder={t.collateralDetails?.govtEmployeeModal?.fullNamePlaceholder || 'Enter full name...'}
-                class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm {errors.fullName ? 'border-red-500' : 'border-gray-300'}"
-              />
-              {#if errors.fullName}
-                <p class="mt-1 text-xs text-red-600">{errors.fullName}</p>
-              {/if}
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                {t.collateralDetails?.govtEmployeeModal?.relationship || 'Relationship with Applicant'} <span class="text-red-500">{t.collateralDetails?.govtEmployeeModal?.required || '*'}</span>
-              </label>
-              <select
-                bind:value={formData.relationship}
-                class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm {errors.relationship ? 'border-red-500' : 'border-gray-300'}"
-              >
-                {#each relationships as rel}
-                  <option value={rel.value}>{rel.label}</option>
-                {/each}
-              </select>
-              {#if errors.relationship}
-                <p class="mt-1 text-xs text-red-600">{errors.relationship}</p>
-              {/if}
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                {t.collateralDetails?.govtEmployeeModal?.aadharNumber || 'Aadhaar Number'} <span class="text-red-500">{t.collateralDetails?.govtEmployeeModal?.required || '*'}</span>
-              </label>
-              <input
-                type="text"
-                bind:value={formData.aadharNumber}
-                placeholder={t.collateralDetails?.govtEmployeeModal?.aadharNumberPlaceholder || 'Enter 12-digit Aadhaar...'}
-                maxlength="12"
-                class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm {errors.aadharNumber ? 'border-red-500' : 'border-gray-300'}"
-              />
-              {#if errors.aadharNumber}
-                <p class="mt-1 text-xs text-red-600">{errors.aadharNumber}</p>
-              {/if}
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                {t.collateralDetails?.govtEmployeeModal?.mobileNumber || 'Mobile Number'} <span class="text-red-500">{t.collateralDetails?.govtEmployeeModal?.required || '*'}</span>
-              </label>
-              <input
-                type="text"
-                bind:value={formData.mobileNumber}
-                placeholder={t.collateralDetails?.govtEmployeeModal?.mobileNumberPlaceholder || 'Enter 10-digit mobile...'}
-                maxlength="10"
-                class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm {errors.mobileNumber ? 'border-red-500' : 'border-gray-300'}"
-              />
-              {#if errors.mobileNumber}
-                <p class="mt-1 text-xs text-red-600">{errors.mobileNumber}</p>
-              {/if}
-            </div>
-
-            <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                {t.collateralDetails?.govtEmployeeModal?.residentialAddress || 'Residential Address'} <span class="text-red-500">{t.collateralDetails?.govtEmployeeModal?.required || '*'}</span>
-              </label>
-              <textarea
-                bind:value={formData.residentialAddress}
-                placeholder={t.collateralDetails?.govtEmployeeModal?.residentialAddressPlaceholder || 'Enter complete residential address...'}
-                rows="2"
-                class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm {errors.residentialAddress ? 'border-red-500' : 'border-gray-300'}"
-              ></textarea>
-              {#if errors.residentialAddress}
-                <p class="mt-1 text-xs text-red-600">{errors.residentialAddress}</p>
-              {/if}
-            </div>
-          </div>
-        </div> -->
-
-        <!--  -->
 
         <div>
           <h4 class="font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -209,7 +102,8 @@
           <div class="grid md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                {t.collateralDetails?.govtEmployeeModal?.departmentName || 'Department / Office Name'} <span class="text-red-500">{t.collateralDetails?.govtEmployeeModal?.required || '*'}</span>
+                {t.collateralDetails?.govtEmployeeModal?.departmentName || 'Department / Office Name'} 
+                <span class="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -219,13 +113,14 @@
                 class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm {errors.departmentName ? 'border-red-500' : 'border-gray-300'}"
               />
               {#if errors.departmentName}
-                <p class="mt-1 text-xs text-red-600">{errors.departmentName}</p>
+                <p class="error-message mt-1 text-xs text-red-600">{errors.departmentName}</p>
               {/if}
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                {t.collateralDetails?.govtEmployeeModal?.designation || 'Designation'} <span class="text-red-500">{t.collateralDetails?.govtEmployeeModal?.required || '*'}</span>
+                {t.collateralDetails?.govtEmployeeModal?.designation || 'Designation'} 
+                <span class="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -235,13 +130,14 @@
                 class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm {errors.designation ? 'border-red-500' : 'border-gray-300'}"
               />
               {#if errors.designation}
-              <p class="error-message mt-1 text-xs text-red-600">{errors.designation}</p>
-            {/if}
+                <p class="error-message mt-1 text-xs text-red-600">{errors.designation}</p>
+              {/if}
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                {t.collateralDetails?.govtEmployeeModal?.employeeID || 'Employee ID Number'} <span class="text-red-500">{t.collateralDetails?.govtEmployeeModal?.required || '*'}</span>
+                {t.collateralDetails?.govtEmployeeModal?.employeeID || 'Employee ID Number'} 
+                <span class="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -257,7 +153,8 @@
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                {t.collateralDetails?.govtEmployeeModal?.retirementDate || 'Date of Retirement (Mandatory)'} <span class="text-red-500">{t.collateralDetails?.govtEmployeeModal?.required || '*'}</span>
+                {t.collateralDetails?.govtEmployeeModal?.retirementDate || 'Date of Retirement (Mandatory)'} 
+                <span class="text-red-500">*</span>
               </label>
               <input
                 type="date"
@@ -274,16 +171,16 @@
 
         <div>
           <h4 class="font-semibold text-gray-900 mb-3">
-            {t.collateralDetails?.govtEmployeeModal?.requiredDocsTitle || 'Required Documents'} <span class="text-red-500">{t.collateralDetails?.govtEmployeeModal?.required || '*'}</span>
-            <span class="block text-xs text-gray-500">{t.collateralDetails?.govtEmployeeModal?.requiredDocsSubtitle || 'All Mandatory'}</span>
+            {t.collateralDetails?.govtEmployeeModal?.requiredDocsTitle || 'Required Documents'} 
+            <span class="text-red-500">*</span>
+            <span class="block text-xs text-gray-500 mt-1">
+              {t.collateralDetails?.govtEmployeeModal?.requiredDocsSubtitle || 'All Mandatory'}
+            </span>
           </h4>
 
           <div class="space-y-2 bg-gray-50 p-4 rounded-lg">
 
-            <label
-              class="flex items-start gap-3 p-2 rounded cursor-pointer hover:bg-white border"
-              class:border-red-500={errors.isPermanent}
-            >
+            <label class="flex items-start gap-3 p-2 rounded cursor-pointer hover:bg-white border">
               <input
                 type="checkbox"
                 bind:checked={formData.hasSalaryCertificate}
@@ -291,15 +188,13 @@
               />
               <div class="text-sm">
                 <p class="font-medium text-gray-900">
-                  {t.collateralDetails?.govtEmployeeModal?.salaryCertificate || 'Original Salary Certificate'} <span class="text-red-500">{t.collateralDetails?.govtEmployeeModal?.required || '*'}</span>
+                  {t.collateralDetails?.govtEmployeeModal?.salaryCertificate || 'Original Salary Certificate'} 
+                  <span class="text-red-500">*</span>
                 </p>
               </div>
             </label>
 
-            <label
-              class="flex items-start gap-3 p-2 rounded cursor-pointer hover:bg-white border"
-              class:border-red-500={errors.isPermanent}
-            >
+            <label class="flex items-start gap-3 p-2 rounded cursor-pointer hover:bg-white border">
               <input
                 type="checkbox"
                 bind:checked={formData.hasIdentityCard}
@@ -307,15 +202,13 @@
               />
               <div class="text-sm">
                 <p class="font-medium text-gray-900">
-                  {t.collateralDetails?.govtEmployeeModal?.identityCard || 'Office Identity Card'} <span class="text-red-500">{t.collateralDetails?.govtEmployeeModal?.required || '*'}</span>
+                  {t.collateralDetails?.govtEmployeeModal?.identityCard || 'Office Identity Card'} 
+                  <span class="text-red-500">*</span>
                 </p>
               </div>
             </label>
 
-            <label
-              class="flex items-start gap-3 p-2 rounded cursor-pointer hover:bg-white border"
-              class:border-red-500={errors.isPermanent}
-            >
+            <label class="flex items-start gap-3 p-2 rounded cursor-pointer hover:bg-white border">
               <input
                 type="checkbox"
                 bind:checked={formData.hasForm24B}
@@ -323,12 +216,13 @@
               />
               <div class="text-sm">
                 <p class="font-medium text-gray-900">
-                  {t.collateralDetails?.govtEmployeeModal?.form24B || 'Form – 24 (B)'} <span class="text-red-500">{t.collateralDetails?.govtEmployeeModal?.required || '*'}</span>
+                  {t.collateralDetails?.govtEmployeeModal?.form24B || 'Form – 24 (B)'} 
+                  <span class="text-red-500">*</span>
                 </p>
               </div>
             </label>
 
-            <label
+            <label 
               class="flex items-start gap-3 p-2 rounded cursor-pointer hover:bg-white border"
               class:border-red-500={errors.isPermanent}
             >
@@ -340,7 +234,8 @@
               />
               <div class="text-sm">
                 <p class="font-medium text-gray-900">
-                  {t.collateralDetails?.govtEmployeeModal?.permanentEmployee || 'Permanent Government Employee'} <span class="text-red-500">{t.collateralDetails?.govtEmployeeModal?.required || '*'}</span>
+                  {t.collateralDetails?.govtEmployeeModal?.permanentEmployee || 'Permanent Government Employee'} 
+                  <span class="text-red-500">*</span>
                 </p>
               </div>
             </label>

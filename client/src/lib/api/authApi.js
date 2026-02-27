@@ -700,7 +700,6 @@ const getCollateralProperties = async (userId, applicationId) => {
     }
 };
 
-// Save collateral properties
 const customSaveCollateralProperties = async (userId, applicationId, properties) => {
     console.log("customSaveCollateralProperties called:", { userId, applicationId, count: properties.length });
 
@@ -731,6 +730,137 @@ const customSaveCollateralProperties = async (userId, applicationId, properties)
     }
 };
 
+// Get FD collaterals
+
+const getFDCollaterals = async (userId, applicationId) => {
+    console.log("getFDCollaterals called for:", { userId, applicationId });
+    try {
+        const response = await fetch(
+            `/api/collateral/${userId}/${applicationId}?action=getFDCollaterals`,
+            {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            }
+        );
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const result = await response.json();
+        console.log("Get FD collaterals response:", result);
+        return result;
+    } catch (e) {
+        console.error("getFDCollaterals failed:", e);
+        return { error: -2, errorMsg: e.message || 'Failed to get FD collaterals' };
+    }
+};
+
+// Save FD collaterals
+const saveFDCollaterals = async (userId, applicationId, fdCollaterals) => {
+    console.log("saveFDCollaterals called:", { userId, applicationId, count: fdCollaterals.length });
+    try {
+        const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'saveFDCollaterals',
+                fdCollaterals
+            })
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const result = await response.json();
+        console.log("Save FD collaterals response:", result);
+        return result;
+    } catch (e) {
+        console.error("saveFDCollaterals failed:", e);
+        return { error: -2, errorMsg: e.message || 'Failed to save FD collaterals' };
+    }
+};
+
+
+// Get LIC collaterals
+const getLICCollaterals = async (userId, applicationId) => {
+    console.log("getLICCollaterals called for:", { userId, applicationId });
+    try {
+        const response = await fetch(
+            `/api/collateral/${userId}/${applicationId}?action=getLICCollaterals`,
+            {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            }
+        );
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const result = await response.json();
+        console.log("Get LIC collaterals response:", result);
+        return result;
+    } catch (e) {
+        console.error("getLICCollaterals failed:", e);
+        return { error: -2, errorMsg: e.message || 'Failed to get LIC collaterals' };
+    }
+};
+
+// Save LIC collaterals
+const saveLICCollaterals = async (userId, applicationId, licCollaterals) => {
+    console.log("saveLICCollaterals called:", { userId, applicationId, count: licCollaterals.length });
+    try {
+        const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'saveLICCollaterals',
+                licCollaterals
+            })
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const result = await response.json();
+        console.log("Save LIC collaterals response:", result);
+        return result;
+    } catch (e) {
+        console.error("saveLICCollaterals failed:", e);
+        return { error: -2, errorMsg: e.message || 'Failed to save LIC collaterals' };
+    }
+};
+
+
+// Get Govt collaterals
+const getGovtCollaterals = async (userId, applicationId) => {
+    console.log("getGovtCollaterals called for:", { userId, applicationId });
+    try {
+        const response = await fetch(
+            `/api/collateral/${userId}/${applicationId}?action=getGovtCollaterals`,
+            {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            }
+        );
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const result = await response.json();
+        console.log("Get govt collaterals response:", result);
+        return result;
+    } catch (e) {
+        console.error("getGovtCollaterals failed:", e);
+        return { error: -2, errorMsg: e.message || 'Failed to get govt collaterals' };
+    }
+};
+
+// Save Govt collaterals
+const saveGovtCollaterals = async (userId, applicationId, govtCollaterals) => {
+    console.log("saveGovtCollaterals called:", { userId, applicationId, count: govtCollaterals.length });
+    try {
+        const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'saveGovtCollaterals',
+                govtCollaterals
+            })
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const result = await response.json();
+        console.log("Save govt collaterals response:", result);
+        return result;
+    } catch (e) {
+        console.error("saveGovtCollaterals failed:", e);
+        return { error: -2, errorMsg: e.message || 'Failed to save govt collaterals' };
+    }
+};
 
 
 
@@ -758,5 +888,11 @@ export {
 
 
   getCollateralProperties,
-  customSaveCollateralProperties
+  customSaveCollateralProperties,
+  getFDCollaterals, 
+  saveFDCollaterals,
+  getLICCollaterals, 
+  saveLICCollaterals,
+  getGovtCollaterals, 
+  saveGovtCollaterals
 };

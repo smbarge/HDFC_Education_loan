@@ -344,3 +344,89 @@ Content-Type: application/json
     }
   ]
 }
+
+//FD  property
+
+### GET - Fetch all FD collaterals
+GET http://localhost:5173/api/collateral/1/2?action=getFDCollaterals
+Content-Type: application/json
+
+
+### POST - Save single FD collateral
+POST http://localhost:5173/api/collateral/1/2
+Content-Type: application/json
+
+{
+  "action": "saveFDCollaterals",
+  "fdCollaterals": [
+    {
+      "bankName": "State Bank of India",
+      "branchName": "Pune Main Branch",
+      "streetAddress": "MG Road, Pune",
+      "district": "1",
+      "taluka": "3",
+      "place": "Pune",
+      "pinCode": "411001",
+      "fdAccountNumber": "FD123456789",
+      "fdStartDate": "2024-01-01",
+      "fdMaturityDate": "2026-01-01",
+      "interestRate": "7.50",
+      "fdDepositAmount": "500000"
+    }
+  ]
+}
+
+
+//lic property
+
+### GET - Fetch all LIC collaterals
+GET http://localhost:5173/api/collateral/1/2?action=getLICCollaterals
+Content-Type: application/json
+
+
+### POST - Save single LIC collateral
+POST http://localhost:5173/api/collateral/1/2
+Content-Type: application/json
+
+{
+  "action": "saveLICCollaterals",
+  "licCollaterals": [
+    {
+      "policyName": "LIC Jeevan Anand",
+      "policyType": "1",
+      "policyReceiptNo": "LIC123456",
+      "policySurrenderValue": "250000",
+      "policyStartDate": "2020-01-01",
+      "policyMaturityDate": "2035-01-01"
+    }
+  ]
+}
+
+
+//gov collateral 
+
+### GET - Fetch all govt collaterals
+GET http://localhost:5173/api/collateral/1/2?action=getGovtCollaterals
+Content-Type: application/json
+
+
+
+### POST - Save single govt collateral
+POST http://localhost:5173/api/collateral/1/2
+Content-Type: application/json
+
+{
+  "action": "saveGovtCollaterals",
+  "govtCollaterals": [
+    {
+      "departmentName": "District Collector Office",
+      "designation": "Senior Clerk",
+      "employeeID": "EMP123456",
+      "retirementDate": "2035-06-30",
+      "hasSalaryCertificate": true,
+      "hasIdentityCard": true,
+      "hasForm24B": true,
+      "isPermanent": true
+    }
+  ]
+}
