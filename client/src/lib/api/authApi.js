@@ -667,6 +667,72 @@ const customSaveGuarantorDetails = async ({ applicationId, guarantorDetails }) =
 };
 
 
+//Collateral Properties --------------------
+
+// Get collateral properties
+
+const getCollateralProperties = async (userId, applicationId) => {
+    console.log("getCollateralProperties called for:", { userId, applicationId });
+
+    try {
+        const response = await fetch(
+            `/api/collateral/${userId}/${applicationId}?action=getCollateralProperties`,
+            {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log("Get collateral properties response:", result);
+        return result;
+
+    } catch (e) {
+        console.error("getCollateralProperties failed:", e);
+        return {
+            error: -2,
+            errorMsg: e.message || 'Failed to get collateral properties'
+        };
+    }
+};
+
+// Save collateral properties
+const customSaveCollateralProperties = async (userId, applicationId, properties) => {
+    console.log("customSaveCollateralProperties called:", { userId, applicationId, count: properties.length });
+
+    try {
+        const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'saveCollateralProperties',
+                properties
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log("Save collateral properties response:", result);
+        return result;
+
+    } catch (e) {
+        console.error("customSaveCollateralProperties failed:", e);
+        return {
+            error: -2,
+            errorMsg: e.message || 'Failed to save collateral properties'
+        };
+    }
+};
+
+
+
 
 export {
   customVerifyApplicantAndSendOtp,
@@ -688,5 +754,9 @@ export {
   getEducationDetailsData,
   customSaveEducationDetails,
   getGuarantorDetailsData,
-  customSaveGuarantorDetails
+  customSaveGuarantorDetails,
+
+
+  getCollateralProperties,
+  customSaveCollateralProperties
 };

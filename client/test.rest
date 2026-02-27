@@ -271,9 +271,6 @@ GET http://localhost:5173/api/getVerifiedContacts?applicationId=1
 Content-Type: application/json
 
 
-
-
-
 ### Save Personal Details (Step 2)
 POST http://localhost:5173/api/createApplication/2
 Content-Type: application/json
@@ -314,4 +311,36 @@ Content-Type: application/json
     "details": null,
     "relation" : 1
   }
+}
+
+
+//Collatera; 
+
+//collateral property 
+
+### GET - Fetch all collateral properties
+GET http://localhost:5173/api/collateral/1/2?action=getCollateralProperties
+Content-Type: application/json
+
+### POST - Save single property collateral
+POST http://localhost:5173/api/collateral/1/2
+Content-Type: application/json
+
+{
+  "action": "saveCollateralProperties",
+  "properties": [
+    {
+      "propertyType": "1",
+      "documentType": "2",
+      "surveyNo": "SRV-001",
+      "district": "1",
+      "taluka": "3",
+      "village": "Pune Village",
+      "pinCode": "411001",
+      "units": "1",
+      "hectares": "2.5",
+      "rGuntha": "10",
+      "propertyValue": "5000000"
+    }
+  ]
 }

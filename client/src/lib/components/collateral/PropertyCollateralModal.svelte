@@ -1,5 +1,8 @@
 <script>
   import propertyCollateralValidation from '$lib/validation/collateral/propertyCollateral';
+  import { fetchMasters, fetchTalukas } from '$lib/api/auth';
+import { onMount } from 'svelte';
+
 
   export let show = false;
   export let onSave;
@@ -23,35 +26,95 @@
     propertyValue: ''
   };
 
-  const propertyTypes = [
-    { value: 'residential', label: 'residential' },
-    { value: 'commercial', label: 'commercial' },
-    { value: 'agriland', label: 'agriLand' },
-    { value: 'openplot', label: 'openPlot' }
-  ];
 
-  const documentTypes = [
-    { value: '712', label: 'doc712' },
-    { value: '8a', label: 'doc8A' },
-    { value: 'prcard', label: 'prCard' },
-    { value: '6D', label: 'doc6D' }
-  ];
 
-  const districts = [
-    { value: '', label: 'Select District' },
-    { value: 'KOLHAPUR', label: 'KOLHAPUR' },
-    { value: 'PUNE', label: 'PUNE' },
-    { value: 'MUMBAI', label: 'MUMBAI' },
-    { value: 'NAGPUR', label: 'NAGPUR' },
-    { value: 'BEED', label: 'BEED' }
-  ];
 
-  const talukas = [
-    { value: '', label: 'Select Taluka' },
-    { value: 'HATKALANGLE', label: 'HATKALANGLE' },
-    { value: 'BEED', label: 'BEED' },
-    { value: 'ASHTI', label: 'ASHTI' }
-  ];
+  let districts = [];
+  let talukas = [];
+  let isLoadingTalukas = false;
+
+  let isLoadingDistricts = false;
+  let districtError = null;
+
+  let propertyTypes = [];
+  let documentTypes = [];
+  let units = [];
+
+  onMount(async () => {
+    await loadMasters();
+  });
+
+
+async function loadMasters() {
+  isLoadingDistricts = true;
+  districtError = null;
+
+  try {
+    const result = await fetchMasters();
+
+    if (result.error === 0) {
+      districts = result.masters.m_district.map(row => ({
+        value: row.dist_id,
+        label: `${row.eng_name} - ${row.dev_name}`,
+        state_id: row.state_id,
+        country_id: row.country_id
+      }));
+
+      propertyTypes = result.masters.m_property_type.map(row => ({
+        value: row.id,
+        label: `${row.eng_name} - ${row.dev_name}`,
+      }));
+
+      documentTypes = result.masters.m_document_type.map(row => ({
+        value: row.id,
+        label: `${row.eng_name} - ${row.dev_name}`,
+      }));
+
+      units = result.masters.m_units.map(row => ({
+        value: row.id,
+        label: `${row.eng_name} - ${row.dev_name}`,
+      }));
+
+    
+    } else {
+      districtError = 'Failed to load masters';
+    }
+
+  } catch (error) {
+    console.error('Failed to load masters:', error);
+    districtError = 'Failed to load masters';
+  } finally {
+    isLoadingDistricts = false;
+  }
+}
+
+
+async function loadTalukasForDistrict(districtId) {
+  const district = districts.find(d => d.value == districtId);
+  if (!district) return;
+
+  isLoadingTalukas = true;
+  talukas = [];
+
+  try {
+    const result = await fetchTalukas({
+      district_id: district.value,
+      state_id: district.state_id,
+      country_id: district.country_id
+    });
+
+    if (result.error === 0 && Array.isArray(result.talukas)) {
+      talukas = result.talukas.map(row => ({
+        value: row.taluka_id,
+        label: `${row.eng_name} - ${row.dev_name}`
+      }));
+    }
+  } catch (error) {
+    console.error('Failed to load talukas:', error);
+  } finally {
+    isLoadingTalukas = false;
+  }
+}
 
   function validateField(fieldName) {
     const result = propertyCollateralValidation(formData, t);
@@ -104,6 +167,7 @@
       propertyValue: ''
     };
     errors = {};
+    talukas = [];
   }
 </script>
 
@@ -134,31 +198,25 @@
           </label>
 
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {#each propertyTypes as type}
-              <label class="flex items-center gap-2 cursor-pointer border rounded-md px-3 py-2
-                            hover:border-blue-400
-                            peer-checked:border-blue-500">
-                
-                <input
-                  type="radio"
-                  name="propertyType"
-                  value={type.value}
-                  bind:group={formData.propertyType}
-                  on:change={() => validateField('propertyType')}
-                  class="w-4 h-4 accent-blue-600"
-                />
-
-                <div class="leading-tight">
-                  <p class="text-sm font-medium text-gray-900">
-                    {t?.collateralDetails?.propertyCollateralModal?.[type.label] || type.value}
-                  </p>
-                 
-                </div>
-       
-                  
-              </label>
-            {/each}
-          </div>
+              {#each propertyTypes as type}
+                <label
+                  for="propertyType_{type.value}"
+                  class="flex items-center gap-2 cursor-pointer border rounded-md px-3 py-2 hover:border-blue-400">
+                  <input
+                    type="radio"
+                    id="propertyType_{type.value}"
+                    name="propertyType"
+                    value={type.value}
+                    bind:group={formData.propertyType}
+                    on:change={() => validateField('propertyType')}
+                    class="w-4 h-4 accent-blue-600"
+                  />
+                  <div class="leading-tight">
+                    <p class="text-sm font-medium text-gray-900">{type.label}</p>
+                  </div>
+                </label>
+              {/each}
+            </div>
           {#if errors.propertyType}
                     <p class="error-message mt-2 text-xs text-red-600">{errors.propertyType}</p>
           {/if}
@@ -171,31 +229,25 @@
           </label>
 
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {#each documentTypes as doc}
-              <label
-                class="flex items-center gap-2 border rounded-md px-3 py-2
-                      cursor-pointer hover:border-blue-400">
-
-                <input
-                  type="radio"
-                  name="documentType"
-                  value={doc.value}
-                  bind:group={formData.documentType}
-                  on:change={() => validateField('documentType')}
-                  class="w-4 h-4 accent-blue-600"
-                />
-
-                <div class="leading-tight">
-                  <p class="text-sm font-medium text-gray-900">
-                    {t?.collateralDetails?.propertyCollateralModal?.[doc.label] || doc.value}
-                  </p>
-                 
-                </div>
-               
-
-              </label>
-            {/each}
-          </div>
+              {#each documentTypes as doc}
+                <label
+                  for="documentType_{doc.value}"
+                  class="flex items-center gap-2 border rounded-md px-3 py-2 cursor-pointer hover:border-blue-400">
+                  <input
+                    type="radio"
+                    id="documentType_{doc.value}"
+                    name="documentType"
+                    value={doc.value}
+                    bind:group={formData.documentType}
+                    on:change={() => validateField('documentType')}
+                    class="w-4 h-4 accent-blue-600"
+                  />
+                  <div class="leading-tight">
+                    <p class="text-sm font-medium text-gray-900">{doc.label}</p>
+                  </div>
+                </label>
+              {/each}
+            </div>
            {#if errors.documentType}
                   <p class="error-message mt-2 text-xs text-red-600">{errors.documentType}</p>
             {/if}
@@ -230,14 +282,19 @@
                   {t?.collateralDetails?.propertyCollateralModal?.district || 'District'} <span class="text-red-500">*</span>
                 </label>
                 <select
-                  bind:value={formData.district}
-                  on:change={() => validateField('district')}  
-                  class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm {errors.district ? 'border-red-500' : 'border-gray-300'}"
-                >
-                  {#each districts as dist}
-                    <option value={dist.value}>{dist.label}</option>
-                  {/each}
-                </select>
+                    bind:value={formData.district}
+                    on:change={() => {
+                      validateField('district');
+                      loadTalukasForDistrict(formData.district);
+                      formData.taluka = '';
+                    }}
+                    class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                  >
+                    <option value="">{t?.collateralDetails?.propertyCollateralModal?.districtPlaceholder || 'Select District'}</option>
+                    {#each districts as district}
+                      <option value={district.value}>{district.label}</option>
+                    {/each}
+                  </select>
                {#if errors.district}
                 <p class="error-message mt-1 text-xs text-red-600">{errors.district}</p>
               {/if}
@@ -248,14 +305,20 @@
                   {t?.collateralDetails?.propertyCollateralModal?.taluka || 'Taluka'} <span class="text-red-500">*</span>
                 </label>
                 <select
-                  bind:value={formData.taluka}
-                  on:change={() => validateField('taluka')}
-                  class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm {errors.taluka ? 'border-red-500' : 'border-gray-300'}"
-                >
-                  {#each talukas as tal}
-                    <option value={tal.value}>{tal.label}</option>
-                  {/each}
-                </select>
+                    bind:value={formData.taluka}
+                    on:change={() => validateField('taluka')}
+                    disabled={!formData.district || isLoadingTalukas}
+                    class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm
+                    {errors.taluka ? 'border-red-500' : 'border-gray-300'}
+                    {!formData.district || isLoadingTalukas ? 'bg-gray-100 cursor-not-allowed' : ''}"
+                  >
+                    <option value="">
+                      {isLoadingTalukas ? 'Loading...' : (t?.collateralDetails?.propertyCollateralModal?.talukaPlaceholder || 'Select Taluka')}
+                    </option>
+                    {#each talukas as taluka}
+                      <option value={taluka.value}>{taluka.label}</option>
+                    {/each}
+                  </select>
                 {#if errors.taluka}
                   <p class="error-message mt-1 text-xs text-red-600">{errors.taluka}</p>
                 {/if}
@@ -306,23 +369,24 @@
           
           <div class="grid md:grid-cols-4 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                {t?.collateralDetails?.propertyCollateralModal?.units || 'Units'} <span class="text-red-500">*</span>
-              </label>
-              <select
-                bind:value={formData.units}
-                 on:change={() => validateField('units')}
-                class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm border-gray-300"
-              >
-                <option value="">{t?.collateralDetails?.propertyCollateralModal?.unitsPlaceholder || 'Select'}</option>
-                <option value="hectares">{t?.collateralDetails?.propertyCollateralModal?.unitsHectares || 'Hectares'}</option>
-                <option value="acres">{t?.collateralDetails?.propertyCollateralModal?.unitsAcres || 'Acres'}</option>
-                <option value="guntha">{t?.collateralDetails?.propertyCollateralModal?.unitsGuntha || 'Guntha'}</option>
-              </select>
-              {#if errors.units}
-              <p class="error-message mt-1 text-xs text-red-600">{errors.units}</p>
-            {/if}
-            </div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  {t?.collateralDetails?.propertyCollateralModal?.units || 'Units'} <span class="text-red-500">*</span>
+                </label>
+                <select
+                  bind:value={formData.units}
+                  on:change={() => validateField('units')}
+                  class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm
+                  {errors.units ? 'border-red-500' : 'border-gray-300'}"
+                >
+                  <option value="">{t?.collateralDetails?.propertyCollateralModal?.unitsPlaceholder || 'Select'}</option>
+                  {#each units as unit}
+                    <option value={unit.value}>{unit.label}</option>
+                  {/each}
+                </select>
+                {#if errors.units}
+                  <p class="error-message mt-1 text-xs text-red-600">{errors.units}</p>
+                {/if}
+              </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">

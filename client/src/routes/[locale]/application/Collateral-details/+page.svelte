@@ -14,6 +14,9 @@
   import collateralDetailsValidation from '$lib/validation/collateral/collateralDetails';
   import { user, logout as logoutStore, applicationId } from '$lib/stores/userStore';
 
+  
+  import { getCollateralProperties, customSaveCollateralProperties } from '$lib/api/authApi';
+
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
@@ -33,26 +36,37 @@ $: userData = $user ? {
 
 
 
-  onMount(() => {
-    if (!$user) {
-      goto(`/${locale}/login`);
-      return;
-    }
+onMount(async () => {
+  if (!$user) {
+    goto(`/${locale}/login`);
+    return;
+  }
 
-    if (!$applicationId) {
-      goto(`/${locale}/dashboard`);
-      return;
-    }
+  if (!$applicationId) {
+    goto(`/${locale}/dashboard`);
+    return;
+  }
 
-    const savedCollaterals = sessionStorage.getItem('collateralItems');
-    if (savedCollaterals) {
-      try {
-        collateralItems = JSON.parse(savedCollaterals);
-      } catch (error) {
-        collateralItems = [];
-      }
+  //Load property collaterals from database
+  const collateralData = await getCollateralProperties($user.id, $applicationId);
+  
+  if (collateralData.error === 0 && collateralData.properties) {
+    collateralItems = collateralData.properties;
+    console.log('Loaded property collaterals from DB:', collateralItems);
+  }
+
+  // Load non-property collaterals from session storage
+  const savedOtherCollaterals = sessionStorage.getItem('otherCollaterals');
+  if (savedOtherCollaterals) {
+    try {
+      const otherItems = JSON.parse(savedOtherCollaterals);
+      collateralItems = [...collateralItems, ...otherItems];
+      console.log('Loaded other collaterals from session:', otherItems);
+    } catch (error) {
+      console.error('Failed to parse otherCollaterals:', error);
     }
-  });
+  }
+});
 
   let currentStep = 5;
   let isSubmitting = false;
@@ -96,62 +110,101 @@ $: userData = $user ? {
     showGovtEmployeeModal = false;
   }
 
-  function savePropertyCollateral(data) {
-        collateralItems = [...collateralItems, data];
-        sessionStorage.setItem('collateralItems', JSON.stringify(collateralItems));
-        showPropertyModal = false;
-        errors = {};
-      }
+
+//Saving Functions 
+
+  async function savePropertyCollateral(data) {
+    const saveResult = await customSaveCollateralProperties(
+      $user.id,
+      $applicationId,
+      [...collateralItems.filter(i => i.type === 'property'), data]
+    );
+
+    if (saveResult.error !== 0) {
+      alert(saveResult.errorMsg || 'Failed to save property collateral');
+      return;
+    }
+
+    // Reload from DB to get real IDs
+    const collateralData = await getCollateralProperties($user.id, $applicationId);
+    if (collateralData.error === 0) {
+      const otherItems = collateralItems.filter(i => i.type !== 'property');
+      collateralItems = [...collateralData.properties, ...otherItems];
+    }
+
+    showPropertyModal = false;
+    errors = {};
+  }
 
   function saveFDCollateral(data) {
+      collateralItems = [...collateralItems, data];
+      showFDModal = false;
+      sessionStorage.setItem('collateralItems', JSON.stringify(collateralItems));
+      errors = {};
+  }
+
+    function saveLICCollateral(data) {
     collateralItems = [...collateralItems, data];
-    showFDModal = false;
+    showLICModal = false;
     sessionStorage.setItem('collateralItems', JSON.stringify(collateralItems));
     errors = {};
   }
 
-  function saveLICCollateral(data) {
-  collateralItems = [...collateralItems, data];
-  showLICModal = false;
-  sessionStorage.setItem('collateralItems', JSON.stringify(collateralItems));
-  errors = {};
-}
-
-function saveGovtEmployee(data) {
-  collateralItems = [...collateralItems, data];
-  showGovtEmployeeModal = false;
-  sessionStorage.setItem('collateralItems', JSON.stringify(collateralItems));
-  errors = {};
-}
-
-function deleteCollateral(id) {
-  if (confirm('Are you sure you want to delete this collateral?')) {
-    collateralItems = collateralItems.filter(item => item.id !== id);
-    sessionStorage.setItem('collateralItems', JSON.stringify(collateralItems)); 
+  function saveGovtEmployee(data) {
+    collateralItems = [...collateralItems, data];
+    showGovtEmployeeModal = false;
+    sessionStorage.setItem('collateralItems', JSON.stringify(collateralItems));
+    errors = {};
   }
-}
 
-  function editCollateral(item) {
+//Delete Functions
+
+  async function deleteCollateral(id) {
+    const itemToDelete = collateralItems.find(item => item.id === id);
+    const confirmMsg = t.collateralDetails?.deleteConfirm || 'Are you sure you want to delete this collateral?';
+
+    if (!confirm(confirmMsg)) return;
+
+    collateralItems = collateralItems.filter(item => item.id !== id);
+
+    if (itemToDelete?.type === 'property') {
+      // Re-save remaining property collaterals to DB (your API does delete-all + re-insert)
+      const remainingProperties = collateralItems.filter(i => i.type === 'property');
+      await customSaveCollateralProperties($user.id, $applicationId, remainingProperties);
+    } else {
+      const otherCollaterals = collateralItems.filter(item => item.type !== 'property');
+      if (otherCollaterals.length > 0) {
+        sessionStorage.setItem('otherCollaterals', JSON.stringify(otherCollaterals));
+      } else {
+        sessionStorage.removeItem('otherCollaterals');
+      }
+    }
+  }
+
+//Edit Functions
+  async function editCollateral(item) {
     collateralItems = collateralItems.filter(i => i.id !== item.id);
-    sessionStorage.setItem('collateralItems', JSON.stringify(collateralItems)); 
 
-    
     if (item.type === 'property') {
+      // Remove from DB (re-save remaining)
+      const remainingProperties = collateralItems.filter(i => i.type === 'property');
+      await customSaveCollateralProperties($user.id, $applicationId, remainingProperties);
       showPropertyModal = true;
     } else if (item.type === 'fd') {
       showFDModal = true;
     } else if (item.type === 'lic') {
       showLICModal = true;
-    }else if (item.type === 'govt-employee') {
+    } else if (item.type === 'govt-employee') {
       showGovtEmployeeModal = true;
     }
   }
 
- function validateCollateralList() {
-  const result = collateralDetailsValidation({ collateralItems }, t);
-  errors = result.getErrors();
-  return result.isValid();
-}
+//Validate Functions 
+  function validateCollateralList() {
+    const result = collateralDetailsValidation({ collateralItems }, t);
+    errors = result.getErrors();
+    return result.isValid();
+  }
 
   function handleBack() {
     goto(`/${locale}/dashboard`);
@@ -208,40 +261,28 @@ function deleteCollateral(id) {
 //   }
 // }
 
-async function handleProceed() {
-  // Validate that at least one collateral is added
-  if (!validateCollateralList()) {
-    return;
-  }
 
-  isSubmitting = true;
-  try {
-    // Save collateral items to session storage WITH DISPLAY INFO
-    const collateralDataToSave = collateralItems.map(item => ({
-      ...item,
-      // Add display name based on type for error messages
-      displayName: item.type === 'property' 
-        ? `${t.collateralDetails?.propertyCollateral} - ${item.village}`
-        : item.type === 'fd' 
-        ? `${t.collateralDetails?.fdCollateral} - ${item.bankName}`
-        : item.type === 'lic'
-        ? `${t.collateralDetails?.licCollateral} - ${item.policyName}`
-        : item.type === 'govt-employee'
-        ? `${t.collateralDetails?.govtEmployee} - ${item.fullName}`
-        : item.type
-    }));
-    
-    sessionStorage.setItem('collateralItems', JSON.stringify(collateralDataToSave));
-    
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    goto(`/${locale}/application/upload-documents`);
-  } catch (error) {
-    console.error('Error:', error);
-    alert(t.collateralDetails?.submitError || 'Failed to submit. Please try again.');
-  } finally {
-    isSubmitting = false;
+  async function handleProceed() {
+    if (!validateCollateralList()) return;
+
+    isSubmitting = true;
+    try {
+      // Save non-property collaterals to session storage
+      const otherCollaterals = collateralItems.filter(item => item.type !== 'property');
+      if (otherCollaterals.length > 0) {
+        sessionStorage.setItem('otherCollaterals', JSON.stringify(otherCollaterals));
+      } else {
+        sessionStorage.removeItem('otherCollaterals');
+      }
+
+      goto(`/${locale}/application/upload-documents`);
+    } catch (error) {
+      console.error('Error:', error);
+      alert(t.collateralDetails?.submitError || 'Failed to submit. Please try again.');
+    } finally {
+      isSubmitting = false;
+    }
   }
-}
 
 </script>
 
@@ -484,7 +525,7 @@ async function handleProceed() {
     </div>
 
     </div>
-  </div>5678448993
+  </div>
 </div>
 
 <!-- Modals -->

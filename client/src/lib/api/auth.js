@@ -35,7 +35,10 @@ const fetchMasters = async () => {
                 m_course_type :[],
                 m_mode_of_study :[],
                 m_admission_status :[],
-                m_perpose_loan: []
+                m_perpose_loan: [],
+                m_property_type : [],
+                m_document_type : [],
+                m_units : []
             }
         };
     }

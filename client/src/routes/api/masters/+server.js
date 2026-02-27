@@ -17,7 +17,10 @@ export async function GET() {
             coursetypeRes,
             modeofstudyRes,
             addmissionstatusRes,
-            perposeloanRes
+            perposeloanRes,
+            propertytypeRes,
+            documenttypeRes,
+            unitsRes
             ] = await Promise.all([
       
       //for the district Master
@@ -132,6 +135,34 @@ export async function GET() {
         dev_name
         FROM public.m_perpose_loan
         ORDER BY id
+        `),
+
+        pool.query(`
+        SELECT
+        id,
+        eng_name,
+        dev_name
+        FROM public.m_property_type
+        ORDER BY id
+        `),
+
+
+        pool.query(`
+        SELECT
+        id,
+        eng_name,
+        dev_name
+        FROM public.m_document_type
+        ORDER BY id
+        `),
+
+         pool.query(`
+        SELECT
+        id,
+        eng_name,
+        dev_name
+        FROM public.m_units
+        ORDER BY id
         `)
     ]);
 
@@ -149,7 +180,10 @@ export async function GET() {
         m_course_type :coursetypeRes.rows,
         m_mode_of_study : modeofstudyRes.rows,
         m_admission_status : addmissionstatusRes.rows,
-        m_perpose_loan : perposeloanRes.rows
+        m_perpose_loan : perposeloanRes.rows,
+        m_property_type : propertytypeRes.rows,
+        m_document_type : documenttypeRes.rows,
+        m_units : unitsRes.rows
       },
       counts: {
         district: districtRes.rowCount,
@@ -162,7 +196,10 @@ export async function GET() {
         coursetype : coursetypeRes.rowCount,
         modeofstudy : modeofstudyRes.rowCount,
         addmissionstatus : addmissionstatusRes.rowCount,
-        perposeloan : perposeloanRes.rowCount
+        perposeloan : perposeloanRes.rowCount,
+        propertyttype : propertytypeRes.rowCount,
+        documenttype : documenttypeRes.rowCount,
+        units : unitsRes.rowCount
       }
     });
 
@@ -183,7 +220,10 @@ export async function GET() {
         m_course_type :[],
         m_mode_of_study :[],
         m_admission_status :[],
-        m_perpose_loan: []
+        m_perpose_loan: [],
+        m_property_type : [],
+        m_document_type : [],
+        m_units : []
       }
     }, { status: 500 });
 

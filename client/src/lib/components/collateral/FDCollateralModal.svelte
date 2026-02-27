@@ -1,5 +1,7 @@
 <script>
   import fdCollateralValidation from '$lib/validation/collateral/fdCollateral';
+  import { fetchMasters, fetchTalukas } from '$lib/api/auth';
+  import { onMount } from 'svelte';
 
   export let show = false;
   export let onSave;
@@ -8,6 +10,13 @@
   export let t = {};
   
   let errors = {};
+  let districts = [];
+  let talukas = [];
+
+  let isLoadingTalukas = false;
+
+  let isLoadingDistricts = false;
+  let districtError = null;
   
   let formData = {
     type: '',
@@ -25,21 +34,66 @@
     fdDepositAmount: ''
   };
 
-  const districts = [
-    { value: '', label: t.collateralDetails?.fdCollateralModal?.districtPlaceholder || 'Select District' },
-    { value: 'KOLHAPUR', label: 'KOLHAPUR' },
-    { value: 'PUNE', label: 'PUNE' },
-    { value: 'MUMBAI', label: 'MUMBAI' },
-    { value: 'NAGPUR', label: 'NAGPUR' },
-    { value: 'BEED', label: 'BEED' }
-  ];
+  onMount(async () => {
+    await loadMasters();
+  });
 
-  const talukas = [
-    { value: '', label: t.collateralDetails?.fdCollateralModal?.talukaPlaceholder || 'Select Taluka' },
-    { value: 'HATKALANGLE', label: 'HATKALANGLE' },
-    { value: 'BEED', label: 'BEED' },
-    { value: 'ASHTI', label: 'ASHTI' }
-  ];
+
+async function loadMasters() {
+  isLoadingDistricts = true;
+  districtError = null;
+
+  try {
+    const result = await fetchMasters();
+
+    if (result.error === 0) {
+      districts = result.masters.m_district.map(row => ({
+        value: row.dist_id,
+        label: `${row.eng_name} - ${row.dev_name}`,
+        state_id: row.state_id,
+        country_id: row.country_id
+      }));
+    
+    } else {
+      districtError = 'Failed to load masters';
+    }
+
+  } catch (error) {
+    console.error('Failed to load masters:', error);
+    districtError = 'Failed to load masters';
+  } finally {
+    isLoadingDistricts = false;
+  }
+}
+
+
+async function loadTalukasForDistrict(districtId) {
+  const district = districts.find(d => d.value == districtId);
+  if (!district) return;
+
+  isLoadingTalukas = true;
+  talukas = [];
+
+  try {
+    const result = await fetchTalukas({
+      district_id: district.value,
+      state_id: district.state_id,
+      country_id: district.country_id
+    });
+
+    if (result.error === 0 && Array.isArray(result.talukas)) {
+      talukas = result.talukas.map(row => ({
+        value: row.taluka_id,
+        label: `${row.eng_name} - ${row.dev_name}`
+      }));
+    }
+  } catch (error) {
+    console.error('Failed to load talukas:', error);
+  } finally {
+    isLoadingTalukas = false;
+  }
+}
+
 
   function validateField(fieldName) {
     const result = fdCollateralValidation(formData, t);
@@ -175,15 +229,21 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 {t.collateralDetails?.fdCollateralModal?.district || 'District'} <span class="text-red-500">{t.collateralDetails?.fdCollateralModal?.required || '*'}</span>
               </label>
+              
               <select
-                bind:value={formData.district}
-                on:change={() => validateField('district')} 
-                class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm {errors.district ? 'border-red-500' : 'border-gray-300'}"
-              >
-                {#each districts as dist}
-                  <option value={dist.value}>{dist.label}</option>
-                {/each}
-              </select>
+                    bind:value={formData.district}
+                    on:change={() => {
+                      validateField('district');
+                      loadTalukasForDistrict(formData.district);
+                      formData.taluka = '';
+                    }}
+                    class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                  >
+                    <option value="">{t?.collateralDetails?.fdCollateralModal?.districtPlaceholder || 'Select District'}</option>
+                    {#each districts as district}
+                      <option value={district.value}>{district.label}</option>
+                    {/each}
+                  </select>
               {#if errors.district}
               <p class="error-message mt-1 text-xs text-red-600">{errors.district}</p>
             {/if}
@@ -193,15 +253,24 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 {t.collateralDetails?.fdCollateralModal?.taluka || 'Taluka'} <span class="text-red-500">{t.collateralDetails?.fdCollateralModal?.required || '*'}</span>
               </label>
+              
               <select
-                bind:value={formData.taluka}
-                on:change={() => validateField('taluka')}
-                class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm {errors.taluka ? 'border-red-500' : 'border-gray-300'}"
-              >
-                {#each talukas as tal}
-                  <option value={tal.value}>{tal.label}</option>
-                {/each}
+                    bind:value={formData.taluka}
+                    on:change={() => validateField('taluka')}
+                    disabled={!formData.district || isLoadingTalukas}
+                    class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm
+                    {errors.taluka ? 'border-red-500' : 'border-gray-300'}
+                    {!formData.district || isLoadingTalukas ? 'bg-gray-100 cursor-not-allowed' : ''}"
+                  >
+                    <option value="">
+                      {isLoadingTalukas ? 'Loading...' : (t?.collateralDetails?.fdCollateralModal?.talukaPlaceholder || 'Select Taluka')}
+                    </option>
+                    {#each talukas as taluka}
+                      <option value={taluka.value}>{taluka.label}</option>
+                    {/each}
               </select>
+
+
               {#if errors.taluka}
               <p class="error-message mt-1 text-xs text-red-600">{errors.taluka}</p>
             {/if}
