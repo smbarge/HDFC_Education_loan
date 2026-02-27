@@ -336,6 +336,7 @@ export const en = {
     welcomeMessage: "Welcome back! Track your loan application progress and manage your account.",
     contactUs:"Contact Us",
     supportDesc:"Our support team is here to assist you",
+    viewApplication:"View Your Application",
 
     // New User
     welcomeNewUser: "Welcome to MAMFDC!",
