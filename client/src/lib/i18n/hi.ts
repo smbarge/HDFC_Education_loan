@@ -387,6 +387,7 @@ export const hi = {
     welcomeMessage: "वापस स्वागत है! अपने ऋण आवेदन की प्रगति को ट्रैक करें और अपने खाते का प्रबंधन करें।",
     contactUs:"संपर्क करें",
     supportDesc:"हमारी सहायता टीम आपकी मदद के लिए यहाँ है",
+    viewApplication:"अपना आवेदन देखें",
     
     // New User
     welcomeNewUser: "एमएएमएफडीसी में आपका स्वागत है!",
