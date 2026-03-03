@@ -21,7 +21,8 @@ export async function GET() {
             propertytypeRes,
             documenttypeRes,
             unitsRes,
-            requireddocumentsRes
+            requireddocumentsRes,
+            uploaddocsRes
             ] = await Promise.all([
       
       //for the district Master
@@ -173,6 +174,16 @@ export async function GET() {
         dev_name
         FROM public.m_required_documents
         ORDER BY id
+        `),
+
+        pool.query(`
+        SELECT
+        doc_id,
+        id,
+        eng_name,
+        dev_name
+        FROM public.m_upload_docs
+        ORDER BY doc_id
         `)
 
         
@@ -196,7 +207,8 @@ export async function GET() {
         m_property_type : propertytypeRes.rows,
         m_document_type : documenttypeRes.rows,
         m_units : unitsRes.rows,
-        m_required_documents : requireddocumentsRes.rows
+        m_required_documents : requireddocumentsRes.rows,
+        m_upload_docs : uploaddocsRes.rows
       },
       counts: {
         district: districtRes.rowCount,
@@ -213,7 +225,8 @@ export async function GET() {
         propertyttype : propertytypeRes.rowCount,
         documenttype : documenttypeRes.rowCount,
         units : unitsRes.rowCount,
-        requireddocuments : requireddocumentsRes.rowCount
+        requireddocuments : requireddocumentsRes.rowCount,
+        uploaddocs : uploaddocsRes.rowCount
       }
     });
 
@@ -238,7 +251,8 @@ export async function GET() {
         m_property_type : [],
         m_document_type : [],
         m_units : [],
-        m_required_documents : []
+        m_required_documents : [],
+        m_upload_docs : []
       }
     }, { status: 500 });
 

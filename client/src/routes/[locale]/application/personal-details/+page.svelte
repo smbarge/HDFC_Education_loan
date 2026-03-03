@@ -47,6 +47,7 @@
   let occupations = [];
   let relations = [];
   let otpError = '';
+  let submitError = '';
   
 //   onMount(async () => {
 //   if (typeof window !== 'undefined') {
@@ -615,6 +616,7 @@ function validateForm() {
 
 
 async function handleProceed() {
+  submitError = '';
   console.log('handleProceed called');
   
   const result = personalDetailsValidation(formData, t);
@@ -678,7 +680,7 @@ async function handleProceed() {
 
     if (saveResult.error !== 0) {
       console.error('Save failed:', saveResult.errorMsg);
-      alert(saveResult.errorMsg || 'Failed to save personal details');
+      submitError = saveResult.errorMsg || 'Failed to save personal details';
       return;
     }
 
@@ -691,7 +693,7 @@ async function handleProceed() {
 
   } catch (error) {
     console.error('Error submitting form:', error);
-    alert('An error occurred while saving. Please try again.');
+    submitError = 'An error occurred while saving. Please try again.';
   } finally {
     isSubmitting = false;
   }
@@ -1116,8 +1118,8 @@ function handleLogout() {
                   bind:value={formData.permanentDistrict}
                   on:change={() => {
                     validateField('permanentDistrict');
-                    loadTalukasForDistrict(formData.permanentDistrict, 'permanent');  // ✅ ADD THIS
-                    formData.permanentTaluka = '';  // ✅ Reset taluka
+                    loadTalukasForDistrict(formData.permanentDistrict, 'permanent'); 
+                    formData.permanentTaluka = ''; 
                   }}
                   disabled={formData.sameAsCurrentAddress}
                   class="w-full px-2 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed text-sm {errors.permanentDistrict ? 'border-red-500' : 'border-gray-300'}"
@@ -1429,6 +1431,13 @@ function handleLogout() {
         
       </div>
     </section>
+
+    {#if submitError}
+      <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-center">
+        <p class="text-sm text-red-600 font-medium">{submitError}</p>
+      </div>
+    {/if}
+
 
     <div class="flex flex-col sm:flex-row justify-center gap-3 mt-6">
       <button

@@ -10,6 +10,7 @@
   import GuarantorDocumentsSection from '$lib/components/upload-documents/GuarantorDocumentsSection.svelte';
   import CollateralDocumentsSection from '$lib/components/upload-documents/CollateralDocumentsSection.svelte';
   import StudyAbroadDocumentsSection from '$lib/components/upload-documents/StudyAbroadDocumentsSection.svelte';
+  import SubmissionSuccessModal from '$lib/components/upload-documents/SubmissionSuccessModal.svelte';
   import ApplicantInfoSummary from '$lib/components/upload-documents/ApplicantInfoSummary.svelte';
   import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
   import { getEducationDetailsData } from '$lib/api/authApi';
@@ -17,11 +18,31 @@
 
   import { user, logout as logoutStore, applicationId } from '$lib/stores/userStore';
 
-  
+//   import { 
+//   getGuarantorDetailsData,
+//   getCollateralProperties, 
+//   getFDCollaterals, 
+//   getLICCollaterals, 
+//   getGovtCollaterals
+// } from '$lib/api/authApi';
+
+import { 
+  getGuarantorDetailsData,
+  getCollateralProperties, 
+  getFDCollaterals, 
+  getLICCollaterals, 
+  getGovtCollaterals,
+  uploadDocument,
+  getUploadedDocuments,
+  deleteDocument
+} from '$lib/api/authApi';
+
   import documentUploadValidation, { 
     validateDocumentFile, 
     validateAllRequiredDocuments,
   } from '$lib/validation/application/uploaddocuments';
+
+
 
 
   $: locale = $page.params.locale || 'en';
@@ -37,6 +58,7 @@
   let missingDocuments = [];
 
   let purposeOfLoan = '';
+  let showSuccessModal = false;
     
 
 
@@ -53,7 +75,82 @@
   let collateralItems = [];
   let guarantorData = null;
 
- onMount(async () => {
+  //feach master call 
+  let uploadDocsMetadata = [];
+
+  const docIdToMasterIdMap = {
+  // upload_for: 1 - Personal Identity
+  'aadharCard': 1,
+  'panCard': 2,
+  'photo': 3,
+  'signature': 4,
+  // upload_for: 2 - Educational
+  'admissionLetter': 5,
+  'bonafide': 6,
+  'feeStructure': 7,
+  'markSheets': 8,
+  'entranceExam': 9,
+  // upload_for: 3 - Residence
+  'domicile': 10,
+  'minorityCert': 11,
+  'casteCert': 12,
+  // upload_for: 4 - Family Income
+  'incomeCert': 13,
+  'parentAadhar': 14,
+  'rationCard': 15,
+  // upload_for: 5 - Bank
+  'passbook': 16,
+  'cancelledCheque': 16,
+  // upload_for: 6 - Co-Applicant
+  'coAadhar': 17,
+  'coIncomeCert': 18,
+  'coRationCard': 19,
+  // upload_for: 7 - Property Collateral
+  'propertyOwnership': 20,
+  'extract712': 21,
+  'prCard': 22,
+  'valuationCert': 23,
+  'form24A': 24,
+  // upload_for: 8 - Govt Employee
+  'govtIdCard': 25,
+  'salaryCert': 26,
+  'officeCert': 27,
+  'retirementProof': 28,
+  'form24B': 29,
+  // upload_for: 9 - LIC
+  'licPhotoWithSign': 30,
+  'photoWithSign': 30,
+  'licPolicyOriginal': 31,
+  'premiumReceipts': 32,
+  'policyBond': 33,
+  'policyStatus': 34,
+  // upload_for: 10 - FD
+  'fdPhotoWithSign': 35,
+  'aadharCardXerox': 36,
+  'fdReceipt': 36,
+  'bankConfirmation': 37,
+  'fdStatement': 38,
+  // Study Abroad
+  'passport_abroad': 39,
+  'visa_abroad': 40,
+  // upload_for: 12 - Guarantor
+  'guarantor_aadharCard': 41,
+  'guarantor_guarantorAffidavit': 42,
+  'guarantor_incomeCertificate': 43,
+  'guarantor_addressProof': 44,
+
+  // COLLATERAL PREFIX ALIASES — baseDocId after stripping prefix
+  // Property collateral stripped keys
+  'propertyAadharCard': 1,
+  // Govt employee stripped keys  
+  'govtAadharCard': 1,
+  // LIC stripped keys
+  'licAadharCard': 1,
+  // FD stripped keys
+  'fdAadharCardXerox': 36,
+};
+
+  onMount(async () => {
   if (!$user) {
     goto(`/${locale}/login`);
     return;
@@ -64,70 +161,104 @@
     return;
   }
 
-  const savedCollaterals = sessionStorage.getItem('collateralItems');
-  if (savedCollaterals) {
-    try {
-      collateralItems = JSON.parse(savedCollaterals);
-    } catch (error) {
-      collateralItems = [];
-    }
+  // Check if guarantor exists (just check, don't load full data)
+  const guarantorResult = await getGuarantorDetailsData($applicationId);
+  if (guarantorResult.error === 0 && guarantorResult.data) {
+    // Guarantor exists - set a flag to show upload section
+    guarantorData = {
+      exists: true,
+      guarantorFullName: guarantorResult.data.guarantorFullName,
+      guarantorMobile: guarantorResult.data.guarantorMobile
+    };
   }
 
-  const savedGuarantor = sessionStorage.getItem('guarantorData');
-  if (savedGuarantor) {
-    try {
-      guarantorData = JSON.parse(savedGuarantor);
-    } catch (error) {
-      guarantorData = null;
-    }
+  const existingDocs = await getUploadedDocuments($user.id, $applicationId);
+if (existingDocs.error === 0 && existingDocs.documents) {
+  existingDocs.documents.forEach(doc => {
+    uploadedDocs[doc.doc_key] = {
+      uploaded: true,
+      url: doc.file_name,
+      fileName: doc.org_filename,
+      fileSize: doc.document_size,
+      uploadedAt: doc.upload_date
+    };
+  });
+  uploadedDocs = { ...uploadedDocs };
+}
+
+
+
+  // Check if collaterals exist (just check, don't need full details)
+  collateralItems = [];
+
+  const propertyData = await getCollateralProperties($user.id, $applicationId);
+  if (propertyData.error === 0 && propertyData.properties?.length > 0) {
+    collateralItems = [...collateralItems, ...propertyData.properties];
+  }
+
+  const fdData = await getFDCollaterals($user.id, $applicationId);
+  if (fdData.error === 0 && fdData.fdCollaterals?.length > 0) {
+    collateralItems = [...collateralItems, ...fdData.fdCollaterals];
+  }
+
+  const licData = await getLICCollaterals($user.id, $applicationId);
+  if (licData.error === 0 && licData.licCollaterals?.length > 0) {
+    collateralItems = [...collateralItems, ...licData.licCollaterals];
+  }
+
+  const govtData = await getGovtCollaterals($user.id, $applicationId);
+  if (govtData.error === 0 && govtData.govtCollaterals?.length > 0) {
+    collateralItems = [...collateralItems, ...govtData.govtCollaterals];
   }
 
   // Fetch education details to get purposeOfLoan
   const educationData = await getEducationDetailsData($applicationId);
   if (educationData.error === 0 && educationData.data) {
     purposeOfLoan = educationData.data.purposeOfLoan || '';
-    console.log('purposeOfLoan value is:', purposeOfLoan); // ← CHECK THIS
+    console.log('purposeOfLoan value is:', purposeOfLoan);
   }
 });
 
-  function handleUpload(docId, file) {
-    console.log('Uploading document:', docId, file);
-    
-    // Clear previous error for this document
-    delete uploadErrors[docId];
+
+
+async function handleUpload(docId, file) {
+  delete uploadErrors[docId];
+  uploadErrors = { ...uploadErrors };
+
+  const validation = validateDocumentFile(file, docId);
+  if (!validation.valid) {
+    uploadErrors[docId] = validation.error;
     uploadErrors = { ...uploadErrors };
-    
-    // Validate file based on document type (includes size and type validation)
-    const validation = validateDocumentFile(file, docId);
-    if (!validation.valid) {
-      uploadErrors[docId] = validation.error;
-      uploadErrors = { ...uploadErrors };
-      return;
-    }
-    
-    uploadedDocs[docId] = {
-      uploaded: true,
-      url: URL.createObjectURL(file),
-      file: file,
-      fileName: file.name,
-      fileSize: file.size,
-      uploadedAt: new Date().toISOString()
-    };
-    uploadedDocs = { ...uploadedDocs };
-    
-    // Save to session storage
-    sessionStorage.setItem('uploadedDocs', JSON.stringify(
-      Object.entries(uploadedDocs).reduce((acc, [key, value]) => {
-        acc[key] = {
-          uploaded: value.uploaded,
-          fileName: value.fileName,
-          fileSize: value.fileSize,
-          uploadedAt: value.uploadedAt
-        };
-        return acc;
-      }, {})
-    ));
+    return;
   }
+
+  // Get master document ID from uploadDocsMetadata
+  const baseDocId = docId.replace(/^(collateral_[^_]+_\d+_|guarantor_)/, '');
+  const documentId = docIdToMasterIdMap[baseDocId] || docIdToMasterIdMap[docId];
+
+  if (!documentId) {
+    uploadErrors[docId] = 'Document mapping not found';
+    uploadErrors = { ...uploadErrors };
+    return;
+  }
+
+  const result = await uploadDocument($user.id, $applicationId, docId, documentId, file);
+
+  if (result.error !== 0) {
+    uploadErrors[docId] = result.errorMsg || 'Upload failed';
+    uploadErrors = { ...uploadErrors };
+    return;
+  }
+
+  uploadedDocs[docId] = {
+    uploaded: true,
+    url: result.filePath,
+    fileName: file.name,
+    fileSize: file.size,
+    uploadedAt: new Date().toISOString()
+  };
+  uploadedDocs = { ...uploadedDocs };
+}
 
   function handleView(docId) {
     if (uploadedDocs[docId]?.url) {
@@ -135,31 +266,20 @@
     }
   }
 
-  function handleDelete(docId) {
-    const confirmMessage = t.uploadDocuments?.validationMessages?.deleteConfirm || 
-      'Are you sure you want to delete this document? / तुम्हाला खात्री आहे की तुम्ही हे दस्तऐवज हटवू इच्छिता?';
-    
-    if (confirm(confirmMessage)) {
-      if (uploadedDocs[docId]?.url) {
-        URL.revokeObjectURL(uploadedDocs[docId].url);
-      }
-      delete uploadedDocs[docId];
-      uploadedDocs = { ...uploadedDocs };
-      
-      // Update session storage
-      sessionStorage.setItem('uploadedDocs', JSON.stringify(
-        Object.entries(uploadedDocs).reduce((acc, [key, value]) => {
-          acc[key] = {
-            uploaded: value.uploaded,
-            fileName: value.fileName,
-            fileSize: value.fileSize,
-            uploadedAt: value.uploadedAt
-          };
-          return acc;
-        }, {})
-      ));
+async function handleDelete(docId) {
+  const confirmMessage = t.uploadDocuments?.validationMessages?.deleteConfirm || 
+    'Are you sure you want to delete this document?';
+  
+  if (confirm(confirmMessage)) {
+    const result = await deleteDocument($user.id, $applicationId, docId);
+    if (result.error !== 0) {
+      submitError = result.errorMsg || 'Delete failed';
+      return;
     }
+    delete uploadedDocs[docId];
+    uploadedDocs = { ...uploadedDocs };
   }
+}
 
   function handleBack() {
     goto(`/${locale}/dashboard`);
@@ -169,66 +289,59 @@
     goto(`/${locale}/application/Collateral-details`);
   }
 
-  async function handleSubmit() {
-    // Clear previous errors
-    submitError = '';
-    missingDocuments = [];
+async function handleSubmit() {
+  // Clear previous errors
+  submitError = '';
+  missingDocuments = [];
+  
+  const validation = validateAllRequiredDocuments(uploadedDocs, collateralItems, purposeOfLoan);
+  
+  if (!validation.valid) {
+    const missingMsg = t.uploadDocuments?.validationMessages?.missingDocuments || 'missing document(s)';
+    const pleaseUploadMsg = t.uploadDocuments?.validationMessages?.allDocumentsRequired || 'Please upload all required documents!';
     
-    // OPTION 1: Use the simple validation function (Current approach - RECOMMENDED)
-    const validation = validateAllRequiredDocuments(uploadedDocs, collateralItems,purposeOfLoan);
+    submitError = `${pleaseUploadMsg} ${validation.totalMissing} ${missingMsg}.`;
+    missingDocuments = validation.missing;
     
-    if (!validation.valid) {
-      const missingMsg = t.uploadDocuments?.validationMessages?.missingDocuments || 'missing document(s)';
-      const pleaseUploadMsg = t.uploadDocuments?.validationMessages?.allDocumentsRequired || 'Please upload all required documents!';
-      
-      submitError = `${pleaseUploadMsg} ${validation.totalMissing} ${missingMsg}.`;
-      missingDocuments = validation.missing;
-      
-      // Scroll to error message
-      setTimeout(() => {
-        const errorElement = document.getElementById('submit-error');
-        if (errorElement) {
-          errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }, 100);
-      
+    setTimeout(() => {
+      const errorElement = document.getElementById('submit-error');
+      if (errorElement) {
+        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
+    
+    return;
+  }
+  
+  isSubmitting = true;
+  try {
+    const submitResult = await fetch(`/api/createApplication/${$user.id}/${$applicationId}/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    
+    const result = await submitResult.json();
+    
+    if (result.error !== 0) {
+      submitError = result.errorMsg || 'Failed to submit application';
       return;
     }
 
-    /* 
-    // OPTION 2: Use Vest validation suite (Advanced - OPTIONAL)
-    const vestResult = documentUploadValidation(
-      { uploadedDocs }, 
-      t, 
-      collateralItems
-    );
+    //Show success modal
+    showSuccessModal = true;
     
-    if (vestResult.hasErrors()) {
-      const errors = vestResult.getErrors();
-      console.log('Vest validation errors:', errors);
-      
-      // Process errors
-      Object.keys(errors).forEach(docId => {
-        uploadErrors[docId] = errors[docId][0]; // Get first error message
-      });
-      uploadErrors = { ...uploadErrors };
-      
-      submitError = `${t.uploadDocuments?.validationMessages?.allDocumentsRequired} ${Object.keys(errors).length} ${t.uploadDocuments?.validationMessages?.missingDocuments}.`;
-      return;
-    }
-    */
-    
-    isSubmitting = true;
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      goto(`/${locale}/dashboard`);
-    } catch (error) {
-      console.error('Error:', error);
-      submitError = 'Failed to submit documents. Please try again. / दस्तऐवज सबमिट करण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.';
-    } finally {
-      isSubmitting = false;
-    }
+  } catch (error) {
+    console.error('Error:', error);
+    submitError = 'Failed to submit documents. Please try again. / दस्तऐवज सबमिट करण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.';
+  } finally {
+    isSubmitting = false;
   }
+}
+
+function handleGoToDashboard() {
+  applicationId.set(null);
+  goto(`/${locale}/dashboard`);
+}
 </script>
 
 <svelte:head>
@@ -411,3 +524,10 @@
     </div>
   </div>
 </div>
+
+<!-- Success Modal Component -->
+<SubmissionSuccessModal 
+  bind:show={showSuccessModal}
+  applicationId={$applicationId}
+  on:goToDashboard={handleGoToDashboard}
+/>

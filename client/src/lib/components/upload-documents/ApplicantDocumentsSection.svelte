@@ -1,4 +1,6 @@
 <script>
+// @ts-nocheck
+
   import { page } from '$app/stores';
   import { i18n } from '$lib/i18n';
   import DocumentUploadRow from './DocumentUploadRow.svelte';
@@ -37,8 +39,7 @@
       { id: 'rationCard', key: 'rationCard', required: false }
     ],
     bank: [
-      { id: 'passbook', key: 'passbook', required: true },
-      { id: 'cancelledCheque', key: 'cancelledCheque', required: true }
+      { id: 'passbook', key: 'passbook', required: true }
     ]
   };
 

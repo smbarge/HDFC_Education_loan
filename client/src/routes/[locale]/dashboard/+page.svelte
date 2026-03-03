@@ -48,20 +48,19 @@
     // });
 
   let hasExistingApplication = false;
+  let applicationStatus = null;
 
   onMount(async () => {
   if (!$user) {
     goto(`/${locale}/login`);
+    return;
   }
 
-  if ($applicationId) {
+  const result = await getUserApplication($user.id);
+  if (result.error === 0) {
+    applicationId.set(result.applicationId);
     hasExistingApplication = true;
-  } else {
-    const result = await getUserApplication($user.id);
-    if (result.error === 0) {
-      applicationId.set(result.applicationId);
-      hasExistingApplication = true;
-    }
+    applicationStatus = result.status; // 'in-progress' or 'submitted'
   }
 });
 
@@ -248,18 +247,36 @@
             {t.welcome.newUserMessage || 'Start your education loan application journey today. Get financial support for your educational dreams.'}
           </p>
           {#if hasExistingApplication}
-              <button
-                on:click={() => goto(`/${locale}/application/start`)}
-                class="inline-flex items-center gap-2 px-8 py-3.5 bg-green-600 hover:bg-green-700 text-white font-semibold text-base rounded-lg transition-all duration-200 transform hover:scale-105 shadow-md"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                </svg>
-                <span>Continue Application</span>
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-                </svg>
-              </button>
+              {#if applicationStatus === 'submitted'}
+                <!-- view Application -->
+                <button
+                  on:click={() => goto(`/${locale}/application/view-application`)}
+                  class="inline-flex items-center gap-2 px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-base rounded-lg transition-all duration-200 transform hover:scale-105 shadow-md"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                  </svg>
+                  <span>View Application</span>
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                  </svg>
+                </button>
+              {:else}
+                <!-- Continue Application -->
+                <button
+                  on:click={() => goto(`/${locale}/application/start`)}
+                  class="inline-flex items-center gap-2 px-8 py-3.5 bg-green-600 hover:bg-green-700 text-white font-semibold text-base rounded-lg transition-all duration-200 transform hover:scale-105 shadow-md"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                  </svg>
+                  <span>Continue Application</span>
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                  </svg>
+                </button>
+              {/if}
           {:else}
             <button
               on:click={startNewApplication}

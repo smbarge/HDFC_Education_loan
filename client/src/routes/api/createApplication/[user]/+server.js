@@ -2,12 +2,13 @@ import { json } from '@sveltejs/kit';
 import pool from '$lib/db';
 import { DateTime } from 'luxon';
 
+
 //GET----------------------------------------------------
 
 // Get user's latest application
 async function getUserApplicationQuery(client, userId) {
     const result = await client.query(
-        `SELECT application_id FROM user_applications 
+        `SELECT application_id,status FROM user_applications 
         WHERE user_id = $1 
         ORDER BY application_id DESC LIMIT 1`,
         [userId]
@@ -175,8 +176,8 @@ async function insertPersonalDetailsStep1Query(client, applicationId, stepData) 
 // Insert user application
 async function insertUserApplicationQuery(client, applicationId, userId, userPhone) {
     await client.query(
-        `INSERT INTO user_applications (application_id, user_id, "user")
-        VALUES ($1, $2, $3)
+        `INSERT INTO user_applications (application_id, user_id, "user",status)
+        VALUES ($1, $2, $3 , 1)
         ON CONFLICT DO NOTHING`,
         [applicationId, userId, userPhone]
     );
@@ -519,6 +520,7 @@ async function updateEducationDetailsQuery(client, applicationId, educationDetai
 //API_____
 
 //GET
+
 export async function GET({ params, url }) {
     const client = await pool.connect();
 
@@ -535,10 +537,20 @@ export async function GET({ params, url }) {
                 return json({ error: -1, errorMsg: "No application found" });
             }
 
+             const statusMap = {
+                    1: 'in-progress',
+                    2: 'submitted',
+                    3: 'approved',
+                    4: 'rejected'
+                };
+
             return json({
                 error: 0,
-                applicationId: rows[0].application_id
+                applicationId: rows[0].application_id,
+                status: statusMap[rows[0].status] || 'in-progress'
             });
+
+            // console.log(JSON.stringify(response));
         }
 
         // Get application data (Step 1)

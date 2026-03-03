@@ -412,10 +412,24 @@ async function getVerifiedContacts(applicationId) {
 }
 
 //Exiting Appliction
-export async function getUserApplication(userId) {
-  const response = await fetch(`/api/createApplication/${userId}?action=getUserApplication`);
-  return response.json();
-}
+// export async function getUserApplication(userId) {
+//   const response = await fetch(`/api/createApplication/${userId}?action=getUserApplication`);
+//   return response.json();
+// }
+
+const getUserApplication = async (userId) => {
+  const response = await fetch(`/api/createApplication/${userId}?action=getUserApplication`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' }
+  });
+  const result = await response.json();
+  
+  return {
+    error: result.error,
+    applicationId: result.applicationId,
+    status: result.status 
+  };
+};
 
 //Start Page__
 
@@ -863,6 +877,48 @@ const saveGovtCollaterals = async (userId, applicationId, govtCollaterals) => {
 };
 
 
+// Upload document
+const uploadDocument = async (userId, applicationId, docKey, documentId, file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('document_id', documentId);
+
+  const response = await fetch(
+    `/api/uploaddoc/${userId}/${applicationId}/${docKey}`,
+    {
+      method: 'POST',
+      body: formData
+    }
+  );
+  return response.json();
+};
+
+// Get all uploaded documents
+const getUploadedDocuments = async (userId, applicationId) => {
+  const response = await fetch(
+    `/api/uploaddoc/${userId}/${applicationId}/all`,
+    {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    }
+  );
+  return response.json();
+};
+
+// Delete document
+const deleteDocument = async (userId, applicationId, docKey) => {
+  const response = await fetch(
+    `/api/uploaddoc/${userId}/${applicationId}/${docKey}`,
+    {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' }
+    }
+  );
+  return response.json();
+};
+
+
+
 
 export {
   customVerifyApplicantAndSendOtp,
@@ -877,6 +933,7 @@ export {
   customSendPasswordResetOtp,
   customCreateApplication,
   getVerifiedContacts,
+  getUserApplication,
   customSaveApplicationStart,
   getApplicationData,
   getPersonalDetailsData,
@@ -894,5 +951,10 @@ export {
   getLICCollaterals, 
   saveLICCollaterals,
   getGovtCollaterals, 
-  saveGovtCollaterals
+  saveGovtCollaterals,
+
+
+  uploadDocument,
+  getUploadedDocuments,
+  deleteDocument
 };

@@ -33,6 +33,7 @@
   let showProfileModal = false;
 
   let errors = {};
+  let submitError = '';
 
 
 $: userData = $user ? {
@@ -119,6 +120,7 @@ onMount(async () => {
 //Saving Functions 
 
   async function savePropertyCollateral(data) {
+    submitError = '';
     const saveResult = await customSaveCollateralProperties(
       $user.id,
       $applicationId,
@@ -126,7 +128,7 @@ onMount(async () => {
     );
 
     if (saveResult.error !== 0) {
-      alert(saveResult.errorMsg || 'Failed to save property collateral');
+      submitError = saveResult.errorMsg || 'Failed to save property collateral';
       return;
     }
 
@@ -143,6 +145,7 @@ onMount(async () => {
 
   // Helper function to reload all collaterals from database
   async function reloadAllCollaterals() {
+    submitError = '';
     collateralItems = []; // Clear first to avoid duplicates
 
     // Load property collaterals
@@ -174,6 +177,7 @@ onMount(async () => {
 
 
   async function saveFDCollateral(data) {
+    submitError = '';
     const saveResult = await saveFDCollaterals(
       $user.id,
       $applicationId,
@@ -181,7 +185,7 @@ onMount(async () => {
     );
 
     if (saveResult.error !== 0) {
-      alert(saveResult.errorMsg || 'Failed to save FD collateral');
+      submitError = saveResult.errorMsg || 'Failed to save FD collateral';
       return;
     }
 
@@ -196,6 +200,7 @@ onMount(async () => {
   }
 
   async function saveLICCollateral(data) {
+    submitError = '';
       const saveResult = await saveLICCollaterals(
           $user.id,
           $applicationId,
@@ -203,7 +208,7 @@ onMount(async () => {
       );
 
       if (saveResult.error !== 0) {
-          alert(saveResult.errorMsg || 'Failed to save LIC collateral');
+          submitError = saveResult.errorMsg || 'Failed to save LIC collateral';
           return;
       }
 
@@ -218,7 +223,9 @@ onMount(async () => {
   }
 
   async function saveGovtEmployee(data) {
+    
     console.log('saveGovtEmployee called with data:', data);
+    submitError = '';
     
     try {
      
@@ -234,7 +241,7 @@ onMount(async () => {
 
       if (saveResult.error !== 0) {
         console.error('Save failed:', saveResult.errorMsg);
-        alert(saveResult.errorMsg || 'Failed to save govt collateral');
+        submitError = saveResult.errorMsg || 'Failed to save govt collateral';
         return;
       }
 
@@ -246,7 +253,7 @@ onMount(async () => {
       errors = {};
     } catch (error) {
       console.error('Error in saveGovtEmployee:', error);
-      alert('Failed to save govt collateral');
+      submitError = 'Failed to save govt collateral';
     }
   }
 
@@ -374,6 +381,7 @@ onMount(async () => {
 
 
 async function handleProceed() {
+    submitError = '';
     if (!validateCollateralList()) return;
 
     isSubmitting = true;
@@ -382,7 +390,7 @@ async function handleProceed() {
         goto(`/${locale}/application/upload-documents`);
     } catch (error) {
         console.error('Error:', error);
-        alert(t.collateralDetails?.submitError || 'Failed to submit. Please try again.');
+        submitError = t.collateralDetails?.submitError || 'Failed to submit. Please try again.';
     } finally {
         isSubmitting = false;
     }
@@ -596,6 +604,11 @@ async function handleProceed() {
     {/if}
 
     <!-- Action Buttons -->
+     {#if submitError}
+        <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-center">
+          <p class="text-sm text-red-600 font-medium">{submitError}</p>
+        </div>
+      {/if}
     <div class="flex flex-col sm:flex-row justify-center gap-3">
         <button
           on:click={handleCancel}

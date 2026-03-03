@@ -342,7 +342,7 @@ export async function GET({ params, url }) {
     const client = await pool.connect();
 
     try {
-        const { applicationId } = params;
+        const {user, applicationId, } = params;
         const action = url.searchParams.get('action');
 
         if (action === 'getCollateralProperties') {
@@ -466,7 +466,7 @@ export async function POST({ request, params }) {
     try {
         await client.query('BEGIN');
 
-        const { applicationId } = params;
+        const { user, applicationId } = params;
         const body = await request.json();
         const { action, properties, fdCollaterals,licCollaterals,govtCollaterals } = body;
 

@@ -43,46 +43,50 @@
   let isLoadingCurrentTalukas = false;
   let isLoadingPermanentTalukas = false;
 
-onMount(async () => {
-  if (!$user) {
-    goto(`/${locale}/login`);
-    return;
-  }
-
-  if (!$applicationId) {
-    goto(`/${locale}/dashboard`);
-    return;
-  }
-
-  await loadMasters();
-
-  const guarantorData = await getGuarantorDetailsData($applicationId);
-  
-  if (guarantorData.error === 0 && guarantorData.data) {
-
-    const savedCurrentDistrict = guarantorData.data.currentDistrict;
-    const savedCurrentTaluka = guarantorData.data.currentTaluka;
-    const savedPermanentDistrict = guarantorData.data.permanentDistrict;
-    const savedPermanentTaluka = guarantorData.data.permanentTaluka;
-
-    formData = { ...formData, ...guarantorData.data };
-
-    if (savedCurrentDistrict) {
-      await loadTalukasForDistrict(savedCurrentDistrict, 'current');
-      formData.currentTaluka = String(savedCurrentTaluka);
+  onMount(async () => {
+    if (!$user) {
+      goto(`/${locale}/login`);
+      return;
     }
 
-    if (savedPermanentDistrict) {
-      await loadTalukasForDistrict(savedPermanentDistrict, 'permanent');
-      formData.permanentTaluka = String(savedPermanentTaluka);
+    if (!$applicationId) {
+      goto(`/${locale}/dashboard`);
+      return;
     }
 
-    formData = formData;
-  }
-});
+    await loadMasters();
+
+    const guarantorData = await getGuarantorDetailsData($applicationId);
+    
+    if (guarantorData.error === 0 && guarantorData.data) {
+
+      const savedCurrentDistrict = guarantorData.data.currentDistrict;
+      const savedCurrentTaluka = guarantorData.data.currentTaluka;
+      const savedPermanentDistrict = guarantorData.data.permanentDistrict;
+      const savedPermanentTaluka = guarantorData.data.permanentTaluka;
+
+      formData = { ...formData, ...guarantorData.data };
+
+      if (savedCurrentDistrict) {
+        await loadTalukasForDistrict(savedCurrentDistrict, 'current');
+        formData.currentTaluka = String(savedCurrentTaluka);
+      }
+
+      if (savedPermanentDistrict) {
+        await loadTalukasForDistrict(savedPermanentDistrict, 'permanent');
+        formData.permanentTaluka = String(savedPermanentTaluka);
+      }
+
+      formData = formData;
+    }
+  });
+
+
+
   let currentStep = 4;
   let isSubmitting = false;
   let errors = {};
+  let submitError = '';
   
   let selectedTab = 'guarantor';
 
@@ -298,6 +302,7 @@ function validateForm() {
 
 
 async function handleProceed() {
+   submitError = '';
   const result = guarantorDetailsValidation(formData, t);
   errors = result.getErrors();
   
@@ -312,14 +317,14 @@ async function handleProceed() {
   isSubmitting = true;
 
   try {
-    console.log('💾 Saving guarantor details for application:', $applicationId);
+    console.log('Saving guarantor details for application:', $applicationId);
     
     const saveResult = await customSaveGuarantorDetails({
       applicationId: $applicationId,
       guarantorDetails: {
         name: formData.guarantorFullName,
         dob: formData.guarantorDOB,
-        gender: formData.guarantorGender,
+        gender: Number(formData.guarantorGender),
         aadhar: formData.guarantorAadhar || null,
         mobile: formData.guarantorMobile,
         email: formData.guarantorEmail || null,
@@ -336,9 +341,9 @@ async function handleProceed() {
         permanent_place: formData.permanentPlace,
         permanent_area: formData.permanentArea,
         permanent_pincode: formData.permanentPinCode || null,
-        marital_status: formData.maritalStatus,
-        education_qualification: formData.educationalQualification,
-        occupation: formData.guardianOccupation,
+        marital_status: Number(formData.maritalStatus),
+        education_qualification: Number(formData.educationalQualification),
+        occupation: Number(formData.guardianOccupation),
         income: formData.annualIncome,
         past_surety_commitment: formData.previousSurety
       }
@@ -348,7 +353,7 @@ async function handleProceed() {
 
     if (saveResult.error !== 0) {
       console.error('Save failed:', saveResult.errorMsg);
-      alert(saveResult.errorMsg || 'Failed to save guarantor details');
+      submitError = saveResult.errorMsg || 'Failed to save guarantor details';      
       return;
     }
 
@@ -359,7 +364,7 @@ async function handleProceed() {
 
   } catch (error) {
     console.error('Error submitting form:', error);
-    alert('An error occurred while saving. Please try again.');
+    submitError = 'An error occurred while saving. Please try again.';
   } finally {
     isSubmitting = false;
   }
@@ -1109,6 +1114,12 @@ async function handleProceed() {
         {/if}
       </div>
     </section>
+    
+    {#if submitError}
+      <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-center">
+          <p class="text-sm text-red-600 font-medium">{submitError}</p>
+        </div>
+      {/if}
 
     <div class="flex flex-col sm:flex-row justify-center gap-3 mt-6">
           <button

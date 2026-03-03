@@ -39,10 +39,10 @@
   }
 
   function handleAdd() {
-    console.log('🔵 handleAdd called with formData:', formData);
+    console.log('handleAdd called with formData:', formData);
     
     if (!validateForm()) {
-      console.log('❌ Validation failed:', errors);
+      console.log('Validation failed:', errors);
       const firstErrorElement = document.querySelector('.error-message');
       if (firstErrorElement) {
         firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -50,7 +50,7 @@
       return;
     }
 
-    console.log('✅ Validation passed, calling onSave');
+    console.log('Validation passed, calling onSave');
     onSave({ ...formData, id: Date.now(), type: 'govt-employee' });
     resetForm();
   }

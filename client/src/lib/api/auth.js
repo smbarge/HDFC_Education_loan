@@ -39,7 +39,9 @@ const fetchMasters = async () => {
                 m_property_type : [],
                 m_document_type : [],
                 m_units : [],
-                m_required_documents : []
+                m_required_documents : [],
+                m_upload_docs : []
+
             }
         };
     }

@@ -93,8 +93,7 @@ export function getRequiredApplicantDocs() {
     'domicile',
     'minorityCert',
     'incomeCert',
-    'passbook',
-    'cancelledCheque'
+    'passbook'
   ];
 }
 
@@ -219,7 +218,7 @@ const documentUploadValidation = create((data, t, collateralItems = []) => {
   });
 
 
-  skipWhen(!data.purposeOfLoan, () => {
+  skipWhen(data.purposeOfLoan !== 'study_abroad', () => {
   const requiredStudyAbroad = getRequiredStudyAbroadDocs();
 
   requiredStudyAbroad.forEach(docId => {
@@ -336,7 +335,7 @@ export function validateAllRequiredDocuments(uploadedDocs, collateralItems,purpo
   });
 
   // Check study abroad documents (only if purposeOfLoan is study abroad)
-    if (purposeOfLoan) {
+    if (purposeOfLoan === 'study_abroad') {
       const requiredStudyAbroad = getRequiredStudyAbroadDocs();
       requiredStudyAbroad.forEach(docId => {
         if (!uploadedDocs[docId]?.uploaded) {

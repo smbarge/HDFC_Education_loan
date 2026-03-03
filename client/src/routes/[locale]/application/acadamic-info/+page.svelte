@@ -72,7 +72,10 @@ onMount(async () => {
 
   let currentStep = 3;
   let isSubmitting = false;
+
+  //Error message 
   let errors = {};
+  let submitError = '';
   
  
   let formData = {
@@ -361,8 +364,10 @@ function validateForm() {
 
 async function handleProceed() {
 
+  submitError = '';
   const result = academicInfoValidation(formData, t);
   errors = result.getErrors();
+  
   
   if (!result.isValid()) {
     console.log('Validation failed:', errors);
@@ -414,7 +419,7 @@ async function handleProceed() {
 
     if (saveResult.error !== 0) {
       console.error('Save failed:', saveResult.errorMsg);
-      alert(saveResult.errorMsg || 'Failed to save education details');
+      submitError = saveResult.errorMsg || 'Failed to save education details';      
       return;
     }
 
@@ -427,7 +432,7 @@ async function handleProceed() {
 
   } catch (error) {
     console.error('Error submitting form:', error);
-    alert('An error occurred while saving. Please try again.');
+    submitError = 'An error occurred while saving. Please try again.';
   } finally {
     isSubmitting = false;
   }
@@ -1080,6 +1085,11 @@ async function handleProceed() {
         </div>
       </div>
     </section>
+    {#if submitError}
+      <div class="mb-4 text-center">
+        <p class="text-red-600 text-sm font-medium">{submitError}</p>
+      </div>
+    {/if}
 
    <div class="flex flex-col sm:flex-row justify-center gap-3 mt-6">
   
