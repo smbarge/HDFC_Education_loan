@@ -16,14 +16,14 @@ export async function GET({ params }) {
         ud.upload_date,
         ud.file_name,
         ud.org_filename,
-        ud.doc_key,
         ud.status,
         mu.eng_name,
-        mu.dev_name
-       FROM public.upload_docs ud
-       LEFT JOIN public.m_upload_docs mu ON ud.document_id = mu.doc_id
-       WHERE ud.application_id = $1 AND ud.status = 1
-       ORDER BY ud.upload_date DESC`,
+        mu.dev_name,
+        mu.upload_for
+      FROM public.upload_docs ud
+      LEFT JOIN public.m_upload_docs mu ON ud.document_id = mu.id
+      WHERE ud.application_id = $1 AND ud.status = 1
+      ORDER BY mu.upload_for, ud.document_id`,
       [applicationId]
     );
 

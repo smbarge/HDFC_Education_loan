@@ -108,13 +108,16 @@ let submittedDate = null;
     if (applicationStatus === 'submitted' && !submissionInfo) {
       try {
         const { getEducationDetailsData } = await import('$lib/api/authApi');
-        const eduData = await getEducationDetailsData(result.applicationId);
+       const eduData = await getEducationDetailsData(result.applicationId);
+        console.log('Education data fields:', eduData.data); // temp debug - remove after fix
         if (eduData.error === 0 && eduData.data) {
           submissionInfo = {
             applicantName: $user.name || '',
             applicationId: result.applicationId,
-            purposeOfLoan: eduData.data.purposeOfLoan || '',
-            loanAmount: eduData.data.loanRequired || eduData.data.loanAmount || ''
+            purposeOfLoan: eduData.data.purposeOfLoan || 
+                           eduData.data.purpose_of_loan || '',
+            loanAmount: eduData.data.loanRequired || 
+                        eduData.data.loan_required || ''
           };
         }
       } catch(e) {
