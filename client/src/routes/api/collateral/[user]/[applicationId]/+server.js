@@ -336,12 +336,13 @@ async function insertGovtCollateralQuery(client, applicationId, govtData) {
     return result.rows[0].id;
 }
 
-// GET
+//GET
 
 export async function GET({ params, url }) {
-    const client = await pool.connect();
+    let client;
 
     try {
+        client = await pool.connect();
         const {user, applicationId, } = params;
         const action = url.searchParams.get('action');
 
@@ -458,14 +459,14 @@ export async function GET({ params, url }) {
     }
 }
 
-// POST
+//POST
 
 export async function POST({ request, params }) {
-    const client = await pool.connect();
-
+    let client;
     try {
+        client = await pool.connect();
         await client.query('BEGIN');
-
+        
         const { user, applicationId } = params;
         const body = await request.json();
         const { action, properties, fdCollaterals,licCollaterals,govtCollaterals } = body;
@@ -658,6 +659,160 @@ export async function POST({ request, params }) {
             { error: -2, errorMsg: "Server error: " + error.message },
             { status: 500 }
         );
+    } finally {
+        client.release();
+    }
+}
+
+//PUT
+export async function PUT({ request, params }) {
+    let client ;
+    try {
+        client = await pool.connect();
+        await client.query('BEGIN');
+        const { applicationId } = params;
+        const body = await request.json();
+        const { action, property, fd, lic, govt } = body;
+
+        if (action === 'updateCollateralProperty') {
+            await updateCollateralPropertyQuery(client, property.id, applicationId, {
+                property_type: parseInt(property.propertyType),
+                document_type: parseInt(property.documentType),
+                survey_no: property.surveyNo || null,
+                district_id: parseInt(property.district),
+                taluka_id: parseInt(property.taluka),
+                place: property.village || null,
+                pincode: property.pinCode || null,
+                units: parseInt(property.units),
+                area_value: parseFloat(property.hectares),
+                gunta: parseFloat(property.rGuntha),
+                property_value: parseInt(property.propertyValue)
+            });
+            await client.query('COMMIT');
+            return json({ error: 0, errorMsg: 'Property updated successfully' });
+        }
+
+        if (action === 'updateFDCollateral') {
+            await client.query(
+                `UPDATE collateral_fd_information SET
+                    bank_name = $3, branch_name = $4, street_address = $5,
+                    district_id = $6, taluka_id = $7, place = $8, pincode = $9,
+                    fd_acc_no = $10, fd_start_date = $11, fd_maturity_date = $12,
+                    interest_rate = $13, amount = $14
+                WHERE id = $1 AND application_id = $2`,
+                [
+                    fd.id, applicationId,
+                    fd.bankName, fd.branchName, fd.streetAddress,
+                    parseInt(fd.district), parseInt(fd.taluka),
+                    fd.place, fd.pinCode, fd.fdAccountNumber,
+                    fd.fdStartDate, fd.fdMaturityDate,
+                    fd.interestRate ? parseFloat(fd.interestRate) : null,
+                    parseFloat(fd.fdDepositAmount)
+                ]
+            );
+            await client.query('COMMIT');
+            return json({ error: 0, errorMsg: 'FD updated successfully' });
+        }
+
+        if (action === 'updateLICCollateral') {
+            await client.query(
+                `UPDATE collateral_lic_information SET
+                    policy_name = $3, policy_type = $4, policy_receipt_no = $5,
+                    policy_surrender_value = $6, policy_start_date = $7, policy_maturity_date = $8
+                WHERE id = $1 AND application_id = $2`,
+                [
+                    lic.id, applicationId,
+                    lic.policyName || null, parseInt(lic.policyType),
+                    lic.policyReceiptNo || null, parseFloat(lic.policySurrenderValue),
+                    lic.policyStartDate, lic.policyMaturityDate
+                ]
+            );
+            await client.query('COMMIT');
+            return json({ error: 0, errorMsg: 'LIC updated successfully' });
+        }
+
+        if (action === 'updateGovtCollateral') {
+            await client.query(
+                `UPDATE collateral_gov_information SET
+                    department_office_name = $3, designation = $4, employee_id_number = $5,
+                    date_of_retirement = $6, original_salary_certificate = $7,
+                    office_identity_card = $8, form_24b = $9, permanent_government_employee = $10
+                WHERE id = $1 AND application_id = $2`,
+                [
+                    govt.id, applicationId,
+                    govt.departmentName || null, govt.designation || null,
+                    govt.employeeID, govt.retirementDate,
+                    govt.hasSalaryCertificate === true, govt.hasIdentityCard === true,
+                    govt.hasForm24B === true, govt.isPermanent === true
+                ]
+            );
+            await client.query('COMMIT');
+            return json({ error: 0, errorMsg: 'Govt collateral updated successfully' });
+        }
+
+        await client.query('ROLLBACK');
+        return json({ error: -1, errorMsg: 'Invalid action' }, { status: 400 });
+
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Error in collateral PUT:', error);
+        return json({ error: -2, errorMsg: 'Server error: ' + error.message }, { status: 500 });
+    } finally {
+        client.release();
+    }
+}
+
+
+//DELETE
+export async function DELETE({ request, params }) {
+    let client ;
+    try {
+        client = await pool.connect();
+        await client.query('BEGIN');
+        const { applicationId } = params;
+        const body = await request.json();
+        const { action, id } = body;
+
+        if (action === 'deleteCollateralProperty') {
+            await deleteCollateralPropertyQuery(client, id, applicationId);
+            await client.query('COMMIT');
+            return json({ error: 0, errorMsg: 'Property deleted successfully' });
+        }
+
+        if (action === 'deleteFDCollateral') {
+            await client.query(
+                'DELETE FROM collateral_fd_information WHERE id = $1 AND application_id = $2',
+                [id, applicationId]
+            );
+            await client.query('COMMIT');
+            return json({ error: 0, errorMsg: 'FD deleted successfully' });
+        }
+
+        if (action === 'deleteLICCollateral') {
+            await client.query(
+                'DELETE FROM collateral_lic_information WHERE id = $1 AND application_id = $2',
+                [id, applicationId]
+            );
+            await client.query('COMMIT');
+            return json({ error: 0, errorMsg: 'LIC deleted successfully' });
+        }
+
+        if (action === 'deleteGovtCollateral') {
+            await client.query(
+                'DELETE FROM collateral_gov_information WHERE id = $1 AND application_id = $2',
+                [id, applicationId]
+            );
+            await client.query('COMMIT');
+            return json({ error: 0, errorMsg: 'Govt collateral deleted successfully' });
+        }
+
+        await client.query('ROLLBACK');
+        return json({ error: -1, errorMsg: 'Invalid action' }, { status: 400 });
+
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Error in collateral DELETE:', error);
+        return json({ error: -2, errorMsg: 'Server error: ' + error.message }, { status: 500 });
     } finally {
         client.release();
     }

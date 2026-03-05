@@ -22,7 +22,15 @@
           getLICCollaterals, 
           saveLICCollaterals,
           getGovtCollaterals, 
-          saveGovtCollaterals
+          saveGovtCollaterals,
+          updateCollateralProperty,
+          updateFDCollateral,
+          updateLICCollateral,
+          updateGovtCollateral,
+          deleteCollateralProperty,
+          deleteFDCollateral,
+          deleteLICCollateral,
+          deleteGovtCollateral
           } from '$lib/api/authApi';
 
 
@@ -36,7 +44,11 @@
   let submitError = '';
 
 
-$: userData = $user ? {
+  let showDeleteConfirm = false;
+  let itemToDelete = null;
+
+
+  $: userData = $user ? {
   name: $user.name || "Guest User",
   phone: $user.mobile || "",
   username: $user.username || "",
@@ -74,10 +86,36 @@ onMount(async () => {
     }
 });
 
+
+async function reloadAllCollaterals() {
+    collateralItems = [];
+
+    const propertyData = await getCollateralProperties($user.id, $applicationId);
+    if (propertyData.error === 0 && propertyData.properties) {
+        collateralItems = [...collateralItems, ...propertyData.properties];
+    }
+
+    const fdData = await getFDCollaterals($user.id, $applicationId);
+    if (fdData.error === 0 && fdData.fdCollaterals) {
+        collateralItems = [...collateralItems, ...fdData.fdCollaterals];
+    }
+
+    const licData = await getLICCollaterals($user.id, $applicationId);
+    if (licData.error === 0 && licData.licCollaterals) {
+        collateralItems = [...collateralItems, ...licData.licCollaterals];
+    }
+
+    const govtData = await getGovtCollaterals($user.id, $applicationId);
+    if (govtData.error === 0 && govtData.govtCollaterals) {
+        collateralItems = [...collateralItems, ...govtData.govtCollaterals];
+    }
+}
+
   let currentStep = 5;
   let isSubmitting = false;
   
   let collateralItems = [];
+  let editingItem = null;
   
   let showPropertyModal = false;
   let showFDModal = false;
@@ -119,203 +157,182 @@ onMount(async () => {
 
 //Saving Functions 
 
-  async function savePropertyCollateral(data) {
+// REPLACE savePropertyCollateral:
+async function savePropertyCollateral(data) {
     submitError = '';
-    const saveResult = await customSaveCollateralProperties(
-      $user.id,
-      $applicationId,
-      [...collateralItems.filter(i => i.type === 'property'), data]
-    );
+    let result;
 
-    if (saveResult.error !== 0) {
-      submitError = saveResult.errorMsg || 'Failed to save property collateral';
-      return;
+    if (editingItem?.id) {
+        result = await updateCollateralProperty($user.id, $applicationId, { ...data, id: editingItem.id });
+    } else {
+        result = await customSaveCollateralProperties($user.id, $applicationId,
+            [...collateralItems.filter(i => i.type === 'property'), data]
+        );
     }
 
-    const collateralData = await getCollateralProperties($user.id, $applicationId);
-    if (collateralData.error === 0) {
-      const otherItems = collateralItems.filter(i => i.type !== 'property');
-      collateralItems = [...collateralData.properties, ...otherItems];
+    if (result.error !== 0) {
+        submitError = result.errorMsg || 'Failed to save property collateral';
+        return;
     }
 
+    editingItem = null;
     showPropertyModal = false;
     errors = {};
-  }
+    await reloadAllCollaterals();
+}
 
-
-  // Helper function to reload all collaterals from database
-  async function reloadAllCollaterals() {
+// REPLACE saveFDCollateral:
+async function saveFDCollateral(data) {
     submitError = '';
-    collateralItems = []; // Clear first to avoid duplicates
+    let result;
 
-    // Load property collaterals
-    const propertyData = await getCollateralProperties($user.id, $applicationId);
-    if (propertyData.error === 0 && propertyData.properties) {
-      collateralItems = [...collateralItems, ...propertyData.properties];
+    if (editingItem?.id) {
+        result = await updateFDCollateral($user.id, $applicationId, { ...data, id: editingItem.id });
+    } else {
+        result = await saveFDCollaterals($user.id, $applicationId,
+            [...collateralItems.filter(i => i.type === 'fd'), data]
+        );
     }
 
-    // Load FD collaterals
-    const fdData = await getFDCollaterals($user.id, $applicationId);
-    if (fdData.error === 0 && fdData.fdCollaterals) {
-      collateralItems = [...collateralItems, ...fdData.fdCollaterals];
+    if (result.error !== 0) {
+        submitError = result.errorMsg || 'Failed to save FD collateral';
+        return;
     }
 
-    // Load LIC collaterals
-    const licData = await getLICCollaterals($user.id, $applicationId);
-    if (licData.error === 0 && licData.licCollaterals) {
-      collateralItems = [...collateralItems, ...licData.licCollaterals];
-    }
-
-    // Load Govt collaterals
-    const govtData = await getGovtCollaterals($user.id, $applicationId);
-    if (govtData.error === 0 && govtData.govtCollaterals) {
-      collateralItems = [...collateralItems, ...govtData.govtCollaterals];
-    }
-
-    console.log('Reloaded all collaterals:', collateralItems);
-  }
-
-
-  async function saveFDCollateral(data) {
-    submitError = '';
-    const saveResult = await saveFDCollaterals(
-      $user.id,
-      $applicationId,
-      [...collateralItems.filter(i => i.type === 'fd'), data]
-    );
-
-    if (saveResult.error !== 0) {
-      submitError = saveResult.errorMsg || 'Failed to save FD collateral';
-      return;
-    }
-
-    const fdData = await getFDCollaterals($user.id, $applicationId);
-    if (fdData.error === 0) {
-      const otherItems = collateralItems.filter(i => i.type !== 'fd');
-      collateralItems = [...otherItems, ...fdData.fdCollaterals];
-    }
-
+    editingItem = null;
     showFDModal = false;
     errors = {};
-  }
+    await reloadAllCollaterals();
+}
 
-  async function saveLICCollateral(data) {
+// REPLACE saveLICCollateral:
+async function saveLICCollateral(data) {
     submitError = '';
-      const saveResult = await saveLICCollaterals(
-          $user.id,
-          $applicationId,
-          [...collateralItems.filter(i => i.type === 'lic'), data]
-      );
+    let result;
 
-      if (saveResult.error !== 0) {
-          submitError = saveResult.errorMsg || 'Failed to save LIC collateral';
-          return;
-      }
-
-      const licData = await getLICCollaterals($user.id, $applicationId);
-      if (licData.error === 0) {
-          const otherItems = collateralItems.filter(i => i.type !== 'lic');
-          collateralItems = [...otherItems, ...licData.licCollaterals];
-      }
-
-      showLICModal = false;
-      errors = {};
-  }
-
-  async function saveGovtEmployee(data) {
-    
-    console.log('saveGovtEmployee called with data:', data);
-    submitError = '';
-    
-    try {
-     
-      const { id, ...dataWithoutId } = data;
-      
-      const saveResult = await saveGovtCollaterals(
-        $user.id,
-        $applicationId,
-        [...collateralItems.filter(i => i.type === 'govt-employee'), dataWithoutId]
-      );
-
-      console.log('Save result:', saveResult);
-
-      if (saveResult.error !== 0) {
-        console.error('Save failed:', saveResult.errorMsg);
-        submitError = saveResult.errorMsg || 'Failed to save govt collateral';
-        return;
-      }
-
-      console.log('Govt collateral saved successfully');
-
-      await reloadAllCollaterals();
-
-      showGovtEmployeeModal = false;
-      errors = {};
-    } catch (error) {
-      console.error('Error in saveGovtEmployee:', error);
-      submitError = 'Failed to save govt collateral';
+    if (editingItem?.id) {
+        result = await updateLICCollateral($user.id, $applicationId, { ...data, id: editingItem.id });
+    } else {
+        result = await saveLICCollaterals($user.id, $applicationId,
+            [...collateralItems.filter(i => i.type === 'lic'), data]
+        );
     }
-  }
+
+    if (result.error !== 0) {
+        submitError = result.errorMsg || 'Failed to save LIC collateral';
+        return;
+    }
+
+    editingItem = null;
+    showLICModal = false;
+    errors = {};
+    await reloadAllCollaterals();
+}
+
+// REPLACE saveGovtEmployee:
+async function saveGovtEmployee(data) {
+    submitError = '';
+    let result;
+
+    try {
+        if (editingItem?.id) {
+            result = await updateGovtCollateral($user.id, $applicationId, { ...data, id: editingItem.id });
+        } else {
+            const { id, ...dataWithoutId } = data;
+            result = await saveGovtCollaterals($user.id, $applicationId,
+                [...collateralItems.filter(i => i.type === 'govt-employee'), dataWithoutId]
+            );
+        }
+
+        if (result.error !== 0) {
+            submitError = result.errorMsg || 'Failed to save govt collateral';
+            return;
+        }
+
+        editingItem = null;
+        showGovtEmployeeModal = false;
+        errors = {};
+        await reloadAllCollaterals();
+    } catch (error) {
+        console.error('Error in saveGovtEmployee:', error);
+        submitError = 'Failed to save govt collateral';
+    }
+}
+
 
 //Delete Functions
 
-  async function deleteCollateral(item) {
-    const confirmMsg = t.collateralDetails?.deleteConfirm || 'Are you sure you want to delete this collateral?';
-    if (!confirm(confirmMsg)) return;
+async function deleteCollateral(item) {
+    itemToDelete = item;
+    showDeleteConfirm = true;
+}
 
-    console.log('Deleting collateral:', item);
 
-    // Remove from local array first
-    collateralItems = collateralItems.filter(i => !(i.id === item.id && i.type === item.type));
+async function confirmDelete() {
+    if (!itemToDelete) return;
+    showDeleteConfirm = false;
 
-    // Delete from database
-    if (item.type === 'property') {
-      const remainingProperties = collateralItems.filter(i => i.type === 'property');
-      await customSaveCollateralProperties($user.id, $applicationId, remainingProperties);
+    let result;
+    if (itemToDelete.type === 'property') {
+        result = await deleteCollateralProperty($user.id, $applicationId, itemToDelete.id);
+    } else if (itemToDelete.type === 'fd') {
+        result = await deleteFDCollateral($user.id, $applicationId, itemToDelete.id);
+    } else if (itemToDelete.type === 'lic') {
+        result = await deleteLICCollateral($user.id, $applicationId, itemToDelete.id);
+    } else if (itemToDelete.type === 'govt-employee') {
+        result = await deleteGovtCollateral($user.id, $applicationId, itemToDelete.id);
+    }
 
-    } else if (item.type === 'fd') {
-      const remainingFDs = collateralItems.filter(i => i.type === 'fd');
-      await saveFDCollaterals($user.id, $applicationId, remainingFDs);
+    itemToDelete = null;
 
-    } else if (item.type === 'lic') {
-      const remainingLICs = collateralItems.filter(i => i.type === 'lic');
-      await saveLICCollaterals($user.id, $applicationId, remainingLICs);
-
-    } else if (item.type === 'govt-employee') {
-      const remainingGovts = collateralItems.filter(i => i.type === 'govt-employee');
-      await saveGovtCollaterals($user.id, $applicationId, remainingGovts);
+    if (result?.error !== 0) {
+        submitError = result?.errorMsg || 'Delete failed';
+        return;
     }
 
     await reloadAllCollaterals();
-  }
-
+}
 
 //Edit Functions
 
-  async function editCollateral(item) {
-      collateralItems = collateralItems.filter(i => i.id !== item.id);
+  // async function editCollateral(item) {
+  //     collateralItems = collateralItems.filter(i => i.id !== item.id);
 
-      if (item.type === 'property') {
-          const remainingProperties = collateralItems.filter(i => i.type === 'property');
-          await customSaveCollateralProperties($user.id, $applicationId, remainingProperties);
-          showPropertyModal = true;
+  //     if (item.type === 'property') {
+  //         const remainingProperties = collateralItems.filter(i => i.type === 'property');
+  //         await customSaveCollateralProperties($user.id, $applicationId, remainingProperties);
+  //         showPropertyModal = true;
 
-      } else if (item.type === 'fd') {
-          const remainingFDs = collateralItems.filter(i => i.type === 'fd');
-          await saveFDCollaterals($user.id, $applicationId, remainingFDs);
-          showFDModal = true;
+  //     } else if (item.type === 'fd') {
+  //         const remainingFDs = collateralItems.filter(i => i.type === 'fd');
+  //         await saveFDCollaterals($user.id, $applicationId, remainingFDs);
+  //         showFDModal = true;
 
-      } else if (item.type === 'lic') {
-          const remainingLICs = collateralItems.filter(i => i.type === 'lic');
-          await saveLICCollaterals($user.id, $applicationId, remainingLICs);
-          showLICModal = true;
+  //     } else if (item.type === 'lic') {
+  //         const remainingLICs = collateralItems.filter(i => i.type === 'lic');
+  //         await saveLICCollaterals($user.id, $applicationId, remainingLICs);
+  //         showLICModal = true;
 
-      } else if (item.type === 'govt-employee') {
-          const remainingGovts = collateralItems.filter(i => i.type === 'govt-employee');
-          await saveGovtCollaterals($user.id, $applicationId, remainingGovts);
-          showGovtEmployeeModal = true;
-      }
-  }
+  //     } else if (item.type === 'govt-employee') {
+  //         const remainingGovts = collateralItems.filter(i => i.type === 'govt-employee');
+  //         await saveGovtCollaterals($user.id, $applicationId, remainingGovts);
+  //         showGovtEmployeeModal = true;
+  //     }
+  // }
+
+  function editCollateral(item) {
+    editingItem = item;
+
+    if (item.type === 'property') {
+        showPropertyModal = true;
+    } else if (item.type === 'fd') {
+        showFDModal = true;
+    } else if (item.type === 'lic') {
+        showLICModal = true;
+    } else if (item.type === 'govt-employee') {
+        showGovtEmployeeModal = true;
+    }
+}
 
 //Validate Functions 
   function validateCollateralList() {
@@ -564,7 +581,6 @@ async function handleProceed() {
                 </div>
                 <div class="space-y-1 text-sm text-gray-600">
                   <p><span class="font-medium">{t.collateralDetails?.licCollateralModal?.policyName || 'Policy Name'}:</span> {item.policyName || 'N/A'}</p>
-                  <p><span class="font-medium">{t.collateralDetails?.licCollateralModal?.policyType || 'Policy Type'}:</span> {item.policyType || 'N/A'}</p>
                   <p><span class="font-medium">{t.collateralDetails?.licCollateralModal?.policyReceiptNo || 'Receipt No'}:</span> {item.policyReceiptNo || 'N/A'}</p>
                   <p><span class="font-medium">{t.collateralDetails?.licCollateralModal?.policySurrenderValue || 'Surrender Value'}:</span> ₹{item.policySurrenderValue || '0'}</p>
                 </div>
@@ -646,35 +662,70 @@ async function handleProceed() {
 </div>
 
 <!-- Modals -->
- 
+
 <PropertyCollateralModal 
-  {locale}         
-  {t} 
-  show={showPropertyModal} 
+  {locale} {t} 
+  show={showPropertyModal}
+  editData={editingItem?.type === 'property' ? editingItem : null}
   onSave={savePropertyCollateral} 
-  onCancel={closePropertyModal} 
+  onCancel={() => { editingItem = null; showPropertyModal = false; }} 
 />
 
 <FDCollateralModal 
-  {locale}         
-  {t} 
-  show={showFDModal} 
+  {locale} {t} 
+  show={showFDModal}
+  editData={editingItem?.type === 'fd' ? editingItem : null}
   onSave={saveFDCollateral} 
-  onCancel={closeFDModal} 
+  onCancel={() => { editingItem = null; showFDModal = false; }} 
 />
 
 <LICCollateralModal 
-  {locale}         
-  {t} 
-  show={showLICModal} 
+  {locale} {t} 
+  show={showLICModal}
+  editData={editingItem?.type === 'lic' ? editingItem : null}
   onSave={saveLICCollateral} 
-  onCancel={closeLICModal} 
+  onCancel={() => { editingItem = null; showLICModal = false; }} 
 />
 
+
 <GovtEmployeeGuarantorModal 
-  {locale}         
-  {t} 
-  show={showGovtEmployeeModal} 
+  {locale} {t} 
+  show={showGovtEmployeeModal}
+  editData={editingItem?.type === 'govt-employee' ? editingItem : null}
   onSave={saveGovtEmployee} 
-  onCancel={closeGovtEmployeeModal} 
+  onCancel={() => { editingItem = null; showGovtEmployeeModal = false; }} 
 />
+
+
+<!-- Delete Confirmation Modal -->
+{#if showDeleteConfirm}
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 flex items-center justify-center bg-red-100 rounded-full">
+                <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900">Delete Collateral</h3>
+        </div>
+        <p class="text-gray-600 text-sm mb-6">
+            {t.collateralDetails?.deleteConfirm || 'Are you sure you want to delete this collateral? This action cannot be undone.'}
+        </p>
+        <div class="flex gap-3 justify-end">
+            <button
+                on:click={() => { showDeleteConfirm = false; itemToDelete = null; }}
+                class="px-4 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors text-sm"
+            >
+                Cancel
+            </button>
+            <button
+                on:click={confirmDelete}
+                class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors text-sm"
+            >
+                Delete
+            </button>
+        </div>
+    </div>
+</div>
+{/if}

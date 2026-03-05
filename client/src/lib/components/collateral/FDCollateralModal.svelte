@@ -8,6 +8,7 @@
   export let onCancel;
   export let locale = 'en';
   export let t = {};
+  export let editData = null;
   
   let errors = {};
   let districts = [];
@@ -17,6 +18,23 @@
 
   let isLoadingDistricts = false;
   let districtError = null;
+
+
+  let previousShow = false;
+    $: if (show && !previousShow) {
+        previousShow = true;
+        if (editData) {
+            formData = { ...editData };
+            if (editData.district) {
+                loadTalukasForDistrict(editData.district);
+            }
+        } else {
+            resetForm();
+        }
+    } else if (!show) {
+        previousShow = false;
+    }
+
   
   let formData = {
     type: '',
@@ -113,18 +131,21 @@ async function loadTalukasForDistrict(districtId) {
     return result.isValid();
   }
 
-  function handleAdd() {
+function handleAdd() {
     if (!validateForm()) {
-      const firstErrorElement = document.querySelector('.error-message');
-      if (firstErrorElement) {
-        firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-      return;
+        const firstErrorElement = document.querySelector('.error-message');
+        if (firstErrorElement) {
+            firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
     }
-
-    onSave({ ...formData, id: Date.now(), type: 'fd' });
+    if (editData?.id) {
+        onSave({ ...formData, id: editData.id, type: 'fd' });
+    } else {
+        onSave({ ...formData, type: 'fd' });
+    }
     resetForm();
-  }
+}
 
   function handleCancel() {
     resetForm();
@@ -157,7 +178,7 @@ async function loadTalukasForDistrict(districtId) {
       <!-- Header -->
       <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
         <h3 class="text-xl font-bold text-gray-900">
-          {t.collateralDetails?.fdCollateralModal?.modalTitle || 'Add Collateral FD'}
+          {editData ? (t.collateralDetails?.fdCollateralModal?.editModalTitle || 'Edit Collateral FD') : (t.collateralDetails?.fdCollateralModal?.modalTitle || 'Add Collateral FD')}
         </h3>
         <button
           on:click={handleCancel}
@@ -411,7 +432,7 @@ async function loadTalukasForDistrict(districtId) {
             on:click={handleAdd}
             class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors text-sm"
           >
-            {t.collateralDetails?.fdCollateralModal?.addButton || 'Add'}
+              {editData ? (t.collateralDetails?.fdCollateralModal?.updateButton || 'Update') : (t.collateralDetails?.fdCollateralModal?.addButton || 'Add')}
           </button>
         </div>
       </div>

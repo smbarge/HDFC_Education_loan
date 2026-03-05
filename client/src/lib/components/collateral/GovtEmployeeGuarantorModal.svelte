@@ -6,8 +6,12 @@
   export let onCancel;
   export let locale = 'en';
   export let t = {};
+  export let editData = null;
+
   
   let errors = {};
+
+ 
   
   let formData = {
     departmentName: '',
@@ -19,6 +23,20 @@
     hasForm24B: false,
     isPermanent: false
   };
+
+
+  // ADD THIS after let declarations:
+let previousShow = false;
+$: if (show && !previousShow) {
+    previousShow = true;
+    if (editData) {
+        formData = { ...editData };
+    } else {
+        resetForm();
+    }
+} else if (!show) {
+    previousShow = false;
+}
 
   function validateField(fieldName) {
     const result = govtEmployeeValidation(formData, t);
@@ -38,22 +56,17 @@
     return result.isValid();
   }
 
-  function handleAdd() {
-    console.log('handleAdd called with formData:', formData);
-    
+ function handleAdd() {
     if (!validateForm()) {
-      console.log('Validation failed:', errors);
-      const firstErrorElement = document.querySelector('.error-message');
-      if (firstErrorElement) {
-        firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-      return;
+        const firstErrorElement = document.querySelector('.error-message');
+        if (firstErrorElement) {
+            firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
     }
-
-    console.log('Validation passed, calling onSave');
-    onSave({ ...formData, id: Date.now(), type: 'govt-employee' });
+    onSave({ ...formData, type: 'govt-employee' });
     resetForm();
-  }
+}
 
   function handleCancel() {
     resetForm();
@@ -81,7 +94,7 @@
 
       <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
         <h3 class="text-xl font-bold text-gray-900">
-          {t.collateralDetails?.govtEmployeeModal?.modalTitle || 'Add Government Employee Guarantor'}
+            {editData ? (t.collateralDetails?.govtEmployeeModal?.editModalTitle || 'Edit Government Employee Guarantor') : (t.collateralDetails?.govtEmployeeModal?.modalTitle || 'Add Government Employee Guarantor')}
         </h3>
         <button
           on:click={handleCancel}
@@ -260,7 +273,7 @@
             on:click={handleAdd}
             class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors text-sm"
           >
-            {t.collateralDetails?.govtEmployeeModal?.addButton || 'Add'}
+              {editData ? (t.collateralDetails?.govtEmployeeModal?.updateButton || 'Update') : (t.collateralDetails?.govtEmployeeModal?.addButton || 'Add')}
           </button>
         </div>
       </div>

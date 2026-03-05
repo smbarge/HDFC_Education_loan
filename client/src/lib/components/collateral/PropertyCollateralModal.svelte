@@ -9,9 +9,12 @@ import { onMount } from 'svelte';
   export let onCancel;
   export let locale = 'en'; 
   export let t = {};  
+  export let editData = null;
+
   
   let errors = {};
-  
+
+
   let formData = {
     propertyType: '',
     documentType: '',
@@ -26,6 +29,21 @@ import { onMount } from 'svelte';
     propertyValue: ''
   };
 
+  // ADD THIS after let declarations:
+let previousShow = false;
+$: if (show && !previousShow) {
+    previousShow = true;
+    if (editData) {
+        formData = { ...editData };
+        if (editData.district) {
+            loadTalukasForDistrict(editData.district);
+        }
+    } else {
+        resetForm();
+    }
+} else if (!show) {
+    previousShow = false;
+}
 
 
 
@@ -134,18 +152,17 @@ async function loadTalukasForDistrict(districtId) {
     return result.isValid();
   }
 
-  function handleAdd() {
+function handleAdd() {
     if (!validateForm()) {
-      const firstErrorElement = document.querySelector('.error-message');
-      if (firstErrorElement) {
-        firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-      return;
+        const firstErrorElement = document.querySelector('.error-message');
+        if (firstErrorElement) {
+            firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
     }
-
-    onSave({ ...formData, id: Date.now(), type: 'property' });
+    onSave({ ...formData, type: 'property' });
     resetForm();
-  }
+}
 
   function handleCancel() {
     resetForm();
@@ -177,7 +194,7 @@ async function loadTalukasForDistrict(districtId) {
 
       <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
         <h3 class="text-xl font-bold text-gray-900">
-          {t?.collateralDetails?.propertyCollateralModal?.modalTitle || 'Add Collateral Property'}
+              {editData ? (t?.collateralDetails?.propertyCollateralModal?.editModalTitle || 'Edit Collateral Property') : (t?.collateralDetails?.propertyCollateralModal?.modalTitle || 'Add Collateral Property')}
         </h3>
         <button
           on:click={handleCancel}
@@ -449,7 +466,7 @@ async function loadTalukasForDistrict(districtId) {
             on:click={handleAdd}
             class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors text-sm"
           >
-            {t?.collateralDetails?.propertyCollateralModal?.addButton || 'Add'}
+            {editData ? (t?.collateralDetails?.propertyCollateralModal?.updateButton || 'Update') : (t?.collateralDetails?.propertyCollateralModal?.addButton || 'Add')}
           </button>
         </div>
       </div>

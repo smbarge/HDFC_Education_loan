@@ -58,6 +58,7 @@ import {
   let missingDocuments = [];
 
   let purposeOfLoan = '';
+  let loanAmount = '';
   let showSuccessModal = false;
     
 
@@ -216,6 +217,8 @@ if (existingDocs.error === 0 && existingDocs.documents) {
   if (educationData.error === 0 && educationData.data) {
     purposeOfLoan = educationData.data.purposeOfLoan || '';
     console.log('purposeOfLoan value is:', purposeOfLoan);
+    loanAmount = educationData.data.loanAmount || educationData.data.loan_amount || '';
+
   }
 });
 
@@ -338,10 +341,28 @@ async function handleSubmit() {
   }
 }
 
+// function handleGoToDashboard() {
+//   applicationId.set(null);
+//   goto(`/${locale}/dashboard`);
+// }
+
 function handleGoToDashboard() {
+
+   const today = new Date().toLocaleDateString('en-IN', { 
+    day: '2-digit', month: 'short', year: 'numeric' 
+  });
+  // Save submission info to sessionStorage before navigating
+  sessionStorage.setItem('submissionSuccess', JSON.stringify({
+    applicantName: userData?.name || '',
+    applicationId: $applicationId,
+    purposeOfLoan: purposeOfLoan,
+    loanAmount: loanAmount,
+    submittedDate: today
+  }));
   applicationId.set(null);
   goto(`/${locale}/dashboard`);
 }
+
 </script>
 
 <svelte:head>
@@ -526,8 +547,19 @@ function handleGoToDashboard() {
 </div>
 
 <!-- Success Modal Component -->
-<SubmissionSuccessModal 
+<!-- <SubmissionSuccessModal 
   bind:show={showSuccessModal}
   applicationId={$applicationId}
   on:goToDashboard={handleGoToDashboard}
+/> -->
+
+
+<SubmissionSuccessModal 
+  bind:show={showSuccessModal}
+  applicationId={$applicationId}
+  applicantName={userData?.name || ''}
+  purposeOfLoan={purposeOfLoan}
+  loanAmount={loanAmount}
+  on:goToDashboard={handleGoToDashboard}
 />
+

@@ -50,19 +50,80 @@
   let hasExistingApplication = false;
   let applicationStatus = null;
 
-  onMount(async () => {
+
+  let showSubmissionBanner = false;
+  let submissionInfo = null;
+
+
+  const loanPurposeMap = {
+  '1': 'Graduation',
+  '2': 'Post Graduation', 
+  '3': 'Diploma',
+  '4': 'Professional Course',
+  '5': 'Technical Course',
+  '6': 'Medical Course',
+  '7': 'Study Abroad',
+  '8': 'Other'
+};
+
+
+// $: loanPurposeLabel = loanPurposeMap[String(purposeOfLoan)] || purposeOfLoan || 'N/A';
+let submittedDate = null;
+
+
+ onMount(async () => {
   if (!$user) {
     goto(`/${locale}/login`);
     return;
+  }
+
+  // // Check sessionStorage for fresh submission data
+  // const saved = sessionStorage.getItem('submissionSuccess');
+  // if (saved) {
+  //   submissionInfo = JSON.parse(saved);
+  //   sessionStorage.removeItem('submissionSuccess');
+  // }
+
+  // const savedDate = sessionStorage.getItem('submissionDate');
+  // if (savedDate) {
+  //   submittedDate = savedDate;
+  //   sessionStorage.removeItem('submissionDate');
+  // }
+
+
+  const saved = sessionStorage.getItem('submissionSuccess');
+  if (saved) {
+    submissionInfo = JSON.parse(saved);
+    submittedDate = submissionInfo.submittedDate || null;
+    sessionStorage.removeItem('submissionSuccess');
   }
 
   const result = await getUserApplication($user.id);
   if (result.error === 0) {
     applicationId.set(result.applicationId);
     hasExistingApplication = true;
-    applicationStatus = result.status; // 'in-progress' or 'submitted'
+    applicationStatus = result.status;
+
+    // If submitted but no fresh submissionInfo, fetch education data for display
+    if (applicationStatus === 'submitted' && !submissionInfo) {
+      try {
+        const { getEducationDetailsData } = await import('$lib/api/authApi');
+        const eduData = await getEducationDetailsData(result.applicationId);
+        if (eduData.error === 0 && eduData.data) {
+          submissionInfo = {
+            applicantName: $user.name || '',
+            applicationId: result.applicationId,
+            purposeOfLoan: eduData.data.purposeOfLoan || '',
+            loanAmount: eduData.data.loanRequired || eduData.data.loanAmount || ''
+          };
+        }
+      } catch(e) {
+        console.error('Could not fetch education data:', e);
+      }
+    }
   }
 });
+
 
   // Modal state
   let showProfileModal = false;
@@ -226,7 +287,171 @@
   <DashboardHeader {t} {locale} {userData} on:openProfile={openProfileModal} />
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-    
+
+    <!-- //After sucessfuly Submission --------------------------------->
+
+  {#if applicationStatus === 'submitted'}
+
+<div class="w-full">
+
+    <!-- Success Banner -->
+    <div class="mb-6 bg-white rounded-2xl shadow-lg border border-green-200 overflow-hidden">
+      <div class="bg-gradient-to-r from-green-400 to-emerald-500 px-6 py-5 flex items-center justify-between">
+          <!-- Left: Success Message -->
+          <div class="flex items-center gap-4">
+            <div class="w-14 h-14 bg-white bg-opacity-20 rounded-full flex items-center justify-center flex-shrink-0">
+              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-white font-bold text-xl">Application Submitted Successfully!</h3>
+              <p class="text-green-100 text-sm mt-1">Your application has been received and is under review.</p>
+            </div>
+          </div>
+
+          <!-- Right: View Application Button -->
+          <button
+            on:click={() => goto(`/${locale}/application/view-application`)}
+            class="flex-shrink-0 flex items-center gap-2 px-5 py-2.5 bg-white text-green-700 font-bold rounded-xl hover:bg-green-50 transition-all shadow text-sm"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+            View Application
+          </button>
+        </div>
+
+      <!-- Status Badge -->
+      <div class="px-6 py-3 bg-green-50 border-b border-green-100 flex items-center justify-center gap-2">
+        <div class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></div>
+        <span class="text-green-700 text-sm font-semibold">Status: Under Review</span>
+      </div>
+
+      <!-- Info Cards -->
+        <div class="p-6 grid grid-cols-2 gap-4">
+        <div class="bg-purple-50 rounded-xl p-4 border border-purple-100">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-8 h-8 bg-purple-200 rounded-full flex items-center justify-center">
+              <svg class="w-4 h-4 text-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+            </div>
+            <p class="text-xs text-gray-500 font-medium">Applicant</p>
+          </div>
+          <p class="font-bold text-gray-800 text-sm">{submissionInfo?.applicantName || userData.name || 'N/A'}</p>
+        </div>
+
+        <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-8 h-8 bg-blue-200 rounded-full flex items-center justify-center">
+              <svg class="w-4 h-4 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+            <p class="text-xs text-gray-500 font-medium">Application ID</p>
+          </div>
+          <p class="font-bold text-blue-600 text-sm">#{submissionInfo?.applicationId || $applicationId}</p>
+        </div>
+
+        <div class="bg-green-50 rounded-xl p-4 border border-green-100">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-8 h-8 bg-green-200 rounded-full flex items-center justify-center">
+              <svg class="w-4 h-4 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055"/>
+              </svg>
+            </div>
+            <p class="text-xs text-gray-500 font-medium">Education Purpose</p>
+          </div>
+          <p class="font-bold text-gray-800 text-sm">
+            {submissionInfo ? (loanPurposeMap[String(submissionInfo.purposeOfLoan)] || 'N/A') : 'N/A'}
+          </p>
+        </div>
+
+        <div class="bg-yellow-50 rounded-xl p-4 border border-yellow-100">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-8 h-8 bg-yellow-200 rounded-full flex items-center justify-center">
+              <svg class="w-4 h-4 text-yellow-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <p class="text-xs text-gray-500 font-medium">Loan Amount</p>
+          </div>
+          <p class="font-bold text-gray-800 text-sm">
+            {submissionInfo?.loanAmount ? '₹' + Number(submissionInfo.loanAmount).toLocaleString('en-IN') : 'N/A'}
+          </p>
+        </div>
+      </div>
+
+      <!-- Application Timeline / Track -->
+      <div class="px-6 pb-6">
+        <h4 class="text-sm font-bold text-gray-700 mb-4">Application Track</h4>
+        <div class="relative">
+          <!-- Vertical line -->
+          <div class="absolute left-4 top-2 bottom-2 w-0.5 bg-gray-200"></div>
+
+          <!-- Step 1 — Submitted -->
+          <div class="relative flex items-start gap-4 mb-5">
+            <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 z-10">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-green-700">Application Submitted</p>
+                  <p class="text-xs text-gray-500">{submittedDate || 'Successfully Submitted'}</p>
+            </div>
+          </div>
+
+          <!-- Step 2 — Under Review (active) -->
+          <div class="relative flex items-start gap-4 mb-5">
+            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 z-10 animate-pulse">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-blue-700">Under Review</p>
+              <p class="text-xs text-gray-500">Your application is being reviewed by our team</p>
+            </div>
+          </div>
+
+          <!-- Step 3 — Approved/Rejected (pending) -->
+          <div class="relative flex items-start gap-4">
+            <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0 z-10">
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-gray-400">Approved / Rejected</p>
+              <p class="text-xs text-gray-400">Decision pending</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- View Application Button -->
+      <!-- <div class="px-6 pb-6">
+        <button
+          on:click={() => goto(`/${locale}/application/view-application`)}
+          class="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+          </svg>
+          <span>View Application</span>
+        </button>
+      </div> -->
+    </div>
+  </div>
+
+
+    <!-- end te sucessfuly submission data----------------------------- -->
+
+    {:else}
     <section class="max-w-7xl mx-auto text-center mb-12">
       <div class="bg-white rounded-2xl shadow-md p-10 sm:p-12 overflow-hidden relative border border-purple-100">
         <div class="absolute top-0 right-0 w-48 h-48 bg-purple-100 opacity-30 rounded-full -mr-24 -mt-24"></div>
@@ -589,7 +814,12 @@
   </button>
       </div>
     </section>
+
+   {/if}
+
   </div>  
+
+
 </div>
 
 <!-- Profile Modal Component -->

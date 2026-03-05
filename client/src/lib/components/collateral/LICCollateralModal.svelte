@@ -1,13 +1,21 @@
 <script>
   import licCollateralValidation from '$lib/validation/collateral/licCollateral';
+  import { fetchMasters } from '$lib/api/auth';
+  import { onMount } from 'svelte';
 
   export let show = false;
   export let onSave;
   export let onCancel;
   export let locale = 'en';
   export let t = {};
+  export let editData = null;
+
+
   
   let errors = {};
+  let policyTypes = [];
+
+
   
   let formData = {
     type: '',
@@ -18,6 +26,28 @@
     policyStartDate: '',
     policyMaturityDate: ''
   };
+
+
+  onMount(async () => {
+  const result = await fetchMasters();
+  if (result.error === 0) {
+    policyTypes = result.masters.m_policy_type || [];
+  }
+});
+
+
+  // ADD THIS after let declarations:
+let previousShow = false;
+$: if (show && !previousShow) {
+    previousShow = true;
+    if (editData) {
+        formData = { ...editData };
+    } else {
+        resetForm();
+    }
+} else if (!show) {
+    previousShow = false;
+}
 
   function validateField(fieldName) {
     const result = licCollateralValidation(formData, t);
@@ -39,16 +69,15 @@
 
   function handleAdd() {
     if (!validateForm()) {
-      const firstErrorElement = document.querySelector('.error-message');
-      if (firstErrorElement) {
-        firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-      return;
+        const firstErrorElement = document.querySelector('.error-message');
+        if (firstErrorElement) {
+            firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
     }
-
-    onSave({ ...formData, id: Date.now(), type: 'lic' });
+    onSave({ ...formData, type: 'lic' });
     resetForm();
-  }
+}
 
   function handleCancel() {
     resetForm();
@@ -75,7 +104,7 @@
       
       <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
         <h3 class="text-xl font-bold text-gray-900">
-          {t?.collateralDetails?.licCollateralModal?.modalTitle || 'Add Collateral FD/LIC'} 
+          {editData ? (t?.collateralDetails?.licCollateralModal?.editModalTitle || 'Edit Collateral LIC') : (t?.collateralDetails?.licCollateralModal?.modalTitle || 'Add Collateral FD/LIC')}
         </h3>
         <button
           on:click={handleCancel}
@@ -113,20 +142,23 @@
               {/if}
               </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      {t?.collateralDetails?.licCollateralModal?.policyType || 'Policy Type'} <span class="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      bind:value={formData.policyType}
-                      on:input={() => validateField('policyType')}
-                      placeholder={t?.collateralDetails?.licCollateralModal?.policyTypePlaceholder || 'Enter Policy Type'}
-                      class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm {errors.policyType ? 'border-red-500' : 'border-gray-300'}"
-                    />
-                    {#if errors.policyType}
-                      <p class="error-message mt-1 text-xs text-red-600">{errors.policyType}</p>
-                    {/if}
-                  </div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    {t?.collateralDetails?.licCollateralModal?.policyType || 'Policy Type'} <span class="text-red-500">*</span>
+                  </label>
+                  <select
+                    bind:value={formData.policyType}
+                    on:change={() => validateField('policyType')}
+                    class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm {errors.policyType ? 'border-red-500' : 'border-gray-300'}"
+                  >
+                    <option value="">-- Select Policy Type --</option>
+                   {#each policyTypes as pt}
+                      <option value={pt.id}>{pt.eng_name}</option>
+                    {/each}
+                  </select>
+                  {#if errors.policyType}
+                    <p class="error-message mt-1 text-xs text-red-600">{errors.policyType}</p>
+                  {/if}
+                </div>
             </div>
 
             <div>
@@ -211,7 +243,7 @@
             on:click={handleAdd}
             class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors text-sm"
           >
-            {t?.collateralDetails?.licCollateralModal?.addButton || 'Add'}
+              {editData ? (t?.collateralDetails?.licCollateralModal?.updateButton || 'Update') : (t?.collateralDetails?.licCollateralModal?.addButton || 'Add')}
           </button>
         </div>
       </div>

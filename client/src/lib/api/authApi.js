@@ -338,6 +338,7 @@ const customSendPasswordResetOtp = async ({ mobile, name }) => {
 };
 
 // Application Management
+
 const customCreateApplication = async ({ userId }) => {
     console.log("customCreateApplication called for userId:", userId);
     
@@ -555,7 +556,7 @@ const customSavePersonalDetails = async ({ applicationId, personalDetails }) => 
     }
 };
 
-//Education detail page ___
+//Education detail page___
 
 // Get education details
 const getEducationDetailsData = async (applicationId) => {
@@ -616,10 +617,7 @@ const customSaveEducationDetails = async ({ applicationId, educationDetails }) =
     }
 };
 
-
-
-
-//Guarantor detail 
+//Guarantor detail page____
 
 // Get guarantor details
 const getGuarantorDetailsData = async (applicationId) => {
@@ -681,7 +679,7 @@ const customSaveGuarantorDetails = async ({ applicationId, guarantorDetails }) =
 };
 
 
-//Collateral Properties --------------------
+//------------------Collateral Properties --------------------
 
 // Get collateral properties
 
@@ -876,6 +874,84 @@ const saveGovtCollaterals = async (userId, applicationId, govtCollaterals) => {
     }
 };
 
+//Edit all Collateral Documents
+
+const updateCollateralProperty = async (userId, applicationId, property) => {
+    const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'updateCollateralProperty', property })
+    });
+    return response.json();
+};
+
+const updateFDCollateral = async (userId, applicationId, fd) => {
+    const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'updateFDCollateral', fd })
+    });
+    return response.json();
+};
+
+const updateLICCollateral = async (userId, applicationId, lic) => {
+    const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'updateLICCollateral', lic })
+    });
+    return response.json();
+};
+
+const updateGovtCollateral = async (userId, applicationId, govt) => {
+    const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'updateGovtCollateral', govt })
+    });
+    return response.json();
+};
+
+
+
+//delete all collateral documents
+ const deleteCollateralProperty = async (userId, applicationId, id) => {
+    const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'deleteCollateralProperty', id })
+    });
+    return response.json();
+};
+
+ const deleteFDCollateral = async (userId, applicationId, id) => {
+    const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'deleteFDCollateral', id })
+    });
+    return response.json();
+};
+
+ const deleteLICCollateral = async (userId, applicationId, id) => {
+    const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'deleteLICCollateral', id })
+    });
+    return response.json();
+};
+
+ const deleteGovtCollateral = async (userId, applicationId, id) => {
+    const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'deleteGovtCollateral', id })
+    });
+    return response.json();
+};
+
+// -------------------------------
 
 // Upload document
 const uploadDocument = async (userId, applicationId, docKey, documentId, file) => {
@@ -918,6 +994,22 @@ const deleteDocument = async (userId, applicationId, docKey) => {
 };
 
 
+//view application 
+
+export async function getViewApplicationData(userId, applicationId) {
+  try {
+    const response = await fetch(
+      `/api/createApplication/${userId}/${applicationId}/view`
+    );
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching view application data:', error);
+    return { error: -1, errorMsg: 'Failed to fetch application data' };
+  }
+}
+
+
 
 
 export {
@@ -952,6 +1044,16 @@ export {
   saveLICCollaterals,
   getGovtCollaterals, 
   saveGovtCollaterals,
+
+  updateCollateralProperty,
+  updateFDCollateral,
+  updateLICCollateral,
+  updateGovtCollateral,
+
+  deleteCollateralProperty,
+  deleteFDCollateral,
+  deleteLICCollateral,
+  deleteGovtCollateral,
 
 
   uploadDocument,
