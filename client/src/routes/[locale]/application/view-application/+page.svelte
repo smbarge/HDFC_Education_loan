@@ -458,44 +458,89 @@
               <p class="text-gray-400 text-sm">No collateral details found.</p>
             {/if}
 
+
+
+            
           <!-- ===== DOCUMENT UPLOAD ===== -->
           {:else if activeTab === 'documents'}
-  <h3 class="text-lg font-bold text-gray-800 mb-4">Uploaded Documents</h3>
-  {#if appData.allDocs?.length > 0}
-    <div class="flex flex-col gap-3">
-      {#each appData.allDocs as doc}
-        <div class="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3 border border-gray-200">
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-              </svg>
-            </div>
-            <div>
-              <p class="text-sm font-semibold text-gray-800">{doc.document_name || doc.doc_key}</p>
-              <p class="text-xs text-gray-400">{doc.org_filename || ''}</p>
-            </div>
-          </div>
-          <a
-            href={doc.file_name}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors"
-          >
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-            </svg>
-            View
-          </a>
-        </div>
-      {/each}
-    </div>
-  {:else}
-    <p class="text-gray-400 text-sm">No documents uploaded yet.</p>
-  {/if}
-{/if}
+            {@const sectionNameMap = {
+              1: 'APPLICANT DOCUMENTS',
+              2: 'APPLICANT DOCUMENTS',
+              3: 'APPLICANT DOCUMENTS',
+              4: 'APPLICANT DOCUMENTS',
+              5: 'APPLICANT DOCUMENTS',
+              6: 'CO-APPLICANT DOCUMENTS',
+              7: 'COLLATERAL DOCUMENT — Property',
+              8: 'COLLATERAL DOCUMENT — Govt Employee',
+              9: 'COLLATERAL DOCUMENT — LIC Policy',
+              10: 'COLLATERAL DOCUMENT — Fixed Deposit',
+              11: 'STUDY ABROAD DOCUMENTS',
+              12: 'GUARANTOR DOCUMENTS',
+            }}
+            {@const sectionOrderMap = { 1:1, 2:1, 3:1, 4:1, 5:1, 6:2, 12:3, 7:4, 8:5, 9:6, 10:7, 11:8 }}
+            {@const groupedSections = (() => {
+              const sections = {};
+              (appData.allDocs || []).forEach(doc => {
+                const sid = doc.section_id;
+                const sname = sectionNameMap[sid] || doc.section_name || 'Other Documents';
+                if (!sections[sname]) sections[sname] = { section_name: sname, order: sectionOrderMap[sid] || 99, docs: [] };
+                sections[sname].docs.push(doc);
+              });
+              return Object.values(sections).sort((a, b) => a.order - b.order);
+            })()}
 
+            <h3 class="text-lg font-bold text-gray-800 mb-6">Uploaded Documents</h3>
+
+            {#if groupedSections.length > 0}
+              {#each groupedSections as section}
+                <div class="mb-6">
+                  <!-- Section Header -->
+                  <div class="bg-gradient-to-r from-purple-600 to-purple-700 rounded-t-xl px-5 py-3">
+                    <h4 class="text-white font-bold text-sm uppercase tracking-wide">{section.section_name}</h4>
+                  </div>
+
+                  <!-- Column Headers -->
+                  <div class="bg-gray-100 border-x border-gray-200 px-5 py-2 grid grid-cols-12">
+                    <p class="col-span-9 text-xs font-bold text-gray-500 uppercase">Documents Name</p>
+                    <p class="col-span-3 text-xs font-bold text-gray-500 uppercase text-right">View</p>
+                  </div>
+
+                  <!-- Docs -->
+                  <div class="border border-t-0 border-gray-200 rounded-b-xl overflow-hidden divide-y divide-gray-100">
+                    {#each section.docs as doc}
+                      <div class="flex items-center justify-between px-5 py-3 bg-white hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center gap-3">
+                          <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                          </div>
+                          <div>
+                            <p class="text-sm font-semibold text-gray-800">{doc.document_name}</p>
+                            <p class="text-xs text-gray-400">{doc.org_filename || ''}</p>
+                          </div>
+                        </div>
+                        <a
+                          href={doc.file_name}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="flex items-center gap-1.5 px-4 py-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-semibold rounded-lg transition-colors flex-shrink-0"
+                        >
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                          </svg>
+                          View
+                        </a>
+                      </div>
+                    {/each}
+                  </div>
+                </div>
+              {/each}
+            {:else}
+              <p class="text-gray-400 text-sm">No documents uploaded yet.</p>
+            {/if}
+          {/if}
         </div>
       </div>
 

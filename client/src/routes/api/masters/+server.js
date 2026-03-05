@@ -177,15 +177,15 @@ export async function GET() {
         ORDER BY id
         `),
 
-        pool.query(`
+       pool.query(`
         SELECT
-        doc_id,
         id,
         eng_name,
-        dev_name
+        dev_name,
+        upload_for
         FROM public.m_upload_docs
-        ORDER BY doc_id
-        `),
+        ORDER BY id
+      `),
 
         pool.query(`
         SELECT

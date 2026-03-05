@@ -435,7 +435,7 @@ Content-Type: application/json
 # Upload document section 
 
 ### Get all
-GET http://localhost:5173/api/uploaddoc/1/2/all
+GET http://localhost:5173/api/uploaddoc/3/4/all
 
 
 ###POST

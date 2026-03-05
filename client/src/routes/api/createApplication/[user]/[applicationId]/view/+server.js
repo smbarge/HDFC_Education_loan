@@ -85,17 +85,18 @@ export async function GET({ params }) {
     );
 
     // 8. Uploaded Documents (photo + signature)
-   const docsResult = await client.query(
-  `SELECT u.doc_key, u.file_name, u.org_filename, u.document_id, u.document_name,
-          m.eng_name as master_doc_name, m.doc_id as section_id,
+const docsResult = await client.query(
+  `SELECT u.file_name, u.org_filename, u.document_id, u.document_name,
+          m.eng_name as master_doc_name, m.upload_for as section_id,
           dt.eng_name as section_name
    FROM upload_docs u
    LEFT JOIN m_upload_docs m ON m.id = u.document_id
-   LEFT JOIN m_document_type dt ON dt.id = m.doc_id
-   WHERE u.application_id = $1
-   ORDER BY m.doc_id, m.id`,
+   LEFT JOIN m_document_type dt ON dt.id = m.upload_for
+   WHERE u.application_id = $1 AND u.status = 1
+   ORDER BY m.upload_for, m.id`,
   [applicationId]
 );
+
 
     if (personalResult.rows.length === 0) {
       return json({ error: -1, errorMsg: 'Application not found' });
@@ -103,18 +104,22 @@ export async function GET({ params }) {
 
     const docs = {};
     const allDocs = [];
-        docsResult.rows.forEach(d => {
-        docs[d.doc_key] = d.file_name;
-        allDocs.push({
-            doc_key: d.doc_key,
-            file_name: d.file_name,
-            org_filename: d.org_filename,
-            document_id: d.document_id,
-            document_name: d.document_name
-        });
-        });
+    docsResult.rows.forEach(d => {
+      docs[d.document_id] = d.file_name;
 
+      // Named keys for photo (id:3) and signature (id:4)
+      if (d.document_id === 3) docs['photo'] = d.file_name;
+      if (d.document_id === 4) docs['signature'] = d.file_name;
 
+      allDocs.push({
+        file_name: d.file_name,
+        org_filename: d.org_filename,
+        document_id: d.document_id,
+        document_name: d.master_doc_name || d.document_name || 'Document',
+        section_id: d.section_id,
+        section_name: d.section_name || 'Other Documents'
+      });
+    });
     const personal = personalResult.rows[0];
     personal.gender                  = genderMap[personal.gender]|| personal.gender;
     personal.religion                = religionMap[personal.religion]|| personal.religion;

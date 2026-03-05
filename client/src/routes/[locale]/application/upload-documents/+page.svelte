@@ -140,18 +140,16 @@ import {
   'guarantor_incomeCertificate': 43,
   'guarantor_addressProof': 44,
 
-  // COLLATERAL PREFIX ALIASES — baseDocId after stripping prefix
-  // Property collateral stripped keys
-  'propertyAadharCard': 1,
-  // Govt employee stripped keys  
-  'govtAadharCard': 1,
-  // LIC stripped keys
-  'licAadharCard': 1,
-  // FD stripped keys
-  'fdAadharCardXerox': 36,
+   'propertyAadharCard': 45,
+  // FD collateral stripped keys (id: 46)
+  'fdAadharCardXerox': 46,
+  // LIC stripped keys (id: 47)
+  'licAadharCard': 47,
+  // Govt employee stripped keys (id: 48)
+  'govtAadharCard': 48,
 };
 
-  onMount(async () => {
+onMount(async () => {
   if (!$user) {
     goto(`/${locale}/login`);
     return;
@@ -162,10 +160,9 @@ import {
     return;
   }
 
-  // Check if guarantor exists (just check, don't load full data)
+  // Check if guarantor exists
   const guarantorResult = await getGuarantorDetailsData($applicationId);
   if (guarantorResult.error === 0 && guarantorResult.data) {
-    // Guarantor exists - set a flag to show upload section
     guarantorData = {
       exists: true,
       guarantorFullName: guarantorResult.data.guarantorFullName,
@@ -173,23 +170,35 @@ import {
     };
   }
 
-  const existingDocs = await getUploadedDocuments($user.id, $applicationId);
-if (existingDocs.error === 0 && existingDocs.documents) {
-  existingDocs.documents.forEach(doc => {
-    uploadedDocs[doc.doc_key] = {
-      uploaded: true,
-      url: doc.file_name,
-      fileName: doc.org_filename,
-      fileSize: doc.document_size,
-      uploadedAt: doc.upload_date
-    };
+  // Build reverse map: masterId -> all docId keys
+  const masterIdToAllDocIdsMap = {};
+  Object.entries(docIdToMasterIdMap).forEach(([docKey, masterId]) => {
+    const key = String(masterId);
+    if (!masterIdToAllDocIdsMap[key]) masterIdToAllDocIdsMap[key] = [];
+    masterIdToAllDocIdsMap[key].push(docKey);
   });
-  uploadedDocs = { ...uploadedDocs };
-}
 
+  // Fetch existing uploaded documents
+  const existingDocs = await getUploadedDocuments($user.id, $applicationId);
+  if (existingDocs.error === 0 && existingDocs.documents) {
+    existingDocs.documents.forEach(doc => {
+      const docData = {
+        uploaded: true,
+        url: doc.file_name,
+        fileName: doc.org_filename || doc.document_name,
+        fileSize: doc.document_size,
+        uploadedAt: doc.upload_date
+      };
+      uploadedDocs[String(doc.document_id)] = docData;
+      const allDocIds = masterIdToAllDocIdsMap[String(doc.document_id)] || [];
+      allDocIds.forEach(docKey => {
+        uploadedDocs[docKey] = docData;
+      });
+    });
+    uploadedDocs = { ...uploadedDocs };
+  }
 
-
-  // Check if collaterals exist (just check, don't need full details)
+  // Load collaterals
   collateralItems = [];
 
   const propertyData = await getCollateralProperties($user.id, $applicationId);
@@ -212,14 +221,45 @@ if (existingDocs.error === 0 && existingDocs.documents) {
     collateralItems = [...collateralItems, ...govtData.govtCollaterals];
   }
 
-  // Fetch education details to get purposeOfLoan
-  const educationData = await getEducationDetailsData($applicationId);
-  if (educationData.error === 0 && educationData.data) {
-    purposeOfLoan = educationData.data.purposeOfLoan || '';
-    console.log('purposeOfLoan value is:', purposeOfLoan);
-    loanAmount = educationData.data.loanAmount || educationData.data.loan_amount || '';
+  // Re-map existing docs to collateral prefixed keys
+ const collateralTypeDocIdMap = {
+    'property':      { 45: 'aadharCard', 20: 'propertyOwnership', 21: 'extract712', 22: 'prCard', 23: 'valuationCert', 24: 'form24A' },
+    'fd':            { 46: 'aadharCardXerox', 35: 'photoWithSign', 36: 'fdReceipt', 37: 'bankConfirmation', 38: 'fdStatement' },
+    'lic':           { 47: 'aadharCard', 30: 'photoWithSign', 31: 'licPolicyOriginal', 32: 'premiumReceipts', 33: 'policyBond', 34: 'policyStatus' },
+    'govt-employee': { 48: 'aadharCard', 25: 'govtIdCard', 26: 'salaryCert', 27: 'officeCert', 28: 'retirementProof', 29: 'form24B' },
+  };
 
+  // Re-map existing docs to collateral prefixed keys
+   if (existingDocs.error === 0 && existingDocs.documents) {
+    collateralItems.forEach((item, index) => {
+      const collateralType = item.type;
+      const typeMap = collateralTypeDocIdMap[collateralType] || {};
+
+      existingDocs.documents.forEach(doc => {
+        const docData = uploadedDocs[String(doc.document_id)];
+        if (!docData) return;
+
+        const docIdKey = typeMap[doc.document_id] || typeMap[String(doc.document_id)];
+
+        if (docIdKey) {
+          const prefixedKey = `collateral_${collateralType}_${index}_${docIdKey}`;
+          uploadedDocs[prefixedKey] = docData;
+        }
+      });
+    });
+    uploadedDocs = { ...uploadedDocs };
   }
+
+  // Fetch education details
+   const educationData = await getEducationDetailsData($applicationId);
+  if (educationData.error === 0 && educationData.data) {
+    purposeOfLoan = educationData.data.purposeOfLoan || educationData.data.purpose_of_loan || '';
+    loanAmount = educationData.data.loanAmount || 
+                 educationData.data.loan_amount || 
+                 educationData.data.loan_required_amount || 
+                 educationData.data.loanRequiredAmount || '';
+  }
+
 });
 
 
@@ -235,9 +275,31 @@ async function handleUpload(docId, file) {
     return;
   }
 
-  // Get master document ID from uploadDocsMetadata
-  const baseDocId = docId.replace(/^(collateral_[^_]+_\d+_|guarantor_)/, '');
-  const documentId = docIdToMasterIdMap[baseDocId] || docIdToMasterIdMap[docId];
+  // Resolve documentId based on full docId first, then stripped
+  let documentId = docIdToMasterIdMap[docId];
+
+  if (!documentId) {
+    // Extract collateral type and base key
+    const collateralMatch = docId.match(/^collateral_(property|fd|lic|govt-employee)_\d+_(.+)$/);
+    if (collateralMatch) {
+      const collateralType = collateralMatch[1];
+      const baseKey = collateralMatch[2]; // e.g. 'aadharCard', 'photoWithSign'
+      // Map by type-specific key
+      const typeKeyMap = {
+        'property': { 'aadharCard': 45, 'propertyOwnership': 20, 'extract712': 21, 'prCard': 22, 'valuationCert': 23, 'form24A': 24 },
+        'fd':       { 'aadharCard': 46, 'aadharCardXerox': 46, 'photoWithSign': 35, 'fdReceipt': 36, 'bankConfirmation': 37, 'fdStatement': 38 },
+        'lic':      { 'aadharCard': 47, 'photoWithSign': 30, 'licPolicyOriginal': 31, 'premiumReceipts': 32, 'policyBond': 33, 'policyStatus': 34 },
+        'govt-employee': { 'aadharCard': 48, 'govtIdCard': 25, 'salaryCert': 26, 'officeCert': 27, 'retirementProof': 28, 'form24B': 29 },
+      };
+      documentId = typeKeyMap[collateralType]?.[baseKey];
+    } else if (docId.startsWith('guarantor_')) {
+      const baseKey = docId.replace('guarantor_', '');
+      const guarantorKeyMap = { 'aadharCard': 41, 'guarantorAffidavit': 42, 'incomeCertificate': 43, 'addressProof': 44 };
+      documentId = guarantorKeyMap[baseKey];
+    } else {
+      documentId = docIdToMasterIdMap[docId];
+    }
+  }
 
   if (!documentId) {
     uploadErrors[docId] = 'Document mapping not found';
@@ -253,33 +315,67 @@ async function handleUpload(docId, file) {
     return;
   }
 
-  uploadedDocs[docId] = {
+  const docData = {
     uploaded: true,
     url: result.filePath,
     fileName: file.name,
     fileSize: file.size,
     uploadedAt: new Date().toISOString()
   };
+  uploadedDocs[String(documentId)] = docData;
+  uploadedDocs[docId] = docData;  // also store by original docId for component lookup
   uploadedDocs = { ...uploadedDocs };
+
 }
 
-  function handleView(docId) {
-    if (uploadedDocs[docId]?.url) {
-      window.open(uploadedDocs[docId].url, '_blank');
-    }
+function resolveDocumentId(docId) {
+  if (docIdToMasterIdMap[docId]) return String(docIdToMasterIdMap[docId]);
+
+  const collateralMatch = docId.match(/^collateral_(property|fd|lic|govt-employee)_\d+_(.+)$/);
+  if (collateralMatch) {
+    const collateralType = collateralMatch[1];
+    const baseKey = collateralMatch[2];
+    const typeKeyMap = {
+      'property':      { 'aadharCard': 45, 'propertyOwnership': 20, 'extract712': 21, 'prCard': 22, 'valuationCert': 23, 'form24A': 24 },
+      'fd':            { 'aadharCard': 46, 'aadharCardXerox': 46, 'photoWithSign': 35, 'fdReceipt': 36, 'bankConfirmation': 37, 'fdStatement': 38 },
+      'lic':           { 'aadharCard': 47, 'photoWithSign': 30, 'licPolicyOriginal': 31, 'premiumReceipts': 32, 'policyBond': 33, 'policyStatus': 34 },
+      'govt-employee': { 'aadharCard': 48, 'govtIdCard': 25, 'salaryCert': 26, 'officeCert': 27, 'retirementProof': 28, 'form24B': 29 },
+    };
+    return String(typeKeyMap[collateralType]?.[baseKey] || '');
   }
+
+  if (docId.startsWith('guarantor_')) {
+    const baseKey = docId.replace('guarantor_', '');
+    const guarantorKeyMap = { 'aadharCard': 41, 'guarantorAffidavit': 42, 'incomeCertificate': 43, 'addressProof': 44 };
+    return String(guarantorKeyMap[baseKey] || '');
+  }
+
+  return docId;
+}
+
+function handleView(docId) {
+  const documentId = resolveDocumentId(docId);
+  const doc = uploadedDocs[docId] || uploadedDocs[documentId];
+  if (doc?.url) {
+    window.open(doc.url, '_blank');
+  }
+}
+
 
 async function handleDelete(docId) {
   const confirmMessage = t.uploadDocuments?.validationMessages?.deleteConfirm || 
     'Are you sure you want to delete this document?';
   
+  const documentId = resolveDocumentId(docId);
+
   if (confirm(confirmMessage)) {
-    const result = await deleteDocument($user.id, $applicationId, docId);
+    const result = await deleteDocument($user.id, $applicationId, documentId);
     if (result.error !== 0) {
       submitError = result.errorMsg || 'Delete failed';
       return;
     }
-    delete uploadedDocs[docId];
+    delete uploadedDocs[documentId];
+    delete uploadedDocs[docId];  // also clear original docId key
     uploadedDocs = { ...uploadedDocs };
   }
 }

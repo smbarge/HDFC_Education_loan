@@ -34,17 +34,16 @@ export async function POST({ params, request }) {
 
     //Delete existing document with same doc_key (replace strategy)
     await pool.query(
-      `DELETE FROM public.upload_docs WHERE application_id = $1 AND doc_key = $2`,
-      [applicationId, docId]
+      `DELETE FROM public.upload_docs WHERE application_id = $1 AND document_id = $2`,
+      [applicationId, document_id]
     );
 
-    //Insert new document record
-    await pool.query(
-      `INSERT INTO public.upload_docs 
-        (application_id, document_id, document_name, document_size, file_name, org_filename, doc_key, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, 1)`,
-      [applicationId, document_id, file.name, file.size, relativeFilePath, file.name, docId]
-    );
+          await pool.query(
+        `INSERT INTO public.upload_docs 
+          (seq_no, application_id, document_id, document_name, document_size, file_name, org_filename, status, upload_date, created_at, updated_at)
+        VALUES (nextval('upload_docs1_seq_no_seq'), $1, $2, $3, $4, $5, $6, 1, NOW(), NOW(), NOW())`,
+        [applicationId, document_id, file.name, file.size, relativeFilePath, file.name]
+      );
 
     return json({
       error: 0,
@@ -63,9 +62,10 @@ export async function GET({ params }) {
   const { applicationId, docId } = params;
 
   try {
+    const documentId = docId; // docId param is now treated as document_id
     const result = await pool.query(
-      `SELECT * FROM public.upload_docs WHERE application_id = $1 AND doc_key = $2`,
-      [applicationId, docId]
+      `SELECT * FROM public.upload_docs WHERE application_id = $1 AND document_id = $2 AND status = 1`,
+      [applicationId, documentId]
     );
 
     if (result.rows.length === 0) {
@@ -84,7 +84,7 @@ export async function DELETE({ params }) {
 
   try {
     const result = await pool.query(
-      `SELECT file_name FROM public.upload_docs WHERE application_id = $1 AND doc_key = $2`,
+      `SELECT file_name FROM public.upload_docs WHERE application_id = $1 AND document_id = $2 AND status = 1`,
       [applicationId, docId]
     );
 
@@ -97,7 +97,7 @@ export async function DELETE({ params }) {
 
     await pool.query(
       `UPDATE public.upload_docs SET status = 0, updated_at = NOW() 
-       WHERE application_id = $1 AND doc_key = $2`,
+      WHERE application_id = $1 AND document_id = $2`,
       [applicationId, docId]
     );
 
