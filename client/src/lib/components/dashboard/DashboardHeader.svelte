@@ -11,8 +11,9 @@
   
   $: currentPath = $page.url.pathname.replace(`/${locale}`, '') || '';
   
-  function changeLanguage(newLocale) {
-    goto(`/${newLocale}${currentPath}`);
+   function changeLanguage(newLocale) {
+    const search = $page.url.search; // preserves ?mode=review
+    goto(`/${newLocale}${currentPath}${search}`);
   }
 
   function goHome() {
