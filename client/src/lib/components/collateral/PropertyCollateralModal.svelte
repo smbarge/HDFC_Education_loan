@@ -72,24 +72,24 @@ async function loadMasters() {
 
     if (result.error === 0) {
       districts = result.masters.m_district.map(row => ({
-        value: row.dist_id,
+        value: String(row.dist_id),
         label: `${row.eng_name} - ${row.dev_name}`,
         state_id: row.state_id,
         country_id: row.country_id
       }));
 
-      propertyTypes = result.masters.m_property_type.map(row => ({
-        value: row.id,
+       propertyTypes = result.masters.m_property_type.map(row => ({
+        value: String(row.id),
         label: `${row.eng_name} - ${row.dev_name}`,
       }));
 
       documentTypes = result.masters.m_document_type.map(row => ({
-        value: row.id,
+        value: String(row.id),
         label: `${row.eng_name} - ${row.dev_name}`,
       }));
 
       units = result.masters.m_units.map(row => ({
-        value: row.id,
+        value: String(row.id),
         label: `${row.eng_name} - ${row.dev_name}`,
       }));
 
@@ -123,9 +123,13 @@ async function loadTalukasForDistrict(districtId) {
 
     if (result.error === 0 && Array.isArray(result.talukas)) {
       talukas = result.talukas.map(row => ({
-        value: row.taluka_id,
+        value: String(row.taluka_id),
         label: `${row.eng_name} - ${row.dev_name}`
       }));
+      // If editing, re-apply taluka value after talukas are loaded
+      if (editData?.taluka) {
+        formData.taluka = String(editData.taluka);
+      }
     }
   } catch (error) {
     console.error('Failed to load talukas:', error);

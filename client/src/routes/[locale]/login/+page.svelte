@@ -186,7 +186,7 @@
             
             <!-- Username -->
             <div class="space-y-2">
-              <label for="username" class="block text-sm font-medium text-gray-700">
+                <label for="username" class="block text-sm font-medium text-gray-700">
                 {t.login.username} <span class="text-red-500">*</span>
               </label>
               <div class="relative">
@@ -197,13 +197,17 @@
                 </div>
                 <input
                   type="text"
-                  id="username"
+                  id="mobile_field"
+                  name="mobile_field"
                   bind:value={formData.username}
+                  on:focus={(e) => e.target.removeAttribute('readonly')}
                   on:blur={() => runValidation('username')}
                   on:input={() => errors.username = ''}
                   placeholder={t.login.usernamePlaceholder}
                   maxlength="10"
                   inputmode="numeric"
+                  autocomplete="off"
+                  readonly
                   class="block w-full h-12 pl-12 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 {errors.username ? 'border-red-500 bg-red-50' : 'bg-white hover:border-purple-300'}"
                 />
               </div>
@@ -246,9 +250,12 @@
                     id="password"
                     type="text"
                     bind:value={formData.password}
+                    on:focus={(e) => e.target.removeAttribute('readonly')}
                     on:blur={() => runValidation('password')}
                     on:input={() => errors.password = ''}
                     placeholder={t.login.passwordPlaceholder}
+                    autocomplete="new-password"
+                    readonly
                     class="w-full h-12 pl-11 pr-20 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none transition-all {errors.password ? 'border-red-500 bg-red-50' : 'bg-white hover:border-purple-300'}"
                   />
                 {:else}
@@ -256,10 +263,12 @@
                     id="password"
                     type="password"
                     bind:value={formData.password}
+                    on:focus={(e) => e.target.removeAttribute('readonly')}
                     on:blur={() => runValidation('password')}
-
                     on:input={() => errors.password = ''}
                     placeholder={t.login.passwordPlaceholder}
+                    autocomplete="new-password"
+                    readonly
                     class="w-full h-12 pl-11 pr-20 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none transition-all {errors.password ? 'border-red-500 bg-red-50' : 'bg-white hover:border-purple-300'}"
                   />
                 {/if}

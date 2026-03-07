@@ -427,7 +427,9 @@ async function handleSubmit() {
     }
 
     //Show success modal
-    showSuccessModal = true;
+    // showSuccessModal = true;
+    goto(`/${locale}/application/view-application?mode=review`);
+
     
   } catch (error) {
     console.error('Error:', error);

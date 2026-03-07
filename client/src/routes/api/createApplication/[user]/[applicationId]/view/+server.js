@@ -22,6 +22,9 @@ const purposeLoanMap = Object.fromEntries(masters.m_perpose_loan.map(r => [r.id,
 
 const propertyTypeMap = Object.fromEntries(masters.m_property_type.map(r => [r.id, r.eng_name]));
 const policyTypeMap   = Object.fromEntries(masters.m_policy_type.map(r => [r.id, r.eng_name]));
+const districtMap     = Object.fromEntries(masters.m_district.map(r => [r.dist_id, r.eng_name]));
+const unitsMap        = Object.fromEntries(masters.m_units.map(r => [r.id, r.eng_name]));
+
 
 export async function GET({ params }) {
   const { user, applicationId } = params;
@@ -120,6 +123,7 @@ const docsResult = await client.query(
         section_name: d.section_name || 'Other Documents'
       });
     });
+
     const personal = personalResult.rows[0];
     personal.gender                  = genderMap[personal.gender]|| personal.gender;
     personal.religion                = religionMap[personal.religion]|| personal.religion;
@@ -139,6 +143,15 @@ const docsResult = await client.query(
     policy_type: policyTypeMap[l.policy_type] || l.policy_type
     }));
 
+   // const unitsMap = { 1: 'Hectare', 2: 'Acre', 3: 'Guntha', 4: 'Sq. Ft.', 5: 'Sq. Meter' };
+
+    const properties = propertyResult.rows.map(p => ({
+      ...p,
+      district_id: districtMap[p.district_id] || p.district_id,
+      units: unitsMap[p.units] || p.units
+    }));
+
+
     return json({
       error: 0,
       data: {
@@ -146,7 +159,7 @@ const docsResult = await client.query(
         education: education,
         guarantor: guarantorResult.rows[0] || null,
         collateral: {
-          properties: propertyResult.rows,
+          properties: properties,
           fds: fdResult.rows,
           lics: lics,
           govtEmployees: govtResult.rows

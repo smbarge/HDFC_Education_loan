@@ -25,7 +25,7 @@
     };
 
 
-    $: console.log("User data is______:", userData);
+   // $: console.log("User data is______:", userData);
   
 
   let hasExistingApplication = false;

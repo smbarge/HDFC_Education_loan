@@ -67,6 +67,7 @@ onMount(async () => {
         collateralItems = [...collateralData.properties];
     }
 
+    console.log("collater item >>>>>>>>>>",collateralItems);
     // Load FD collaterals from DB
     const fdData = await getFDCollaterals($user.id, $applicationId);
     if (fdData.error === 0 && fdData.fdCollaterals) {
@@ -552,7 +553,7 @@ async function handleProceed() {
                   <h4 class="font-bold text-gray-900">{t.collateralDetails?.propertyCollateral}</h4>
                 </div>
                 <div class="space-y-1 text-sm text-gray-600">
-                  <p><span class="font-medium">{t.collateralDetails?.propertyCollateralModal?.propertyTypeLabel || 'Type'}:</span> {item.propertyType || 'N/A'}</p>
+                  <p><span class="font-medium">{t.collateralDetails?.propertyCollateralModal?.propertyTypeLabel || 'Type'}:</span> {item.documentType || 'N/A'}</p>
                    <p><span class="font-medium">{t.collateralDetails?.propertyCollateralModal?.surveyNo || 'Survey No'}:</span> {item.surveyNo || 'N/A'}</p>
                    <p><span class="font-medium">{t.collateralDetails?.propertyCollateralModal?.village || 'Village'}:</span> {item.village || 'N/A'}</p>
                   <p><span class="font-medium">{t.collateralDetails?.propertyCollateralModal?.propertyValue || 'Property Value'}:</span> ₹{item.propertyValue || '0'}</p>
@@ -592,7 +593,7 @@ async function handleProceed() {
                   <h4 class="font-bold text-gray-900">{t.collateralDetails?.govtEmployee}</h4>
                 </div>
                 <div class="space-y-1 text-sm text-gray-600">
-                  <p><span class="font-medium">{t.collateralDetails?.govtEmployeeModal?.fullName || 'Full Name'}:</span> {item.fullName || 'N/A'}</p>
+                  <!-- <p><span class="font-medium">{t.collateralDetails?.govtEmployeeModal?.fullName || 'Full Name'}:</span> {item.fullName || 'N/A'}</p> -->
                   <p><span class="font-medium">{t.collateralDetails?.govtEmployeeModal?.departmentName || 'Department'}:</span> {item.departmentName || 'N/A'}</p>
                   <p><span class="font-medium">{t.collateralDetails?.govtEmployeeModal?.designation || 'Designation'}:</span> {item.designation || 'N/A'}</p>
                   <p><span class="font-medium">{t.collateralDetails?.govtEmployeeModal?.employeeID || 'Employee ID'}:</span> {item.employeeID || 'N/A'}</p>

@@ -8,6 +8,11 @@
   import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
   import ApplicationStepper from '$lib/components/newapplication/ApplicationStepper.svelte';
   import { user, logout as logoutStore, applicationId } from '$lib/stores/userStore';
+  import SubmissionSuccessModal from '$lib/components/upload-documents/SubmissionSuccessModal.svelte';
+  import { submitApplication,getViewApplicationData, notifyApplicationSubmission } from '$lib/api/authApi.js';
+  import jsPDF from 'jspdf';
+
+
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
@@ -25,29 +30,37 @@
 
 
   // Active tab
-  let activeTab = 'identity';
-  const tabs = [
-    { id: 'identity',   label: 'Identity Check' },
-    { id: 'personal',   label: 'Personal Details' },
-    { id: 'academic',   label: 'Academic Info' },
-    { id: 'guarantor',  label: 'Guarantor Details' },
-    { id: 'collateral', label: 'Collateral Details' },
-    { id: 'documents',  label: 'Document Upload' },
+  $: mode = $page.url.searchParams.get('mode'); // 'review' = came from upload
+  $: activeTab = mode === 'review' ? 'review' : 'identity';
+  $: isReviewMode = mode === 'review';
+    const allTabs = [
+    { id: 'identity',   label: 'Identity Check',     reviewOnly: false },
+    { id: 'personal',   label: 'Personal Details',   reviewOnly: false },
+    { id: 'academic',   label: 'Academic Info',      reviewOnly: false },
+    { id: 'guarantor',  label: 'Guarantor Details',  reviewOnly: false },
+    { id: 'collateral', label: 'Collateral Details', reviewOnly: false },
+    { id: 'documents',  label: 'Document Upload',    reviewOnly: false },
+    { id: 'review',     label: 'Review & Submit', reviewOnly: true  },
   ];
 
-  onMount(async () => {
+  $: isReviewMode = $page.url.searchParams.get('mode') === 'review';
+  $: activeTab = isReviewMode ? 'review' : 'identity';
+ $: tabs = isReviewMode
+    ? allTabs   // show ALL tabs including Review & Submit
+    : allTabs.filter(t => !t.reviewOnly);  // hide Review & Submit
+
+   onMount(async () => {
     if (!$user) { goto(`/${locale}/login`); return; }
     if (!$applicationId) { goto(`/${locale}/dashboard`); return; }
 
     try {
-      const res = await fetch(
-        `/api/createApplication/${$user.id}/${$applicationId}/view`
-      );
-      const result = await res.json();
+      const result = await getViewApplicationData($user.id, $applicationId);
       if (result.error !== 0) {
         error = result.errorMsg || 'Failed to load application';
       } else {
         appData = result.data;
+        const stored = sessionStorage.getItem('submissionSuccess');
+        if (!stored) isSubmitted = false;
       }
     } catch (e) {
       error = 'Failed to load application data';
@@ -68,8 +81,229 @@
     return '₹' + Number(val).toLocaleString('en-IN');
   }
 
-  function label(val, fallback = 'N/A') {
+
+//review 
+
+
+  let isSubmitting = false;
+  let submitError = '';
+  let showSuccessModal = false;
+
+  // true = already submitted (status=2), false = pending
+  $: isSubmitted = false; // will be set after load
+
+   async function handleSubmitApplication() {
+    if (!$user?.id || !$applicationId) {
+      submitError = 'Session expired. Please login again.';
+      return;
+    }
+    isSubmitting = true;
+    submitError = '';
+    try {
+     const result = await submitApplication($user.id, $applicationId);
+      if (result.error !== 0) {
+        submitError = result.errorMsg || 'Submission failed';
+        return;
+      }
+      // Fire notification - don't block modal on success/fail
+      notifyApplicationSubmission($user.id, $applicationId).catch(console.error);
+      showSuccessModal = true;
+
+    } catch (e) {
+      submitError = 'Server error. Please try again.';
+    } finally {
+      isSubmitting = false;
+    }
+  }
+
+ function label(val, fallback = 'N/A') {
     return val || fallback;
+  }
+
+function handleDownloadPDF() {
+    const doc = new jsPDF();
+
+     function pdfCurrency(val) {
+      if (!val || isNaN(Number(val))) return 'N/A';
+      return 'Rs. ' + Number(val).toLocaleString('en-IN');
+    }
+
+    const applicantName = appData.personal?.name || 'Applicant';
+    const appId = $applicationId;
+    const fileName = `${applicantName}_Application_${appId}.pdf`;
+
+    let y = 15;
+    const lineH = 7;
+    const margin = 14;
+    const pageH = doc.internal.pageSize.height;
+
+    function checkPage() {
+      if (y > pageH - 20) { doc.addPage(); y = 15; }
+    }
+
+    function sectionTitle(title, color = [88, 28, 135]) {
+      checkPage();
+      doc.setFillColor(...color);
+      doc.rect(margin, y, 182, 8, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text(title, margin + 3, y + 5.5);
+      y += 12;
+      doc.setTextColor(30, 30, 30);
+    }
+
+    function field(label, value) {
+      checkPage();
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.text(label + ':', margin, y);
+      doc.setFont('helvetica', 'normal');
+      doc.text(String(value || 'N/A'), margin + 55, y);
+      y += lineH;
+    }
+
+    // Header
+    doc.setFillColor(88, 28, 135);
+    doc.rect(0, 0, 210, 22, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Education Loan Application', margin, 10);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Application ID: #${appId}   |   Applicant: ${applicantName}`, margin, 17);
+    y = 30;
+    doc.setTextColor(30, 30, 30);
+
+    // Identity
+    sectionTitle('IDENTITY CHECK', [37, 99, 235]);
+    field('Full Name', appData.personal?.name);
+    field('Aadhar Number', appData.personal?.aadhar);
+    field('Date of Birth', formatDate(appData.personal?.dob));
+    field('Gender', appData.personal?.gender);
+    field('Religion', appData.personal?.religion);
+    field('Resident', appData.personal?.resident);
+
+    // Personal
+    sectionTitle('PERSONAL DETAILS',[37, 99, 235]);
+    field('Mobile', appData.personal?.mobile);
+    field('Email', appData.personal?.email);
+    field('PAN Card', appData.personal?.pan);
+    field('Marital Status', appData.personal?.marital_status);
+    field('Education Qual.', appData.personal?.education_qualification);
+    field('Guardian Name', appData.personal?.guardian_name);
+    field('Occupation', appData.personal?.occupation);
+    field('Annual Income', pdfCurrency(appData.personal?.income));
+    field('Current Address', `${appData.personal?.current_address || ''}, ${appData.personal?.current_place || ''} - ${appData.personal?.current_pincode || ''}`);
+    field('Permanent Address', `${appData.personal?.permanent_address || ''}, ${appData.personal?.permanent_place || ''} - ${appData.personal?.permanent_pincode || ''}`);
+
+    // Academic
+    sectionTitle('ACADEMIC INFORMATION', [37, 99, 235]);
+    field('Student Name', appData.education?.student_name);
+    field('Course Name', appData.education?.course_name);
+    field('Course Type', appData.education?.course_type);
+    field('Duration', `${appData.education?.course_duration || ''} Years`);
+    field('Mode of Study', appData.education?.mode_of_study);
+    field('Purpose of Loan', appData.education?.purpose_of_loan);
+    field('Institution', appData.education?.institution_name);
+    field('University', appData.education?.university);
+    field('Admission Status', appData.education?.admission_status);
+    field('Admission Year', appData.education?.admission_year);
+    field('Total Fee', pdfCurrency(appData.education?.total_course_fee));
+    field('Fee Paid', pdfCurrency(appData.education?.fee_paid));
+    field('Remaining Fee', pdfCurrency(appData.education?.remaining_fee));
+    field('Loan Required', pdfCurrency(appData.education?.loan_required_amount));
+    field('Bank Name', appData.education?.bank_name);
+    field('Branch', appData.education?.branch_name);
+    field('IFSC Code', appData.education?.ifsc_code);
+    field('Account No', appData.education?.account_number);
+
+    // Guarantor
+    if (appData.guarantor) {
+      sectionTitle('GUARANTOR DETAILS', [37, 99, 235]);
+      field('Full Name', appData.guarantor?.name);
+      field('Mobile', appData.guarantor?.mobile);
+      field('Aadhar', appData.guarantor?.aadhar);
+      field('Current Address', `${appData.guarantor?.current_address || ''}, ${appData.guarantor?.current_place || ''}`);
+      field('Permanent Address', `${appData.guarantor?.permanent_address || ''}, ${appData.guarantor?.permanent_place || ''}`);
+    }
+
+    // Collateral
+    if (appData.collateral?.properties?.length > 0) {
+      sectionTitle('COLLATERAL — PROPERTY', [37, 99, 235]);
+      appData.collateral.properties.forEach((p, i) => {
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+        doc.text(`Property ${i + 1}`, margin, y); y += lineH;
+        doc.setFont('helvetica', 'normal');
+        field('Survey No', p.survey_no);
+        field('District', p.district_id);
+        field('Village', p.place);
+        field('Area', `${p.area_value || ''} ${p.units || ''}`);
+        field('Valuation', pdfCurrency(p.property_value));
+      });
+    }
+
+    if (appData.collateral?.fds?.length > 0) {
+      sectionTitle('COLLATERAL — FIXED DEPOSIT', [37, 99, 235]);
+      appData.collateral.fds.forEach((fd, i) => {
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+        doc.text(`FD ${i + 1}`, margin, y); y += lineH;
+        doc.setFont('helvetica', 'normal');
+        field('Bank', fd.bank_name);
+        field('Branch', fd.branch_name);
+        field('FD Amount', pdfCurrency(fd.amount));
+        field('Maturity Date', formatDate(fd.fd_maturity_date));
+      });
+    }
+
+    if (appData.collateral?.lics?.length > 0) {
+      sectionTitle('COLLATERAL — LIC POLICY',[37, 99, 235]);
+      appData.collateral.lics.forEach((l, i) => {
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+        doc.text(`LIC ${i + 1}`, margin, y); y += lineH;
+        doc.setFont('helvetica', 'normal');
+        field('Policy Name', l.policy_name);
+        field('Policy Type', l.policy_type);
+        field('Surrender Value', pdfCurrency(l.policy_surrender_value));
+        field('Receipt No', l.policy_receipt_no);
+      });
+    }
+
+    if (appData.collateral?.govtEmployees?.length > 0) {
+      sectionTitle('COLLATERAL — GOVT EMPLOYEE', [37, 99, 235]);
+      appData.collateral.govtEmployees.forEach((g, i) => {
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+        doc.text(`Govt Employee ${i + 1}`, margin, y); y += lineH;
+        doc.setFont('helvetica', 'normal');
+        field('Department', g.department_office_name);
+        field('Designation', g.designation);
+        field('Employee ID', g.employee_id_number);
+      });
+    }
+
+    // Documents list
+    if (appData.allDocs?.length > 0) {
+      sectionTitle('UPLOADED DOCUMENTS', [37, 99, 235]);
+      appData.allDocs.forEach(doc2 => {
+        checkPage();
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`• ${doc2.document_name}`, margin + 2, y);
+        y += lineH;
+      });
+    }
+
+    // Footer on each page
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text(`Page ${i} of ${totalPages}  |  ${applicantName}  |  Application #${appId}`, margin, pageH - 8);
+    }
+
+    doc.save(fileName);
   }
 </script>
 
@@ -87,6 +321,12 @@
     on:close={() => showProfileModal = false}
     on:logout={() => { logoutStore(); goto(`/${locale}/login`); }}
   />
+  
+   <SubmissionSuccessModal
+    bind:show={showSuccessModal}
+    applicationId={$applicationId}
+    on:goToDashboard={() => { applicationId.set(null); goto(`/${locale}/dashboard`); }}
+  />
 
   <!-- <ApplicationStepper currentStep={6} {locale} /> -->
 
@@ -98,26 +338,37 @@
         <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">View Application</h2>
         <p class="text-sm text-gray-500 mt-1">Application ID: #{$applicationId}</p>
       </div>
-      <button
-        on:click={() => goto(`/${locale}/dashboard`)}
-        class="flex items-center gap-2 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
-      >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-        </svg>
-        Back to Dashboard
-      </button>
+       <div class="flex items-center gap-2">
+        <button
+          on:click={handleDownloadPDF}
+          class="flex items-center gap-2 px-4 py-2 text-white bg-purple-600 hover:bg-purple-700 rounded-lg text-sm font-semibold shadow"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          Download PDF
+        </button>
+        <button
+          on:click={() => goto(`/${locale}/dashboard`)}
+          class="flex items-center gap-2 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          Back to Dashboard
+        </button>
+      </div>
     </div>
 
     {#if isLoading}
       <!-- Loading -->
-      <div class="bg-white rounded-2xl shadow p-16 text-center">
+    <div class="bg-white rounded-2xl shadow p-16 text-center">
         <svg class="animate-spin h-10 w-10 text-purple-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
         </svg>
         <p class="text-gray-500">Loading your application...</p>
-      </div>
+    </div>
 
     {:else if error}
       <div class="bg-red-50 border border-red-200 rounded-xl p-6 text-center text-red-700">{error}</div>
@@ -148,10 +399,17 @@
         <div class="flex-1 text-center sm:text-left">
           <h3 class="text-2xl font-bold text-gray-900">{label(appData.personal?.name)}</h3>
           <p class="text-gray-500 text-sm mt-1">Application ID: <span class="font-semibold text-purple-600">#{$applicationId}</span></p>
-          <div class="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-green-100 rounded-full">
-            <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-            <span class="text-green-700 text-xs font-semibold">Submitted — Under Review</span>
-          </div>
+          {#if isReviewMode}
+            <div class="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-yellow-100 rounded-full">
+              <div class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></div>
+              <span class="text-yellow-700 text-xs font-semibold">Pending Submission</span>
+            </div>
+          {:else}
+            <div class="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-green-100 rounded-full">
+              <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+              <span class="text-green-700 text-xs font-semibold">Submitted — Under Review</span>
+            </div>
+          {/if}
         </div>
 
         <!-- Signature -->
@@ -399,20 +657,26 @@
 
           <!-- ===== COLLATERAL DETAILS ===== -->
           {:else if activeTab === 'collateral'}
+
             <h3 class="text-lg font-bold text-gray-800 mb-4">Collateral Details</h3>
 
             <!-- Property -->
             {#if appData.collateral.properties?.length > 0}
               <p class="text-xs font-bold text-purple-700 uppercase mb-2">Property Collateral</p>
+
               {#each appData.collateral.properties as prop}
                 <div class="bg-gray-50 rounded-xl p-4 mb-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  <div><p class="text-xs text-gray-500">Owner Name</p><p class="font-semibold text-sm">{label(prop.owner_name)}</p></div>
                   <div><p class="text-xs text-gray-500">Survey No</p><p class="font-semibold text-sm">{label(prop.survey_no)}</p></div>
-                  <div><p class="text-xs text-gray-500">District</p><p class="font-semibold text-sm">{label(prop.district)}</p></div>
-                  <div><p class="text-xs text-gray-500">Village</p><p class="font-semibold text-sm">{label(prop.village)}</p></div>
-                  <div><p class="text-xs text-gray-500">Valuation</p><p class="font-semibold text-sm">{formatCurrency(prop.valuation)}</p></div>
+                  <div><p class="text-xs text-gray-500">District</p><p class="font-semibold text-sm">{label(prop.district_id)}</p></div>
+                  <div><p class="text-xs text-gray-500">Village</p><p class="font-semibold text-sm">{label(prop.place)}</p></div>
+                  <div><p class="text-xs text-gray-500">Units</p><p class="font-semibold text-sm">{label(prop.units)}</p></div>
+                  <div><p class="text-xs text-gray-500">Area</p><p class="font-semibold text-sm">{label(prop.area_value)}</p></div>
+                  <div><p class="text-xs text-gray-500">Valuation</p><p class="font-semibold text-sm">{formatCurrency(prop.property_value)}</p></div>
+
+
                 </div>
               {/each}
+
             {/if}
 
             <!-- FD -->
@@ -446,8 +710,8 @@
               <p class="text-xs font-bold text-yellow-700 uppercase mb-2 mt-4">Govt Employee Guarantor</p>
               {#each appData.collateral.govtEmployees as govt}
                 <div class="bg-gray-50 rounded-xl p-4 mb-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  <div><p class="text-xs text-gray-500">Full Name</p><p class="font-semibold text-sm">{label(govt.full_name)}</p></div>
-                  <div><p class="text-xs text-gray-500">Department</p><p class="font-semibold text-sm">{label(govt.department_name)}</p></div>
+              
+                  <div><p class="text-xs text-gray-500">Department</p><p class="font-semibold text-sm">{label(govt.department_office_name)}</p></div>
                   <div><p class="text-xs text-gray-500">Designation</p><p class="font-semibold text-sm">{label(govt.designation)}</p></div>
                   <div><p class="text-xs text-gray-500">Employee ID</p><p class="font-semibold text-sm">{label(govt.employee_id_number)}</p></div>
                 </div>
@@ -460,7 +724,7 @@
 
 
 
-            
+          <!-- document -->
           <!-- ===== DOCUMENT UPLOAD ===== -->
           {:else if activeTab === 'documents'}
             {@const sectionNameMap = {
@@ -537,9 +801,111 @@
                   </div>
                 </div>
               {/each}
-            {:else}
+           {:else}
               <p class="text-gray-400 text-sm">No documents uploaded yet.</p>
             {/if}
+
+            <!-- Review the application -------------- -->
+            {:else if activeTab === 'review'}
+            <h3 class="text-lg font-bold text-gray-800 mb-6">Review & Submit Application</h3>
+
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+              <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-center">
+                <p class="text-sm font-bold text-blue-600">{$applicationId}</p>
+                <p class="text-xs text-gray-500 mt-1">Application ID</p>
+              </div>
+              <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-center">
+                <p class="text-sm font-bold text-blue-600">{label(appData.personal?.name)}</p>
+                <p class="text-xs text-gray-500 mt-1">Applicant Name</p>
+              </div>
+              <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-center">
+                <p class="text-sm font-bold text-blue-600">{label(appData.education?.course_name)}</p>
+                <p class="text-xs text-gray-500 mt-1">Course</p>
+              </div>
+              <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-center">
+                <p class="text-sm font-bold text-blue-600">{formatCurrency(appData.education?.loan_required_amount)}</p>
+                <p class="text-xs text-gray-500 mt-1">Loan Required</p>
+              </div>
+            </div>
+
+            <!-- Checklist -->
+            <div class="mb-6 space-y-2">
+              {#each [
+                { label: 'Personal Details', done: !!appData.personal?.mobile },
+                { label: 'Academic Information', done: !!appData.education?.course_name },
+                { label: 'Guarantor Details', done: !!appData.guarantor },
+                { label: 'Collateral Details', done: (appData.collateral?.properties?.length > 0 || appData.collateral?.fds?.length > 0 || appData.collateral?.lics?.length > 0 || appData.collateral?.govtEmployees?.length > 0) },
+                { label: 'Documents Uploaded', done: appData.allDocs?.length > 0 },
+              ] as item}
+                <div class="flex items-center gap-3 p-3 rounded-lg {item.done ? 'bg-green-20 border border-green-100' : 'bg-red-50 border border-red-100'}">
+                  <div class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 {item.done ? 'bg-green-500' : 'bg-red-400'}">
+                    {#if item.done}
+                      <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                      </svg>
+                    {:else}
+                      <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/>
+                      </svg>
+                    {/if}
+                  </div>
+                  <span class="text-sm font-medium {item.done ? 'text-green-800' : 'text-red-700'}">{item.label}</span>
+                  <span class="ml-auto text-xs font-semibold {item.done ? 'text-green-600' : 'text-red-500'}">{item.done ? 'Complete' : 'Pending'}</span>
+                </div>
+              {/each}
+            </div>
+
+            <!-- Declaration -->
+            <div class="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-xl mb-6">
+              <svg class="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <p class="text-sm text-yellow-800">
+                <span class="font-bold">Declaration: </span>
+                I hereby declare that all the information provided in this application is true and correct to the best of my knowledge. I understand that providing false information may result in rejection of my application.
+              </p>
+            </div>
+
+            {#if submitError}
+              <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p class="text-sm text-red-600 font-medium">{submitError}</p>
+              </div>
+            {/if}
+
+            <!-- Action Buttons -->
+            <div class="flex justify-between items-center">
+              <button
+                on:click={() => goto(`/${locale}/application/upload-documents`)}
+                class="flex items-center gap-2 px-5 py-3 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors text-sm"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Back to Documents
+              </button>
+              <div>
+              <button
+                on:click={handleSubmitApplication}
+                disabled={isSubmitting}
+                class="px-10 py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:from-gray-400 disabled:to-gray-400 text-white font-bold rounded-xl transition-all shadow-lg text-sm flex items-center gap-2"
+              >
+                {#if isSubmitting}
+                  <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  Submitting...
+                {:else}
+                  Submit Application
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                  </svg>
+                {/if}
+              </button>
+            </div>
+            </div>
+
           {/if}
         </div>
       </div>
