@@ -353,6 +353,7 @@ export const en = {
     guarantor: "Guarantor Details",
     collateral: "Collateral Details",
     documents: "Document Upload",
+    reviewSubmit:"Review and Submit",
   },
 
 
@@ -1569,6 +1570,9 @@ export const en = {
     optional: "(Optional)",
     ifAvailable: "(if available)"
   },
+
+  //Submit-View
+
 
   footer: {
     about: {
