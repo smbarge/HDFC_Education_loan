@@ -5,7 +5,7 @@ import pool from '$lib/db.js';
 export async function POST({ params }) {
   const { user, applicationId } = params;
   
-  console.log('📝 Submitting application:', { user, applicationId });
+  console.log('Submitting application:', { user, applicationId });
   
   const client = await pool.connect();
   

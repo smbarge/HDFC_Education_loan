@@ -802,7 +802,6 @@ function handleDownloadPDF() {
            {:else}
               <p class="text-gray-400 text-sm">No documents uploaded yet.</p>
             {/if}
-
             <!-- Review the application -------------- -->
             {:else if activeTab === 'review'}
             <h3 class="text-lg font-bold text-gray-800 mb-6">Review & Submit Application</h3>
