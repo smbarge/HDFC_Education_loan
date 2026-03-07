@@ -26,15 +26,14 @@
 
   // Active tab
   let activeTab = 'identity';
-  const tabs = [
-    { id: 'identity',   label: 'Identity Check' },
-    { id: 'personal',   label: 'Personal Details' },
-    { id: 'academic',   label: 'Academic Info' },
-    { id: 'guarantor',  label: 'Guarantor Details' },
-    { id: 'collateral', label: 'Collateral Details' },
-    { id: 'documents',  label: 'Document Upload' },
-  ];
-
+  $: tabs = [
+  { id: 'identity',   label: t?.tabs?.identity },
+  { id: 'personal',   label: t?.tabs?.personal },
+  { id: 'academic',   label: t?.tabs?.academic },
+  { id: 'guarantor',  label: t?.tabs?.guarantor },
+  { id: 'collateral', label: t?.tabs?.collateral },
+  { id: 'documents',  label: t?.tabs?.documents },
+];
   onMount(async () => {
     if (!$user) { goto(`/${locale}/login`); return; }
     if (!$applicationId) { goto(`/${locale}/dashboard`); return; }
@@ -95,8 +94,8 @@
     <!-- Page Header -->
     <div class="flex items-center justify-between mb-6">
       <div>
-        <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">View Application</h2>
-        <p class="text-sm text-gray-500 mt-1">Application ID: #{$applicationId}</p>
+        <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">{t.dashboard.viewApplication}</h2>
+        <p class="text-sm text-gray-500 mt-1">{t.dashboard.applicationId}: #{$applicationId}</p>
       </div>
       <button
         on:click={() => goto(`/${locale}/dashboard`)}
@@ -105,7 +104,7 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
         </svg>
-        Back to Dashboard
+        {t.applicationStart.backToDashboard}
       </button>
     </div>
 
@@ -141,16 +140,16 @@
               </svg>
             </div>
           {/if}
-          <p class="text-xs text-gray-500 mt-2 font-medium">Applicant Photo</p>
+          <p class="text-xs text-gray-500 mt-2 font-medium">{t.dashboard.applicantPhoto}</p>
         </div>
 
         <!-- Name + ID -->
         <div class="flex-1 text-center sm:text-left">
           <h3 class="text-2xl font-bold text-gray-900">{label(appData.personal?.name)}</h3>
-          <p class="text-gray-500 text-sm mt-1">Application ID: <span class="font-semibold text-purple-600">#{$applicationId}</span></p>
+          <p class="text-gray-500 text-sm mt-1"> {t.dashboard.applicationId}: <span class="font-semibold text-purple-600">#{$applicationId}</span></p>
           <div class="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-green-100 rounded-full">
             <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-            <span class="text-green-700 text-xs font-semibold">Submitted — Under Review</span>
+            <span class="text-green-700 text-xs font-semibold">{t.dashboard.applicationSubmittedLabel} — {t.dashboard.UnderReview}</span>
           </div>
         </div>
 
@@ -167,7 +166,7 @@
               <span class="text-xs text-gray-400">No Signature</span>
             </div>
           {/if}
-          <p class="text-xs text-gray-500 mt-2 font-medium">Signature</p>
+          <p class="text-xs text-gray-500 mt-2 font-medium">{t.uploadDocuments.ApplicantDocument.signature}</p>
         </div>
       </div>
 
@@ -194,68 +193,68 @@
        
 
           {#if activeTab === 'identity'}
-            <h3 class="text-lg font-bold text-gray-800 mb-4">Identity Check</h3>
+            <h3 class="text-lg font-bold text-gray-800 mb-4">{t.stepper.step1}</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">Full Name</p>
+                <p class="text-xs text-gray-500 mb-1">{t.applicationStart.nameLabel}</p>
                 <p class="font-semibold text-gray-800">{label(appData.personal?.name)}</p>
               </div>
               <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">Aadhar Number</p>
+                <p class="text-xs text-gray-500 mb-1">{t.applicationStart.aadharLabel}</p>
                 <p class="font-semibold text-gray-800">{label(appData.personal?.aadhar)}</p>
               </div>
               <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">Date of Birth</p>
+                <p class="text-xs text-gray-500 mb-1">{t.applicationStart.dobLabel}</p>
                 <p class="font-semibold text-gray-800">{formatDate(appData.personal?.dob)}</p>
               </div>
               <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">Gender</p>
+                <p class="text-xs text-gray-500 mb-1">{t.applicationStart.genderLabel}</p>
                 <p class="font-semibold text-gray-800">{label(appData.personal?.gender)}</p>
               </div>
               <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">Religion / Community</p>
+                <p class="text-xs text-gray-500 mb-1">{t.applicationStart.religionCommunity}</p>
                 <p class="font-semibold text-gray-800">{label(appData.personal?.religion)}</p>
               </div>
               <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">Resident</p>
+                <p class="text-xs text-gray-500 mb-1">{t.applicationStart.resident}</p>
                 <p class="font-semibold text-gray-800">{appData.personal?.resident === 1 ? 'Yes' : 'No'}</p>
               </div>
             </div>
 
           <!-- ===== PERSONAL DETAILS ===== -->
           {:else if activeTab === 'personal'}
-            <h3 class="text-lg font-bold text-gray-800 mb-4">Personal Details</h3>
+            <h3 class="text-lg font-bold text-gray-800 mb-4">{t.stepper.step2}</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">Mobile</p>
+                <p class="text-xs text-gray-500 mb-1">{t.personalDetails.mobileLabel}</p>
                 <p class="font-semibold text-gray-800">{label(appData.personal?.mobile)}</p>
               </div>
               <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">Email</p>
+                <p class="text-xs text-gray-500 mb-1">{t.personalDetails.emailLabel}</p>
                 <p class="font-semibold text-gray-800">{label(appData.personal?.email)}</p>
               </div>
               <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">PAN Card</p>
+                <p class="text-xs text-gray-500 mb-1">{t.personalDetails.panLabel}</p>
                 <p class="font-semibold text-gray-800">{label(appData.personal?.pan)}</p>
               </div>
               <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">Marital Status</p>
+                <p class="text-xs text-gray-500 mb-1">{t.personalDetails.maritalStatusLabel}</p>
                 <p class="font-semibold text-gray-800">{label(appData.personal?.marital_status)}</p>
               </div>
               <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">Education Qualification</p>
+                <p class="text-xs text-gray-500 mb-1">{t.personalDetails.educationLabel}</p>
                 <p class="font-semibold text-gray-800">{label(appData.personal?.education_qualification)}</p>
               </div>
               <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">Guardian Name</p>
+                <p class="text-xs text-gray-500 mb-1">{t.personalDetails.parentNameLabel}</p>
                 <p class="font-semibold text-gray-800">{label(appData.personal?.guardian_name)}</p>
               </div>
               <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">Occupation</p>
+                <p class="text-xs text-gray-500 mb-1">{t.personalDetails.occupationLabel}</p>
                 <p class="font-semibold text-gray-800">{label(appData.personal?.occupation)}</p>
               </div>
               <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">Annual Income</p>
+                <p class="text-xs text-gray-500 mb-1">{t.personalDetails.annualIncomeLabel}</p>
                 <p class="font-semibold text-gray-800">{formatCurrency(appData.personal?.income)}</p>
               </div>
             </div>
@@ -263,14 +262,14 @@
             <!-- Addresses -->
             <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
-                <p class="text-xs font-bold text-blue-700 mb-2">Current Address</p>
+                <p class="text-xs font-bold text-blue-700 mb-2">{t.personalDetails.currentStreetLabel}</p>
                 <p class="text-sm text-gray-700">{label(appData.personal?.current_address)}</p>
                 <p class="text-xs text-gray-500 mt-1">
                   {label(appData.personal?.current_place)}, {label(appData.personal?.current_pincode)}
                 </p>
               </div>
               <div class="bg-purple-50 rounded-xl p-4 border border-purple-100">
-                <p class="text-xs font-bold text-purple-700 mb-2">Permanent Address</p>
+                <p class="text-xs font-bold text-purple-700 mb-2">{t.personalDetails.permanentStreetLabel}</p>
                 <p class="text-sm text-gray-700">{label(appData.personal?.permanent_address)}</p>
                 <p class="text-xs text-gray-500 mt-1">
                   {label(appData.personal?.permanent_place)}, {label(appData.personal?.permanent_pincode)}
@@ -280,47 +279,47 @@
 
           <!-- ===== ACADEMIC INFO ===== -->
           {:else if activeTab === 'academic'}
-            <h3 class="text-lg font-bold text-gray-800 mb-4">Academic Info</h3>
+            <h3 class="text-lg font-bold text-gray-800 mb-4">{t.stepper.step3}</h3>
             {#if appData.education}
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs text-gray-500 mb-1">Student Name</p>
+                  <p class="text-xs text-gray-500 mb-1">{t.academicInfo.studentNameLabel}</p>
                   <p class="font-semibold text-gray-800">{label(appData.education.student_name)}</p>
                 </div>
                 <div class="bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs text-gray-500 mb-1">Course Name</p>
+                  <p class="text-xs text-gray-500 mb-1">{t.academicInfo.courseNameLabel}</p>
                   <p class="font-semibold text-gray-800">{label(appData.education.course_name)}</p>
                 </div>
                 <div class="bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs text-gray-500 mb-1">Course Type</p>
+                  <p class="text-xs text-gray-500 mb-1">{t.academicInfo.courseTypeLabel}</p>
                   <p class="font-semibold text-gray-800">{label(appData.education.course_type)}</p>
                 </div>
                 <div class="bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs text-gray-500 mb-1">Course Duration</p>
+                  <p class="text-xs text-gray-500 mb-1">{t.academicInfo.courseDurationLabel}</p>
                   <p class="font-semibold text-gray-800">{label(appData.education.course_duration)} Years</p>
                 </div>
                 <div class="bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs text-gray-500 mb-1">Mode of Study</p>
+                  <p class="text-xs text-gray-500 mb-1">{t.academicInfo.modeOfStudyLabel}</p>
                   <p class="font-semibold text-gray-800">{label(appData.education.mode_of_study)}</p>
                 </div>
                 <div class="bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs text-gray-500 mb-1">Purpose of Loan</p>
+                  <p class="text-xs text-gray-500 mb-1">{t.academicInfo.purposeOfLoanLabel}</p>
                   <p class="font-semibold text-gray-800">{label(appData.education.purpose_of_loan)}</p>
                 </div>
                 <div class="bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs text-gray-500 mb-1">Institution Name</p>
+                  <p class="text-xs text-gray-500 mb-1">{t.academicInfo.instituteNameLabel}</p>
                   <p class="font-semibold text-gray-800">{label(appData.education.institution_name)}</p>
                 </div>
                 <div class="bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs text-gray-500 mb-1">University</p>
+                  <p class="text-xs text-gray-500 mb-1">{t.academicInfo.universityNameLabel}</p>
                   <p class="font-semibold text-gray-800">{label(appData.education.university)}</p>
                 </div>
                 <div class="bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs text-gray-500 mb-1">Admission Status</p>
+                  <p class="text-xs text-gray-500 mb-1">{t.academicInfo.admissionStatusLabel}</p>
                   <p class="font-semibold text-gray-800">{label(appData.education.admission_status)}</p>
                 </div>
                 <div class="bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs text-gray-500 mb-1">Admission Year</p>
+                  <p class="text-xs text-gray-500 mb-1">{t.academicInfo.admissionYearLabel}</p>
                   <p class="font-semibold text-gray-800">{label(appData.education.admission_year)}</p>
                 </div>
               </div>
@@ -328,31 +327,31 @@
               <!-- Fee Details -->
               <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div class="bg-green-50 rounded-xl p-3 border border-green-100 text-center">
-                  <p class="text-xs text-gray-500">Total Fee</p>
+                  <p class="text-xs text-gray-500">{t.academicInfo.totalCourseFeeLabel}</p>
                   <p class="font-bold text-green-700 text-sm">{formatCurrency(appData.education.total_course_fee)}</p>
                 </div>
                 <div class="bg-blue-50 rounded-xl p-3 border border-blue-100 text-center">
-                  <p class="text-xs text-gray-500">Fee Paid</p>
+                  <p class="text-xs text-gray-500">{t.academicInfo.feePaidLabel}</p>
                   <p class="font-bold text-blue-700 text-sm">{formatCurrency(appData.education.fee_paid)}</p>
                 </div>
                 <div class="bg-red-50 rounded-xl p-3 border border-red-100 text-center">
-                  <p class="text-xs text-gray-500">Remaining</p>
+                  <p class="text-xs text-gray-500">{t.academicInfo.remainingFeeLabel}</p>
                   <p class="font-bold text-red-700 text-sm">{formatCurrency(appData.education.remaining_fee)}</p>
                 </div>
                 <div class="bg-purple-50 rounded-xl p-3 border border-purple-100 text-center">
-                  <p class="text-xs text-gray-500">Loan Required</p>
+                  <p class="text-xs text-gray-500">{t.academicInfo.loanRequiredLabel}</p>
                   <p class="font-bold text-purple-700 text-sm">{formatCurrency(appData.education.loan_required_amount)}</p>
                 </div>
               </div>
 
               <!-- Bank Details -->
               <div class="mt-4 bg-gray-50 rounded-xl p-4">
-                <p class="text-xs font-bold text-gray-700 mb-3">Bank Details</p>
+                <p class="text-xs font-bold text-gray-700 mb-3">{t.academicInfo.section5Title}</p>
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  <div><p class="text-xs text-gray-500">Bank Name</p><p class="font-semibold text-sm">{label(appData.education.bank_name)}</p></div>
-                  <div><p class="text-xs text-gray-500">Branch</p><p class="font-semibold text-sm">{label(appData.education.branch_name)}</p></div>
-                  <div><p class="text-xs text-gray-500">IFSC</p><p class="font-semibold text-sm">{label(appData.education.ifsc_code)}</p></div>
-                  <div><p class="text-xs text-gray-500">Account No</p><p class="font-semibold text-sm">{label(appData.education.account_number)}</p></div>
+                  <div><p class="text-xs text-gray-500">{t.academicInfo.bankNameLabel}</p><p class="font-semibold text-sm">{label(appData.education.bank_name)}</p></div>
+                  <div><p class="text-xs text-gray-500">{t.academicInfo.branchNameLabel}</p><p class="font-semibold text-sm">{label(appData.education.branch_name)}</p></div>
+                  <div><p class="text-xs text-gray-500">{t.academicInfo.ifscCodeLabel}</p><p class="font-semibold text-sm">{label(appData.education.ifsc_code)}</p></div>
+                  <div><p class="text-xs text-gray-500">{t.academicInfo.accountNumberLabel}</p><p class="font-semibold text-sm">{label(appData.education.account_number)}</p></div>
                 </div>
               </div>
             {:else}
@@ -361,31 +360,31 @@
 
           <!-- ===== GUARANTOR DETAILS ===== -->
           {:else if activeTab === 'guarantor'}
-            <h3 class="text-lg font-bold text-gray-800 mb-4">Guarantor Details</h3>
+            <h3 class="text-lg font-bold text-gray-800 mb-4">{t.stepper.step4}</h3>
             {#if appData.guarantor}
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs text-gray-500 mb-1">Full Name</p>
+                  <p class="text-xs text-gray-500 mb-1">{t.guarantorDetails.guarantorFullNameLabel}</p>
                   <p class="font-semibold text-gray-800">{label(appData.guarantor.name || appData.guarantor.name)}</p>
                 </div>
                 <div class="bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs text-gray-500 mb-1">Mobile</p>
+                  <p class="text-xs text-gray-500 mb-1">{t.guarantorDetails.guarantorMobileLabel}</p>
                   <p class="font-semibold text-gray-800">{label(appData.guarantor.mobile || appData.guarantor.mobile)}</p>
                 </div>
                 <div class="bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs text-gray-500 mb-1">Aadhar</p>
+                  <p class="text-xs text-gray-500 mb-1">{t.guarantorDetails.guarantorAadharLabel}</p>
                   <p class="font-semibold text-gray-800">{label(appData.guarantor.aadhar || appData.guarantor.aadhar)}</p>
                 </div>
                  <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
-                        <p class="text-xs font-bold text-blue-700 mb-2">Current Address</p>
+                        <p class="text-xs font-bold text-blue-700 mb-2">{t.guarantorDetails.currentStreetAddressLabel}</p>
                         <p class="text-sm text-gray-700">{label(appData.guarantor?.current_address)}</p>
                         <p class="text-xs text-gray-500 mt-1">
                         {label(appData.guarantor?.current_place)}, {label(appData.guarantor?.current_pincode)}
                         </p>
                     </div>
                     <div class="bg-purple-50 rounded-xl p-4 border border-purple-100">
-                        <p class="text-xs font-bold text-purple-700 mb-2">Permanent Address</p>
+                        <p class="text-xs font-bold text-purple-700 mb-2">{t.guarantorDetails.permanentStreetAddressLabel}</p>
                         <p class="text-sm text-gray-700">{label(appData.guarantor?.permanent_address)}</p>
                         <p class="text-xs text-gray-500 mt-1">
                         {label(appData.guarantor?.permanent_place)}, {label(appData.guarantor?.permanent_pincode)}
@@ -399,7 +398,7 @@
 
           <!-- ===== COLLATERAL DETAILS ===== -->
           {:else if activeTab === 'collateral'}
-            <h3 class="text-lg font-bold text-gray-800 mb-4">Collateral Details</h3>
+            <h3 class="text-lg font-bold text-gray-800 mb-4">{t.stepper.step5}</h3>
 
             <!-- Property -->
             {#if appData.collateral.properties?.length > 0}
@@ -407,9 +406,9 @@
               {#each appData.collateral.properties as prop}
                 <div class="bg-gray-50 rounded-xl p-4 mb-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
                   <div><p class="text-xs text-gray-500">Owner Name</p><p class="font-semibold text-sm">{label(prop.owner_name)}</p></div>
-                  <div><p class="text-xs text-gray-500">Survey No</p><p class="font-semibold text-sm">{label(prop.survey_no)}</p></div>
-                  <div><p class="text-xs text-gray-500">District</p><p class="font-semibold text-sm">{label(prop.district)}</p></div>
-                  <div><p class="text-xs text-gray-500">Village</p><p class="font-semibold text-sm">{label(prop.village)}</p></div>
+                  <div><p class="text-xs text-gray-500">{t.collateralDetails.surveyNo}</p><p class="font-semibold text-sm">{label(prop.survey_no)}</p></div>
+                  <div><p class="text-xs text-gray-500">{t.collateralDetails.propertyCollateralModal.district}</p><p class="font-semibold text-sm">{label(prop.district)}</p></div>
+                  <div><p class="text-xs text-gray-500">{t.collateralDetails.village}</p><p class="font-semibold text-sm">{label(prop.village)}</p></div>
                   <div><p class="text-xs text-gray-500">Valuation</p><p class="font-semibold text-sm">{formatCurrency(prop.valuation)}</p></div>
                 </div>
               {/each}
@@ -433,10 +432,10 @@
               <p class="text-xs font-bold text-green-700 uppercase mb-2 mt-4">LIC Collateral</p>
               {#each appData.collateral.lics as lic}
                 <div class="bg-gray-50 rounded-xl p-4 mb-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  <div><p class="text-xs text-gray-500">Policy Name</p><p class="font-semibold text-sm">{label(lic.policy_name)}</p></div>
-                  <div><p class="text-xs text-gray-500">Policy Type</p><p class="font-semibold text-sm">{label(lic.policy_type)}</p></div>
-                  <div><p class="text-xs text-gray-500">Surrender Value</p><p class="font-semibold text-sm">{formatCurrency(lic.policy_surrender_value)}</p></div>
-                  <div><p class="text-xs text-gray-500">Receipt No</p><p class="font-semibold text-sm">{label(lic.policy_receipt_no)}</p></div>
+                  <div><p class="text-xs text-gray-500">{t.collateralDetails.policyName}</p><p class="font-semibold text-sm">{label(lic.policy_name)}</p></div>
+                  <div><p class="text-xs text-gray-500">{t.collateralDetails.policyType}</p><p class="font-semibold text-sm">{label(lic.policy_type)}</p></div>
+                  <div><p class="text-xs text-gray-500">{t.collateralDetails.policySurrenderValue}</p><p class="font-semibold text-sm">{formatCurrency(lic.policy_surrender_value)}</p></div>
+                  <div><p class="text-xs text-gray-500">{t.collateralDetails.policyReceiptNo}</p><p class="font-semibold text-sm">{label(lic.policy_receipt_no)}</p></div>
                 </div>
               {/each}
             {/if}
@@ -446,10 +445,10 @@
               <p class="text-xs font-bold text-yellow-700 uppercase mb-2 mt-4">Govt Employee Guarantor</p>
               {#each appData.collateral.govtEmployees as govt}
                 <div class="bg-gray-50 rounded-xl p-4 mb-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  <div><p class="text-xs text-gray-500">Full Name</p><p class="font-semibold text-sm">{label(govt.full_name)}</p></div>
-                  <div><p class="text-xs text-gray-500">Department</p><p class="font-semibold text-sm">{label(govt.department_name)}</p></div>
-                  <div><p class="text-xs text-gray-500">Designation</p><p class="font-semibold text-sm">{label(govt.designation)}</p></div>
-                  <div><p class="text-xs text-gray-500">Employee ID</p><p class="font-semibold text-sm">{label(govt.employee_id_number)}</p></div>
+                  <div><p class="text-xs text-gray-500">{t.collateralDetails.govtEmployeeModal.fullName}</p><p class="font-semibold text-sm">{label(govt.full_name)}</p></div>
+                  <div><p class="text-xs text-gray-500">{t.collateralDetails.govtEmployeeModal.departmentName}</p><p class="font-semibold text-sm">{label(govt.department_name)}</p></div>
+                  <div><p class="text-xs text-gray-500">{t.collateralDetails.govtEmployeeModal.designation}</p><p class="font-semibold text-sm">{label(govt.designation)}</p></div>
+                  <div><p class="text-xs text-gray-500">{t.collateralDetails.govtEmployeeModal.employeeID}</p><p class="font-semibold text-sm">{label(govt.employee_id_number)}</p></div>
                 </div>
               {/each}
             {/if}
@@ -489,7 +488,7 @@
               return Object.values(sections).sort((a, b) => a.order - b.order);
             })()}
 
-            <h3 class="text-lg font-bold text-gray-800 mb-6">Uploaded Documents</h3>
+          <h3 class="text-lg font-bold text-gray-800 mb-6">{t.stepper.step6}</h3>
 
             {#if groupedSections.length > 0}
               {#each groupedSections as section}
@@ -501,8 +500,8 @@
 
                   <!-- Column Headers -->
                   <div class="bg-gray-100 border-x border-gray-200 px-5 py-2 grid grid-cols-12">
-                    <p class="col-span-9 text-xs font-bold text-gray-500 uppercase">Documents Name</p>
-                    <p class="col-span-3 text-xs font-bold text-gray-500 uppercase text-right">View</p>
+                    <p class="col-span-9 text-xs font-bold text-gray-500 uppercase">{t.uploadDocuments.ApplicantDocument.documentName}</p>
+                    <p class="col-span-3 text-xs font-bold text-gray-500 uppercase text-right">{t.uploadDocuments.ApplicantDocument.uploadView}</p>
                   </div>
 
                   <!-- Docs -->
@@ -530,7 +529,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                           </svg>
-                          View
+                          {t.uploadDocuments.ApplicantDocument.view}
                         </a>
                       </div>
                     {/each}

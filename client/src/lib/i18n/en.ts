@@ -326,8 +326,36 @@ export const en = {
     liveChat: "Live Chat",
     startChat: "Start Chat",
     callSupport: "Call Support",
-    viewFAQs: "View FAQs"
+    viewFAQs: "View FAQs",
+    applicationSubmitted: "Application Submitted Successfully!",
+    applicationReceived: "Your application has been received and is under review.",
+    viewApplication: "View Application",
+    statusUnderReview: "Status: Under Review",
+    applicant: "Applicant",
+    //applicationID: "Application ID",
+    educationPurpose: "Education Purpose",
+    loanAmount: "Loan Amount",
+    applicationTrack: "Application Track",
+    applicationSubmittedLabel: "Application Submitted",
+    successfullySubmitted: "Successfully Submitted",
+    UnderReview: "Under Review",
+    reviewMessage: "Your application is being reviewed by our team",
+    approvedRejected: "Approved / Rejected",
+    decisionPending: "Decision pending",  
+    applicantPhoto:"Applicant Photo",
+
   },
+
+  tabs: {
+    identity: "Identity Check",
+    personal: "Personal Details",
+    academic: "Academic Info",
+    guarantor: "Guarantor Details",
+    collateral: "Collateral Details",
+    documents: "Document Upload",
+  },
+
+
   welcome: {
     title: "MAMFDC",
     subtitle: "A Govt. of Maharashtra Undertaking",
@@ -466,6 +494,10 @@ export const en = {
     female: "Female",
     other: "Other"
   },
+
+  //religion and resident for view form
+   religionCommunity: "Religion / Community",
+   resident: "Resident",
   
   // Consent
   consentText: "I provide my consent to share my details with the issuer for the purpose of fetching my details.",
@@ -475,6 +507,7 @@ export const en = {
   proceed: "Proceed",
   cancel: "Cancel",
   backToHome: "Back to Home",
+  backToDashboard:"Back to Dashboard",
   
   // Helper Text
   mandatoryFields: "All fields marked with * are mandatory",
