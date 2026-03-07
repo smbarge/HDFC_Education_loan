@@ -12,7 +12,7 @@
   $: currentPath = $page.url.pathname.replace(`/${locale}`, '') || '';
   
    function changeLanguage(newLocale) {
-    const search = $page.url.search; // preserves ?mode=review
+    const search = $page.url.search; 
     goto(`/${newLocale}${currentPath}${search}`);
   }
 

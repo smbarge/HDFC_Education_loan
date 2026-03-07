@@ -67,7 +67,7 @@ Content-Type: application/json
 {
   "action": "login",
   "mobile": "8767096290",
-  "password": "Admin@123"
+  "password": "Admin@2024"
 }
 
 ### Get user by mobile
@@ -94,6 +94,7 @@ Content-Type: application/json
 ### Fetch Districts
 GET http://localhost:5173/api/masters
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwidXNlcm5hbWUiOiI4NzY3MDk2MjkwIiwibW9iaWxlIjoiODc2NzA5NjI5MCIsInN1YiI6Ijg3NjcwOTYyOTAiLCJpYXQiOjE3NzI4Nzc4NjgsImV4cCI6MTc3Mjk2NDI2OH0.jhzr91R8bd-o3yoBez-1514-qG-5Kt97HO48Sbbtpk8
 
 
 ### Get Masters

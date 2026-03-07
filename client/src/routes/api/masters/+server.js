@@ -1,12 +1,17 @@
 import { json } from '@sveltejs/kit';
 import pool from '$lib/db.js';
+import { verifyToken } from "$lib/jwtverify.js";
 
-export async function GET() {
+export async function GET({request}) {
 
   
   try {
     //client = await pool.connect();
+    const auth = verifyToken(request);
 
+    if (!auth.success) {
+        return json({ message: auth.message }, { status: 401 });
+    }
     const [districtRes, 
             genderRes, 
             religionRes,

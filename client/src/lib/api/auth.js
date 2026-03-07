@@ -1,4 +1,7 @@
+import { token } from "$lib/stores/userStore";
+import { get } from "svelte/store";
 
+let access_token = get(token)
 const fetchMasters = async () => {
     console.log("fetchMasters called");
     
@@ -7,6 +10,7 @@ const fetchMasters = async () => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                 Authorization: `Bearer ${access_token}`
             }
         });
 
