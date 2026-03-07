@@ -1025,7 +1025,7 @@ async function submitApplication(userId, applicationId) {
 }
 
 
-// /after submit notifications send mail and mobile number
+// after submit notifications send mail and mobile number
 export async function notifyApplicationSubmission(userId, applicationId) {
   try {
     const response = await fetch('/api/notify', {
