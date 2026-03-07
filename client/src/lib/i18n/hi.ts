@@ -288,6 +288,7 @@ export const hi = {
     confirmPasswordMatch: 'पासवर्ड मेल नहीं खाते',
     usernameOrMobileRequired: 'उपयोगकर्ता नाम या मोबाइल नंबर आवश्यक है'
     },
+
     dashboard: {
     title: "एमएएमएफडीसी",
     subtitle: "महाराष्ट्र सरकार का उपक्रम",
@@ -376,8 +377,36 @@ export const hi = {
     liveChat: "लाइव चैट",
     startChat: "चैट शुरू करें",
     callSupport: "कॉल सहायता",
-    viewFAQs: "अक्सर पूछे जाने वाले प्रश्न देखें"
+    viewFAQs: "अक्सर पूछे जाने वाले प्रश्न देखें",
+
+    //View Application dashboard
+    applicationSubmitted: "आवेदन सफलतापूर्वक जमा हो गया!",
+    applicationReceived: "आपका आवेदन प्राप्त हो गया है और इसकी समीक्षा की जा रही है।",
+    viewApplication: "आवेदन देखें",
+    statusUnderReview: "स्थिति: समीक्षा के अधीन",
+    applicant: "आवेदक",
+    //ApplicationId: "आवेदन आईडी",
+    educationPurpose: "शिक्षा का उद्देश्य",
+    loanAmount: "ऋण राशि",
+    applicationTrack: "आवेदन प्रगति",
+    applicationSubmittedLabel: "आवेदन जमा किया गया",
+    successfullySubmitted: "सफलतापूर्वक जमा किया गया",
+    UnderReview: "समीक्षा के अधीन",
+    reviewMessage: "आपका आवेदन हमारी टीम द्वारा समीक्षा किया जा रहा है",
+    approvedRejected: "स्वीकृत / अस्वीकृत",
+    decisionPending: "निर्णय लंबित",
+    applicantPhoto:"आवेदक का फोटो",
   },
+
+    tabs: {
+    identity: "पहचान सत्यापन",
+    personal: "व्यक्तिगत विवरण",
+    academic: "शैक्षणिक जानकारी",
+    guarantor: "जमानतदार विवरण",
+    collateral: "गिरवी विवरण",
+    documents: "दस्तावेज़ अपलोड"
+  },
+
 
   welcome: {
     title: "एमएएमएफडीसी",
@@ -506,6 +535,10 @@ export const hi = {
     female: "महिला",
     other: "अन्य"
   },
+
+  //religion and resident for view form
+   religionCommunity: "धर्म / समुदाय",
+   resident: "निवासी",
   
   // Consent
   consentText: "मैं अपने विवरण प्राप्त करने के उद्देश्य से जारीकर्ता के साथ अपने विवरण साझा करने की सहमति प्रदान करता/करती हूं।",
@@ -515,6 +548,7 @@ export const hi = {
   proceed: "आगे बढ़ें",
   cancel: "रद्द करें",
   backToHome: "होम पर वापस जाएं",
+  backToDashboard:"डैशबोर्ड पर वापस जाएं",
   
   // Helper Text
   mandatoryFields: "* चिह्नित सभी फ़ील्ड अनिवार्य हैं",

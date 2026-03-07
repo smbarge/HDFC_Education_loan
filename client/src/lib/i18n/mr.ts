@@ -375,8 +375,40 @@ export const mr = {
     liveChat: "लाइव्ह चॅट",
     startChat: "चॅट सुरू करा",
     callSupport: "कॉल सहाय्य",
-    viewFAQs: "वारंवार विचारले जाणारे प्रश्न पहा"
+    viewFAQs: "वारंवार विचारले जाणारे प्रश्न पहा",
+
+    //View Application Dashboard
+    applicationSubmitted: "अर्ज यशस्वीरित्या सबमिट झाला!",
+    applicationReceived: "तुमचा अर्ज प्राप्त झाला आहे आणि त्याची पडताळणी सुरू आहे.",
+    viewApplication: "अर्ज पहा",
+    statusUnderReview: "स्थिती: पडताळणी सुरू",
+    applicant: "अर्जदार",
+    //ApplicationId: "अर्ज आयडी",
+    educationPurpose: "शिक्षणाचा उद्देश",
+    loanAmount: "कर्जाची रक्कम",
+    applicationTrack: "अर्ज प्रगती",
+    applicationSubmittedLabel: "अर्ज सबमिट केला",
+    successfullySubmitted: "यशस्वीरित्या सबमिट केले",
+    UnderReview: "पडताळणी सुरू",
+    reviewMessage: "तुमचा अर्ज आमच्या टीमकडून पडताळणीसाठी तपासला जात आहे",
+    approvedRejected: "मंजूर / नाकारले",
+    decisionPending: "निर्णय प्रलंबित",
+    applicantPhoto:"अर्जदाराचा फोटो",
+
+
   },
+
+  "tabs": {
+    identity: "ओळख पडताळणी",
+    personal: "वैयक्तिक तपशील",
+    academic: "शैक्षणिक माहिती",
+    guarantor: "हमीदार तपशील",
+    collateral: "तारण तपशील",
+    documents: "कागदपत्र अपलोड"
+  },
+
+
+
   welcome: {
     title: "एमएएमएफडीसी",
     subtitle: "महाराष्ट्र शासनाचा उपक्रम",
@@ -505,6 +537,10 @@ export const mr = {
     female: "महिला",
     other: "इतर"
   },
+
+  // religion and resident for view form
+  religionCommunity: "धर्म / समुदाय",
+  resident: "रहिवासी",
   
   // Consent
   consentText: "मी माझे तपशील मिळवण्याच्या उद्देशाने जारीकर्त्यासोबत माझे तपशील सामायिक करण्याची संमती देतो/देते.",
@@ -514,6 +550,7 @@ export const mr = {
   proceed: "पुढे जा",
   cancel: "रद्द करा",
   backToHome: "मुख्यपृष्ठावर परत जा",
+  backToDashboard:"डॅशबोर्डवर परत जा",
   
   // Helper Text
   mandatoryFields: "* चिन्हांकित सर्व फील्ड अनिवार्य आहेत",
