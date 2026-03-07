@@ -404,7 +404,8 @@ export const hi = {
     academic: "शैक्षणिक जानकारी",
     guarantor: "जमानतदार विवरण",
     collateral: "गिरवी विवरण",
-    documents: "दस्तावेज़ अपलोड"
+    documents: "दस्तावेज़ अपलोड",
+    reviewSubmit:"समीक्षा करें और जमा करें",
   },
 
 

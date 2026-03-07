@@ -404,7 +404,8 @@ export const mr = {
     academic: "शैक्षणिक माहिती",
     guarantor: "हमीदार तपशील",
     collateral: "तारण तपशील",
-    documents: "कागदपत्र अपलोड"
+    documents: "कागदपत्र अपलोड",
+    reviewSubmit:"पुनरावलोकन करा आणि सबमिट करा",
   },
 
 

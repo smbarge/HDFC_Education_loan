@@ -63,6 +63,17 @@
     { id: 'documents',  label: 'Documents',           icon: '📄' },
   ];
 
+  let activeTab = 'reviewSubmit';
+    $: tabs = [
+  { id: 'identity',   label: t?.tabs?.identity },
+  { id: 'personal',   label: t?.tabs?.personal },
+  { id: 'academic',   label: t?.tabs?.academic },
+  { id: 'guarantor',  label: t?.tabs?.guarantor },
+  { id: 'collateral', label: t?.tabs?.collateral },
+  { id: 'documents',  label: t?.tabs?.documents },
+  { id: 'reviewSubmit',  label: t?.tabs?.reviewSubmit }
+];
+
   async function handleSubmit() {
     isSubmitting = true;
     try {
@@ -170,7 +181,7 @@
       </div>
 
       <!-- Section Tabs -->
-      <div class="flex gap-2 overflow-x-auto pb-2 mb-6">
+      <!-- <div class="flex gap-2 overflow-x-auto pb-2 mb-6">
         {#each sections as sec}
           <button
             on:click={() => activeSection = sec.id}
@@ -183,7 +194,20 @@
             <span>{sec.label}</span>
           </button>
         {/each}
-      </div>
+      </div> -->
+      <div class="flex overflow-x-auto border-b border-gray-200 scrollbar-hide">
+          {#each tabs as tab}
+            <button
+              on:click={() => activeTab = tab.id}
+              class="flex-shrink-0 px-5 py-3 text-sm font-semibold transition-colors whitespace-nowrap
+                {activeTab === tab.id
+                  ? 'text-purple-600 border-b-2 border-purple-600 bg-purple-50'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}"
+            >
+              {tab.label}
+            </button>
+          {/each}
+        </div>
 
       <!-- Section Content -->
       <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
