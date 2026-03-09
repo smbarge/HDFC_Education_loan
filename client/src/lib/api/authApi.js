@@ -1025,21 +1025,21 @@ async function submitApplication(userId, applicationId) {
 }
 
 
-// after submit notifications send mail and mobile number
+// /after submit notifications send mail and mobile number
 export async function notifyApplicationSubmission(userId, applicationId) {
   try {
-    const response = await fetch('/api/notify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, applicationId })
-    });
+    const response = await fetch(
+      `/api/createApplication/${userId}/${applicationId}/notify`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' } }
+    );
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error sending notification:', error);
-    return { error: -1, errorMsg: 'Failed to send notification' };
+    console.error('Error sending notifications:', error);
+    return { error: -1, errorMsg: 'Failed to send notifications' };
   }
 }
+
 
 
 

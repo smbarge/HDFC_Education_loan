@@ -1,4 +1,3 @@
-// FILE: src/routes/api/createApplication/[user]/[applicationId]/view/+server.js
 
 import { json } from '@sveltejs/kit';
 import pool from '$lib/db.js';
@@ -8,6 +7,8 @@ import pool from '$lib/db.js';
 const masterRes = await fetch('http://localhost:5173/api/masters');
 const masterData = await masterRes.json();
 const masters = masterData.masters;
+// console.log("MAsters........",masters.m_gender);
+
 
 const genderMap     = Object.fromEntries(masters.m_gender.map(r => [r.id, r.eng_name]));
 const religionMap   = Object.fromEntries(masters.m_religion.map(r => [r.id, r.eng_name]));

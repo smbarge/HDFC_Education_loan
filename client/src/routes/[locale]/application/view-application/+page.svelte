@@ -709,7 +709,7 @@ function handleDownloadPDF() {
               <p class="text-xs font-bold text-yellow-700 uppercase mb-2 mt-4">Govt Employee Guarantor</p>
               {#each appData.collateral.govtEmployees as govt}
                 <div class="bg-gray-50 rounded-xl p-4 mb-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  <div><p class="text-xs text-gray-500">{t.collateralDetails.govtEmployeeModal.departmentName}</p><p class="font-semibold text-sm">{label(govt.department_name)}</p></div>
+                  <div><p class="text-xs text-gray-500">{t.collateralDetails.govtEmployeeModal.departmentName}</p><p class="font-semibold text-sm">{label(govt.department_office_name)}</p></div>
                   <div><p class="text-xs text-gray-500">{t.collateralDetails.govtEmployeeModal.designation}</p><p class="font-semibold text-sm">{label(govt.designation)}</p></div>
                   <div><p class="text-xs text-gray-500">{t.collateralDetails.govtEmployeeModal.employeeID}</p><p class="font-semibold text-sm">{label(govt.employee_id_number)}</p></div>
                 </div>
@@ -802,6 +802,7 @@ function handleDownloadPDF() {
            {:else}
               <p class="text-gray-400 text-sm">No documents uploaded yet.</p>
             {/if}
+
             <!-- Review the application -------------- -->
             {:else if activeTab === 'review'}
             <h3 class="text-lg font-bold text-gray-800 mb-6">Review & Submit Application</h3>
