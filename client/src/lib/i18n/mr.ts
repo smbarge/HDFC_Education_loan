@@ -394,6 +394,7 @@ export const mr = {
     approvedRejected: "मंजूर / नाकारले",
     decisionPending: "निर्णय प्रलंबित",
     applicantPhoto:"अर्जदाराचा फोटो",
+    reviewAndSubmit:"अर्जाचे पुनरावलोकन करा आणि जमा करा",
 
 
   },
@@ -552,6 +553,7 @@ export const mr = {
   cancel: "रद्द करा",
   backToHome: "मुख्यपृष्ठावर परत जा",
   backToDashboard:"डॅशबोर्डवर परत जा",
+  downloadPdf:"पीडीएफ डाउनलोड करा",
   
   // Helper Text
   mandatoryFields: "* चिन्हांकित सर्व फील्ड अनिवार्य आहेत",
@@ -1031,6 +1033,7 @@ export const mr = {
   dept: 'विभाग',
   designation: 'पदनाम',
   employeeID: 'कर्मचारी आयडी',
+  valuation:"मूल्यांकन",
 
   // Tooltips
   deleteTooltip: 'हटवा',
@@ -1522,6 +1525,8 @@ CollateralDocuments: {
   cancelButton: "मागे",
   submitButton: "कागदपत्रे सादर करा",
   processingButton: "प्रक्रिया सुरू आहे...",
+  submitApplication: "अर्ज सादर करा",
+  backToDocs:"कागदपत्रांकडे परत जा",
 
   // Error Messages
   submitError: "कागदपत्रे सादर करण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.",
@@ -1533,6 +1538,21 @@ CollateralDocuments: {
   optional: "(पर्यायी)",
   ifAvailable: "(उपलब्ध असल्यास)"
 },
+
+//Review and Submit
+  checklist: {
+    personalDetails: "वैयक्तिक माहिती",
+    academicInformation: "शैक्षणिक माहिती",
+    guarantorDetails: "हमीदार तपशील",
+    collateralDetails: "तारण तपशील",
+    documentsUploaded: "दस्तऐवज अपलोड",
+    complete: "पूर्ण",
+    pending: "प्रलंबित"
+  },
+
+  //Declaration
+  declaration:"घोषणा ",
+  iHereBy: "मी घोषित करतो/करते की या अर्जामध्ये दिलेली सर्व माहिती माझ्या माहितीनुसार व विश्वासानुसार खरी व अचूक आहे. चुकीची माहिती दिल्यास माझा अर्ज नाकारला जाऊ शकतो.",
 
   footer: {
     about: {
