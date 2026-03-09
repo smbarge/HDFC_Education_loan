@@ -31,7 +31,10 @@
   onMount(async () => {
   const result = await fetchMasters();
   if (result.error === 0) {
-    policyTypes = result.masters.m_policy_type || [];
+    policyTypes = (result.masters.m_policy_type || []).map(row => ({
+    value: String(row.id),
+    label: `${row.eng_name} - ${row.dev_name}`  
+    }));
   }
 });
 
@@ -152,7 +155,7 @@ $: if (show && !previousShow) {
                   >
                     <option value="">-- Select Policy Type --</option>
                    {#each policyTypes as pt}
-                      <option value={pt.id}>{pt.eng_name}</option>
+                     <option value={pt.value}>{pt.label}</option>
                     {/each}
                   </select>
                   {#if errors.policyType}

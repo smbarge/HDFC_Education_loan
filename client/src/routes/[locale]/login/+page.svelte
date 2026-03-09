@@ -99,9 +99,14 @@
       return;
     }
 
-    user.set(response.user);
-    token.set(response.access_token);
+    // console.log("Full response:", response);
+    // console.log("response.token:", response.token);
 
+
+    user.set(response.user);
+    token.set(response.token);
+
+    
     goto(`/${locale}/dashboard`);
 
   } catch (err) {

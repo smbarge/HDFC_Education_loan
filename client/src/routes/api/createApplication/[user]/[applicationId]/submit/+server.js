@@ -1,8 +1,16 @@
 import { json } from '@sveltejs/kit';
 import pool from '$lib/db.js';
+import { verifyToken } from '$lib/jwtverify';
+
 
 // POST - Submit application (mark as completed)
-export async function POST({ params }) {
+export async function POST({ params,request }) {
+
+  const auth = verifyToken(request);
+  if (!auth.success) {
+      return json({ message: auth.message }, { status: 401 });
+  }
+
   const { user, applicationId } = params;
   
   console.log('Submitting application:', { user, applicationId });

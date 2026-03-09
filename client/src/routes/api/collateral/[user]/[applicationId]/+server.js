@@ -1,5 +1,7 @@
 import { json } from '@sveltejs/kit';
 import pool from '$lib/db';
+import { verifyToken } from '$lib/jwtverify';
+
 
 //1. Collateral Property
 
@@ -338,7 +340,11 @@ async function insertGovtCollateralQuery(client, applicationId, govtData) {
 
 //GET
 
-export async function GET({ params, url }) {
+export async function GET({ params, url,request}) {
+     const auth = verifyToken(request);
+    if (!auth.success) {
+        return json({ message: auth.message }, { status: 401 });
+    }
     let client;
 
     try {
@@ -666,6 +672,11 @@ export async function POST({ request, params }) {
 
 //PUT
 export async function PUT({ request, params }) {
+
+     const auth = verifyToken(request);
+    if (!auth.success) {
+        return json({ message: auth.message }, { status: 401 });
+    }
     let client ;
     try {
         client = await pool.connect();
@@ -765,6 +776,11 @@ export async function PUT({ request, params }) {
 
 //DELETE
 export async function DELETE({ request, params }) {
+
+    const auth = verifyToken(request);
+  if (!auth.success) {
+      return json({ message: auth.message }, { status: 401 });
+  }
     let client ;
     try {
         client = await pool.connect();

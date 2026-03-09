@@ -672,7 +672,6 @@ function handleDownloadPDF() {
                   <div><p class="text-xs text-gray-500">Area</p><p class="font-semibold text-sm">{label(prop.area_value)}</p></div>
                   <div><p class="text-xs text-gray-500">Valuation</p><p class="font-semibold text-sm">{formatCurrency(prop.property_value)}</p></div>
 
-
                 </div>
               {/each}
 

@@ -1,8 +1,13 @@
 import { json } from '@sveltejs/kit';
 import pool from '$lib/db.js';
+import { verifyToken } from '$lib/jwtverify';
 
 // GET - Get all documents for an application
-export async function GET({ params }) {
+export async function GET({ params ,request}) {
+  const auth = verifyToken(request);
+  if (!auth.success) {
+      return json({ message: auth.message }, { status: 401 });
+  }
   const { userId, applicationId } = params;
 
   try {

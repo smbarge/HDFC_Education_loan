@@ -2,8 +2,15 @@ import { json } from '@sveltejs/kit';
 import pool from '$lib/db.js';
 import { writeFileSync, mkdirSync, existsSync, unlinkSync } from 'fs';
 import { join } from 'path';
+import { verifyToken } from '$lib/jwtverify';
 
 export async function POST({ params, request }) {
+
+  const auth = verifyToken(request);
+  if (!auth.success) {
+      return json({ message: auth.message }, { status: 401 });
+  }
+
   const { userId, applicationId, docId } = params;
 
   try {
@@ -58,7 +65,13 @@ export async function POST({ params, request }) {
 }
 
 
-export async function GET({ params }) {
+export async function GET({ params ,request}) {
+
+  const auth = verifyToken(request);
+  if (!auth.success) {
+      return json({ message: auth.message }, { status: 401 });
+  }
+
   const { applicationId, docId } = params;
 
   try {
@@ -79,7 +92,11 @@ export async function GET({ params }) {
   }
 }
 
-export async function DELETE({ params }) {
+export async function DELETE({ params ,request}) {
+  const auth = verifyToken(request);
+  if (!auth.success) {
+      return json({ message: auth.message }, { status: 401 });
+  }
   const { applicationId, docId } = params;
 
   try {

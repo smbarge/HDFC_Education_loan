@@ -4,14 +4,16 @@ import { verifyToken } from "$lib/jwtverify.js";
 
 export async function GET({request}) {
 
-  
+    const auth = verifyToken(request);
+
+    if (!auth.success) {
+        return json({ message: auth.message }, { status: 401 });
+    }
+    
   try {
     //client = await pool.connect();
-    // const auth = verifyToken(request);
 
-    // if (!auth.success) {
-    //     return json({ message: auth.message }, { status: 401 });
-    // }
+  
     const [districtRes, 
             genderRes, 
             religionRes,
