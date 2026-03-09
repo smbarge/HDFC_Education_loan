@@ -458,5 +458,11 @@ Content-Disposition: form-data; name="document_id"
 
 //view application 
 ### 2. Get View Application - All Data (NEW)
+POST http://localhost:5173/api/createApplication/1/2/view
+Content-Type: application/json
+
+
+//view application 
+### 2. Get View Application - All Data (NEW)
 GET http://localhost:5173/api/createApplication/1/2/view
 Content-Type: application/json

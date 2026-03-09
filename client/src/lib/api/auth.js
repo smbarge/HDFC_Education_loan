@@ -3,7 +3,7 @@ import { get } from "svelte/store";
 
 let access_token = get(token)
 const fetchMasters = async () => {
-    console.log("fetchMasters called");
+    console.log("fetchMasters called",access_token);
     
     try {
         const response = await fetch('/api/masters', {

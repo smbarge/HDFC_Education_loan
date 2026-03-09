@@ -7,11 +7,11 @@ export async function GET({request}) {
   
   try {
     //client = await pool.connect();
-    const auth = verifyToken(request);
+    // const auth = verifyToken(request);
 
-    if (!auth.success) {
-        return json({ message: auth.message }, { status: 401 });
-    }
+    // if (!auth.success) {
+    //     return json({ message: auth.message }, { status: 401 });
+    // }
     const [districtRes, 
             genderRes, 
             religionRes,
