@@ -1,3 +1,5 @@
+import { submitApplication } from "$lib/api/authApi";
+
 export const en = {
 
   
@@ -343,6 +345,7 @@ export const en = {
     approvedRejected: "Approved / Rejected",
     decisionPending: "Decision pending",  
     applicantPhoto:"Applicant Photo",
+    reviewAndSubmit:"Review & Submit Application",
 
   },
 
@@ -353,6 +356,7 @@ export const en = {
     guarantor: "Guarantor Details",
     collateral: "Collateral Details",
     documents: "Document Upload",
+    reviewSubmit:"Review and Submit",
   },
 
 
@@ -508,6 +512,7 @@ export const en = {
   cancel: "Cancel",
   backToHome: "Back to Home",
   backToDashboard:"Back to Dashboard",
+  downloadPdf:"Download Pdf",
   
   // Helper Text
   mandatoryFields: "All fields marked with * are mandatory",
@@ -1023,6 +1028,7 @@ export const en = {
       dept: 'Dept',
       designation: 'Designation',
       employeeID: 'Employee ID',
+      valuation:"",
       
       // Tooltips
       deleteTooltip: 'Delete',
@@ -1558,6 +1564,8 @@ export const en = {
     cancelButton: "Back",
     submitButton: "Submit Documents",
     processingButton: "Processing...",
+    submitApplication: "Submit Application",
+    backToDocs:"Back To Documents",
 
     // Error Messages
     submitError: "Failed to submit documents. Please try again.",
@@ -1569,6 +1577,21 @@ export const en = {
     optional: "(Optional)",
     ifAvailable: "(if available)"
   },
+
+  //Review and Submit
+  checklist: {
+    personalDetails: "Personal Details",
+    academicInformation: "Academic Information",
+    guarantorDetails: "Guarantor Details",
+    collateralDetails: "Collateral Details",
+    documentsUploaded: "Documents Uploaded",
+    complete: "Complete",
+    pending: "Pending"
+  },
+
+  //Declaration
+  declaration: "Declaration",
+  iHereBy:"I hereby declare that all the information provided in this application is true and correct to the best of my knowledge. I understand that providing false information may result in rejection of my application.",
 
   footer: {
     about: {

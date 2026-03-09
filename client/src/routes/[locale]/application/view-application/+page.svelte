@@ -34,14 +34,14 @@
   $: activeTab = mode === 'review' ? 'review' : 'identity';
   $: isReviewMode = mode === 'review';
     const allTabs = [
-    { id: 'identity',   label: 'Identity Check',     reviewOnly: false },
-    { id: 'personal',   label: 'Personal Details',   reviewOnly: false },
-    { id: 'academic',   label: 'Academic Info',      reviewOnly: false },
-    { id: 'guarantor',  label: 'Guarantor Details',  reviewOnly: false },
-    { id: 'collateral', label: 'Collateral Details', reviewOnly: false },
-    { id: 'documents',  label: 'Document Upload',    reviewOnly: false },
-    { id: 'review',     label: 'Review & Submit', reviewOnly: true  },
-  ];
+  { id: 'identity', reviewOnly: false },
+  { id: 'personal', reviewOnly: false },
+  { id: 'academic', reviewOnly: false },
+  { id: 'guarantor', reviewOnly: false },
+  { id: 'collateral', reviewOnly: false },
+  { id: 'documents', reviewOnly: false },
+  { id: 'review', reviewOnly: true }
+];
 
   $: isReviewMode = $page.url.searchParams.get('mode') === 'review';
   $: activeTab = isReviewMode ? 'review' : 'identity';
@@ -346,7 +346,7 @@ function handleDownloadPDF() {
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
           </svg>
-          Download PDF
+          {t.applicationStart.downloadPdf}
         </button>
         <button
           on:click={() => goto(`/${locale}/dashboard`)}
@@ -355,7 +355,7 @@ function handleDownloadPDF() {
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
           </svg>
-          Back to Dashboard
+          {t.applicationStart.backToDashboard}
         </button>
       </div>
     </div>
@@ -398,16 +398,16 @@ function handleDownloadPDF() {
         <!-- Name + ID -->
         <div class="flex-1 text-center sm:text-left">
           <h3 class="text-2xl font-bold text-gray-900">{label(appData.personal?.name)}</h3>
-          <p class="text-gray-500 text-sm mt-1">Application ID: <span class="font-semibold text-purple-600">#{$applicationId}</span></p>
+          <p class="text-gray-500 text-sm mt-1">{t.dashboard.applicationId}: <span class="font-semibold text-purple-600">#{$applicationId}</span></p>
           {#if isReviewMode}
             <div class="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-yellow-100 rounded-full">
               <div class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></div>
-              <span class="text-yellow-700 text-xs font-semibold">Pending Submission</span>
+              <span class="text-yellow-700 text-xs font-semibold">{t.dashboard.decisionPending}</span>
             </div>
           {:else}
             <div class="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-green-100 rounded-full">
               <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-              <span class="text-green-700 text-xs font-semibold">Submitted — Under Review</span>
+              <span class="text-green-700 text-xs font-semibold">{t.dashboard.applicationSubmittedLabel} — {t.dashboard.UnderReview}</span>
             </div>
           {/if}
         </div>
@@ -434,19 +434,18 @@ function handleDownloadPDF() {
 
         <!-- Tab Headers -->
         <div class="flex overflow-x-auto border-b border-gray-200 scrollbar-hide">
-          {#each tabs as tab}
-            <button
-              on:click={() => activeTab = tab.id}
-              class="flex-shrink-0 px-5 py-3 text-sm font-semibold transition-colors whitespace-nowrap
-                {activeTab === tab.id
-                  ? 'text-purple-600 border-b-2 border-purple-600 bg-purple-50'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}"
-            >
-              {tab.label}
-            </button>
-          {/each}
+        {#each tabs as tab}
+        <button
+        on:click={() => activeTab = tab.id}
+        class="flex-shrink-0 px-5 py-3 text-sm font-semibold transition-colors whitespace-nowrap
+        {activeTab === tab.id
+        ? 'text-purple-600 border-b-2 border-purple-600 bg-purple-50'
+        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}"
+        >
+        {tab.id === 'review' ? t.tabs.reviewSubmit : t.tabs[tab.id]}
+        </button>
+        {/each}
         </div>
-
         <!-- Tab Content -->
             <div class="p-6 sm:p-8">
        
@@ -665,12 +664,12 @@ function handleDownloadPDF() {
 
               {#each appData.collateral.properties as prop}
                 <div class="bg-gray-50 rounded-xl p-4 mb-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  <div><p class="text-xs text-gray-500">Survey No</p><p class="font-semibold text-sm">{label(prop.survey_no)}</p></div>
-                  <div><p class="text-xs text-gray-500">District</p><p class="font-semibold text-sm">{label(prop.district_id)}</p></div>
-                  <div><p class="text-xs text-gray-500">Village</p><p class="font-semibold text-sm">{label(prop.place)}</p></div>
-                  <div><p class="text-xs text-gray-500">Units</p><p class="font-semibold text-sm">{label(prop.units)}</p></div>
-                  <div><p class="text-xs text-gray-500">Area</p><p class="font-semibold text-sm">{label(prop.area_value)}</p></div>
-                  <div><p class="text-xs text-gray-500">Valuation</p><p class="font-semibold text-sm">{formatCurrency(prop.property_value)}</p></div>
+                  <div><p class="text-xs text-gray-500">{t.collateralDetails.surveyNo}</p><p class="font-semibold text-sm">{label(prop.survey_no)}</p></div>
+                  <div><p class="text-xs text-gray-500">{t.collateralDetails.propertyCollateralModal.district}</p><p class="font-semibold text-sm">{label(prop.district_id)}</p></div>
+                  <div><p class="text-xs text-gray-500">{t.collateralDetails.village}</p><p class="font-semibold text-sm">{label(prop.place)}</p></div>
+                  <div><p class="text-xs text-gray-500">{t.collateralDetails.propertyCollateralModal.units}</p><p class="font-semibold text-sm">{label(prop.units)}</p></div>
+                  <div><p class="text-xs text-gray-500">{t.personalDetails.areaLabel}</p><p class="font-semibold text-sm">{label(prop.area_value)}</p></div>
+                  <div><p class="text-xs text-gray-500">{t.collateralDetails.valuation}</p><p class="font-semibold text-sm">{formatCurrency(prop.property_value)}</p></div>
 
                 </div>
               {/each}
@@ -804,54 +803,64 @@ function handleDownloadPDF() {
 
             <!-- Review the application -------------- -->
             {:else if activeTab === 'review'}
-            <h3 class="text-lg font-bold text-gray-800 mb-6">Review & Submit Application</h3>
+            <h3 class="text-lg font-bold text-gray-800 mb-6">{t.dashboard.reviewAndSubmit}</h3>
 
             <!-- Summary Cards -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
               <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-center">
                 <p class="text-sm font-bold text-blue-600">{$applicationId}</p>
-                <p class="text-xs text-gray-500 mt-1">Application ID</p>
+                <p class="text-xs text-gray-500 mt-1">{t.dashboard.applicationId}</p>
               </div>
               <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-center">
                 <p class="text-sm font-bold text-blue-600">{label(appData.personal?.name)}</p>
-                <p class="text-xs text-gray-500 mt-1">Applicant Name</p>
+                <p class="text-xs text-gray-500 mt-1">{t.applicationStart.nameLabel}</p>
               </div>
               <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-center">
                 <p class="text-sm font-bold text-blue-600">{label(appData.education?.course_name)}</p>
-                <p class="text-xs text-gray-500 mt-1">Course</p>
+                <p class="text-xs text-gray-500 mt-1">{t.academicInfo.courseNameLabel}</p>
               </div>
               <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-center">
                 <p class="text-sm font-bold text-blue-600">{formatCurrency(appData.education?.loan_required_amount)}</p>
-                <p class="text-xs text-gray-500 mt-1">Loan Required</p>
+                <p class="text-xs text-gray-500 mt-1">{t.academicInfo.loanRequiredLabel}</p>
               </div>
             </div>
 
             <!-- Checklist -->
-            <div class="mb-6 space-y-2">
-              {#each [
-                { label: 'Personal Details', done: !!appData.personal?.mobile },
-                { label: 'Academic Information', done: !!appData.education?.course_name },
-                { label: 'Guarantor Details', done: !!appData.guarantor },
-                { label: 'Collateral Details', done: (appData.collateral?.properties?.length > 0 || appData.collateral?.fds?.length > 0 || appData.collateral?.lics?.length > 0 || appData.collateral?.govtEmployees?.length > 0) },
-                { label: 'Documents Uploaded', done: appData.allDocs?.length > 0 },
-              ] as item}
-                <div class="flex items-center gap-3 p-3 rounded-lg {item.done ? 'bg-green-20 border border-green-100' : 'bg-red-50 border border-red-100'}">
-                  <div class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 {item.done ? 'bg-green-500' : 'bg-red-400'}">
-                    {#if item.done}
-                      <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-                      </svg>
-                    {:else}
-                      <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/>
-                      </svg>
-                    {/if}
-                  </div>
-                  <span class="text-sm font-medium {item.done ? 'text-green-800' : 'text-red-700'}">{item.label}</span>
-                  <span class="ml-auto text-xs font-semibold {item.done ? 'text-green-600' : 'text-red-500'}">{item.done ? 'Complete' : 'Pending'}</span>
-                </div>
-              {/each}
-            </div>
+           <!-- Checklist -->
+<div class="mb-6 space-y-2">
+{#each [
+   { label: 'personalDetails', done: !!appData.personal?.mobile },
+   { label: 'academicInformation', done: !!appData.education?.course_name },
+   { label: 'guarantorDetails', done: !!appData.guarantor },
+   { label: 'collateralDetails', done: (appData.collateral?.properties?.length > 0 || appData.collateral?.fds?.length > 0 || appData.collateral?.lics?.length > 0 || appData.collateral?.govtEmployees?.length > 0) },
+   { label: 'documentsUploaded', done: appData.allDocs?.length > 0 },
+] as item}
+
+<div class="flex items-center gap-3 p-3 rounded-lg {item.done ? 'bg-green-20 border border-green-100' : 'bg-red-50 border border-red-100'}">
+
+  <div class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 {item.done ? 'bg-green-500' : 'bg-red-400'}">
+    {#if item.done}
+      <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+      </svg>
+    {:else}
+      <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    {/if}
+  </div>
+
+  <span class="text-sm font-medium {item.done ? 'text-green-800' : 'text-red-700'}">
+   {t.checklist[item.label] ?? item.label}
+  </span>
+
+  <span class="ml-auto text-xs font-semibold {item.done ? 'text-green-600' : 'text-red-500'}">
+      {item.done ? t.checklist.complete : t.checklist.pending}
+  </span>
+
+</div>
+{/each}
+</div>
 
             <!-- Declaration -->
             <div class="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-xl mb-6">
@@ -859,8 +868,8 @@ function handleDownloadPDF() {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
               <p class="text-sm text-yellow-800">
-                <span class="font-bold">Declaration: </span>
-                I hereby declare that all the information provided in this application is true and correct to the best of my knowledge. I understand that providing false information may result in rejection of my application.
+                <span class="font-bold">{t.declaration}: </span>
+                {t.iHereBy}
               </p>
             </div>
 
@@ -879,7 +888,7 @@ function handleDownloadPDF() {
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                 </svg>
-                Back to Documents
+                {t.uploadDocuments.backToDocs}
               </button>
               <div>
               <button
@@ -894,7 +903,7 @@ function handleDownloadPDF() {
                   </svg>
                   Submitting...
                 {:else}
-                  Submit Application
+                  {t.uploadDocuments.submitApplication}
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
                   </svg>

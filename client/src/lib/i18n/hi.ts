@@ -396,6 +396,7 @@ export const hi = {
     approvedRejected: "स्वीकृत / अस्वीकृत",
     decisionPending: "निर्णय लंबित",
     applicantPhoto:"आवेदक का फोटो",
+    reviewAndSubmit:"आवेदन की समीक्षा करें और जमा करें",
   },
 
     tabs: {
@@ -550,6 +551,7 @@ export const hi = {
   cancel: "रद्द करें",
   backToHome: "होम पर वापस जाएं",
   backToDashboard:"डैशबोर्ड पर वापस जाएं",
+  downloadPdf:"पीडीएफ डाउनलोड करें",
   
   // Helper Text
   mandatoryFields: "* चिह्नित सभी फ़ील्ड अनिवार्य हैं",
@@ -1029,6 +1031,7 @@ export const hi = {
   dept: 'विभाग',
   designation: 'पद',
   employeeID: 'कर्मचारी आईडी',
+  valuation:"मूल्यांकन",
 
   // Tooltips
   deleteTooltip: 'हटाएं',
@@ -1523,6 +1526,8 @@ export const hi = {
   cancelButton: "वापस",
   submitButton: "दस्तावेज़ जमा करें",
   processingButton: "प्रक्रिया जारी है...",
+  submitApplication: "आवेदन जमा करें",
+  backToDocs:"दस्तावेज़ों पर वापस जाएँ",
 
   // Error Messages
   submitError: "दस्तावेज़ जमा करने में विफल। कृपया पुनः प्रयास करें।",
@@ -1534,6 +1539,21 @@ export const hi = {
   optional: "(वैकल्पिक)",
   ifAvailable: "(यदि उपलब्ध हो)"
 },
+
+  //Review And Submit
+  "checklist": {
+    personalDetails: "व्यक्तिगत विवरण",
+    academicInformation: "शैक्षणिक जानकारी",
+    guarantorDetails: "गारंटर विवरण",
+    collateralDetails: "जमानत विवरण",
+    documentsUploaded: "दस्तावेज़ अपलोड",
+    complete: "पूर्ण",
+    pending: "लंबित"
+  },
+
+  //Declaration
+  declaration:"घोषणा ",
+  iHereBy:"मैं यह घोषित करता/करती हूँ कि इस आवेदन में दी गई सभी जानकारी मेरी जानकारी और विश्वास के अनुसार सत्य और सही है। यदि कोई जानकारी गलत पाई जाती है, तो मेरा आवेदन अस्वीकार किया जा सकता है।",
   
   footer: {
     about: {
