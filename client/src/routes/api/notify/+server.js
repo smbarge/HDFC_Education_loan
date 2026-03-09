@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import pool from '$lib/db.js';
 import nodemailer from 'nodemailer';
+import { verifyToken } from '$lib/jwtverify';
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -11,6 +12,12 @@ const transporter = nodemailer.createTransport({
 });
 
 export async function POST({ request }) {
+
+   const auth = verifyToken(request);
+  if (!auth.success) {
+      return json({ message: auth.message }, { status: 401 });
+  }
+
   const { userId, applicationId } = await request.json();
   const client = await pool.connect();
 

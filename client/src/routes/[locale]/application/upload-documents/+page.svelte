@@ -13,7 +13,10 @@
   import SubmissionSuccessModal from '$lib/components/upload-documents/SubmissionSuccessModal.svelte';
   import ApplicantInfoSummary from '$lib/components/upload-documents/ApplicantInfoSummary.svelte';
   import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
-  import { getEducationDetailsData } from '$lib/api/authApi';
+  import { getEducationDetailsData,submitApplication } from '$lib/api/authApi';
+
+  import { get } from 'svelte/store';
+  import { token } from '$lib/stores/userStore';
 
 
   import { user, logout as logoutStore, applicationId } from '$lib/stores/userStore';
@@ -411,34 +414,24 @@ async function handleSubmit() {
     
     return;
   }
-  
-  isSubmitting = true;
+   isSubmitting = true;
   try {
-    const submitResult = await fetch(`/api/createApplication/${$user.id}/${$applicationId}/submit`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
-    });
-    
-    const result = await submitResult.json();
+    const result = await submitApplication($user.id, $applicationId);
     
     if (result.error !== 0) {
       submitError = result.errorMsg || 'Failed to submit application';
       return;
     }
 
-    //Show success modal
-    // showSuccessModal = true;
     goto(`/${locale}/application/view-application?mode=review`);
-
     
   } catch (error) {
     console.error('Error:', error);
-    submitError = 'Failed to submit documents. Please try again. / दस्तऐवज सबमिट करण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.';
+    submitError = 'Failed to submit documents. Please try again.';
   } finally {
     isSubmitting = false;
   }
 }
-
 // function handleGoToDashboard() {
 //   applicationId.set(null);
 //   goto(`/${locale}/dashboard`);

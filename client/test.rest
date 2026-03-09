@@ -44,9 +44,6 @@ Content-Type: application/json
 }
 
 
-
-
-
 ### Register user
 POST http://localhost:5173/api/auth
 Content-Type: application/json
@@ -66,9 +63,14 @@ Content-Type: application/json
 
 {
   "action": "login",
-  "mobile": "8767096290",
+  "mobile": "9999999999",
   "password": "Admin@2024"
 }
+
+
+### Respected Tokan=====
+
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwidXNlcm5hbWUiOiI5OTk5OTk5OTk5IiwibW9iaWxlIjoiOTk5OTk5OTk5OSIsInN1YiI6Ijk5OTk5OTk5OTkiLCJpYXQiOjE3NzMwMzkyMjMsImV4cCI6MTc3MzEyNTYyM30.eKD-33IoqvXBVKClWurfzZthXWHMi4ugqggq8cGB-GE
 
 ### Get user by mobile
 POST http://localhost:5173/api/auth
@@ -86,7 +88,7 @@ Content-Type: application/json
 {
   "action": "changePassword",
   "mobile": "9999999999",
-  "password": "NewPassword@123"
+  "password": "Admin@2024"
 }
 
 ##Master DropDown
@@ -94,75 +96,83 @@ Content-Type: application/json
 ### Fetch Districts
 GET http://localhost:5173/api/masters
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwidXNlcm5hbWUiOiI4NzY3MDk2MjkwIiwibW9iaWxlIjoiODc2NzA5NjI5MCIsInN1YiI6Ijg3NjcwOTYyOTAiLCJpYXQiOjE3NzI4Nzc4NjgsImV4cCI6MTc3Mjk2NDI2OH0.jhzr91R8bd-o3yoBez-1514-qG-5Kt97HO48Sbbtpk8
+Authorization: Bearer {{token}}
 
 
 ### Get Masters
 GET http://localhost:5173/api/masters
 Content-Type: application/json
+Authorization: Bearer {{token}}
+
 
 ### Get Talukas By District
 GET http://localhost:5173/api/getTalukas?district_id=2707&state_id=27&country_id=1
 Content-Type: application/json
+Authorization: Bearer {{token}}
+
 
 ### Get Stream by course
 GET http://localhost:5173/api/getStream?course_id=4
 Content-Type: application/json
-
+Authorization: Bearer {{token}}
 
 
 ### Create New Application
 POST http://localhost:5173/api/createApplication
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
-  "userId": 1
+  "userId": 6
 }
 
 ### Step 1: Create Application + Save Start Data
-POST http://localhost:5173/api/createApplication/1
+POST http://localhost:5173/api/createApplication/6
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "action": "saveApplicationStart",
-  "userId": 1,
+  "userId": 6,
   "stepData": {
     "religion": 1,
     "district_id": 1,
     "aadhar": "123456789012",
-    "name": "Test User",
-    "dob": "2000-01-01",
-    "gender": 1,
+    "name": "Sanika Sanjay Patil",
+    "dob": "2000-06-22",
+    "gender": 2,
     "resident": 1,
     "concent_for_aadhar_verification": 1
   }
 }
 
 ### Get Application Data
-GET http://localhost:5173/api/createApplication/1?action=getApplicationData
+GET http://localhost:5173/api/createApplication/6?action=getApplicationData
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 
 ### Save Personal Details (Step 2)
-POST http://localhost:5173/api/createApplication/2
+POST http://localhost:5173/api/createApplication/6
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "action": "savePersonalDetails",
-  "applicationId": 2,
+  "applicationId": 7,
   "personalDetails": {
-    "mobile": "7777777777",
+    "mobile": "9999999999",
     "email": "test@example.com",
     "pan": "ABCDE1234F",
     "current_address": "123 Main Street",
     "current_district": "2734",
-    "current_taluka": 101,
+    "current_taluka": "273401",
     "current_place": "Kothrud",
     "current_area": "DP Road",
     "current_pincode": "411038",
     "permanent_address": "123 Main Street",
     "permanent_district": "2734",
-    "permanent_taluka": 102,
+    "permanent_taluka": "273401",
     "permanent_place": "Kothrud",
     "permanent_area": "DP Road",
     "permanent_pincode": "411038",
@@ -181,33 +191,35 @@ Content-Type: application/json
     "guarantor": 0,
     "literate": 0,
     "details": null,
-    "relation" : 1
+    "relation": 1
   }
 }
 
-### Get Personal Details (Step 2)
-GET http://localhost:5173/api/createApplication/2?action=getPersonalDetails
+### Get Personal Details  Note:  (Here pass  as the application ID)
+GET http://localhost:5173/api/createApplication/7?action=getPersonalDetails
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 ### STEP 3: Save Education Details
-POST http://localhost:5173/api/createApplication/1
+POST http://localhost:5173/api/createApplication/6
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "action": "saveEducationDetails",
-  "applicationId": 1,
+  "applicationId": 7,
   "educationDetails": {
-    "student_name": "Test Student",
+    "student_name": "Sanika Sanjay Patil",
     "course_name": "Computer Science",
     "course_type": 1,
-    "stream_specialization": 1,
+    "stream_specialization": 10103,
     "course_duration": 4,
     "mode_of_study": 1,
     "institution_name": "ABC College",
     "university": "Pune University",
     "institution_address": "456 College Road",
-    "institution_district": 25,
-    "institution_taluka": 1,
+    "institution_district": "2734",
+    "institution_taluka": "273401",
     "institution_place": "Pune",
     "institution_pincode": "411038",
     "admission_status": 1,
@@ -226,16 +238,20 @@ Content-Type: application/json
   }
 }
 
-### STEP 3: Get Education Details
-GET http://localhost:5173/api/createApplication/1?action=getEducationDetails
 
-### Save Guarantor Details
-POST http://localhost:5173/api/guarantorDetails/1
+### STEP 3: Get Education Details  Note:  (Here pass  as the application ID)
+GET http://localhost:5173/api/createApplication/7?action=getEducationDetails
+Authorization: Bearer {{token}}
+
+
+### STEP 4  Save Guarantor Details
+POST http://localhost:5173/api/guarantorDetails/6
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "action": "saveGuarantorDetails",
-  "applicationId": 1,
+  "applicationId": 7,
   "guarantorDetails": {
     "name": "John Doe",
     "dob": "1980-05-15",
@@ -245,14 +261,14 @@ Content-Type: application/json
     "email": "john@example.com",
     "pan": "ABCDE1234F",
     "current_address": "123 Main Street",
-    "current_district": 25,
-    "current_taluka": 1,
+    "current_district": "2734",
+    "current_taluka": "273401",
     "current_place": "Pune",
     "current_area": "Kothrud",
     "current_pincode": "411038",
     "permanent_address": "123 Main Street",
-    "permanent_district": 25,
-    "permanent_taluka": 1,
+    "permanent_district": "2734",
+    "permanent_taluka": "273401",
     "permanent_place": "Pune",
     "permanent_area": "Kothrud",
     "permanent_pincode": "411038",
@@ -264,68 +280,33 @@ Content-Type: application/json
   }
 }
 
-### Get Guarantor Details
-GET http://localhost:5173/api/guarantorDetails/1?action=getGuarantorDetails
+
+### Get Guarantor Details  Note:  (Here pass  as the application ID)
+GET http://localhost:5173/api/guarantorDetails/7?action=getGuarantorDetails
+Content-Type: application/json
+Authorization: Bearer {{token}}
 
 ### Fetch Verified Contacts
-GET http://localhost:5173/api/getVerifiedContacts?applicationId=1
+GET http://localhost:5173/api/getVerifiedContacts?applicationId=7
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 
-### Save Personal Details (Step 2)
-POST http://localhost:5173/api/createApplication/2
-Content-Type: application/json
-
-{
-  "action": "savePersonalDetails",
-  "applicationId": 2,
-  "personalDetails": {
-    "mobile": "7777777777",
-    "email": "test@example.com",
-    "pan": "ABCDE1234F",
-    "current_address": "123 Main Street",
-    "current_district": "2734",
-    "current_taluka": 101,
-    "current_place": "Kothrud",
-    "current_area": "DP Road",
-    "current_pincode": "411038",
-    "permanent_address": "123 Main Street",
-    "permanent_district": "2734",
-    "permanent_taluka": 102,
-    "permanent_place": "Kothrud",
-    "permanent_area": "DP Road",
-    "permanent_pincode": "411038",
-    "marital_status": 1,
-    "education_qualification": 1,
-    "guardian_name": "Ashok Sangale",
-    "occupation": 5,
-    "income": "500000",
-    "past_surety_commitment": "No",
-    "ration_card_number": null,
-    "past_surety_commitment_detail": null,
-    "occupationtype": null,
-    "riot_victim": 0,
-    "natural_calamity_victim": 0,
-    "disabled_person": 0,
-    "guarantor": 0,
-    "literate": 0,
-    "details": null,
-    "relation" : 1
-  }
-}
-
-
-//Collatera; 
+//Collateral 
 
 //collateral property 
 
-### GET - Fetch all collateral properties
-GET http://localhost:5173/api/collateral/1/2?action=getCollateralProperties
-Content-Type: application/json
 
-### POST - Save single property collateral
-POST http://localhost:5173/api/collateral/1/2
+### GET - Fetch all collateral properties
+GET http://localhost:5173/api/collateral/6/7?action=getCollateralProperties
 Content-Type: application/json
+Authorization: Bearer {{token}}
+
+
+### POST - Save property collateral
+POST http://localhost:5173/api/collateral/6/7
+Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "action": "saveCollateralProperties",
@@ -334,8 +315,8 @@ Content-Type: application/json
       "propertyType": "1",
       "documentType": "2",
       "surveyNo": "SRV-001",
-      "district": "1",
-      "taluka": "3",
+      "district": "2734",
+      "taluka": "273401",
       "village": "Pune Village",
       "pinCode": "411001",
       "units": "1",
@@ -351,11 +332,12 @@ Content-Type: application/json
 ### GET - Fetch all FD collaterals
 GET http://localhost:5173/api/collateral/1/2?action=getFDCollaterals
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
-
-### POST - Save single FD collateral
-POST http://localhost:5173/api/collateral/1/2
+### POST - Save FD collateral
+POST http://localhost:5173/api/collateral/6/7
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "action": "saveFDCollaterals",
@@ -364,8 +346,8 @@ Content-Type: application/json
       "bankName": "State Bank of India",
       "branchName": "Pune Main Branch",
       "streetAddress": "MG Road, Pune",
-      "district": "1",
-      "taluka": "3",
+      "district": "2734",
+      "taluka": "273401",
       "place": "Pune",
       "pinCode": "411001",
       "fdAccountNumber": "FD123456789",
@@ -377,24 +359,25 @@ Content-Type: application/json
   ]
 }
 
-
 //lic property
 
+
 ### GET - Fetch all LIC collaterals
-GET http://localhost:5173/api/collateral/1/2?action=getLICCollaterals
+GET http://localhost:5173/api/collateral/6/7?action=getLICCollaterals
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
-
-### POST - Save single LIC collateral
-POST http://localhost:5173/api/collateral/1/2
+### POST - Save LIC collateral
+POST http://localhost:5173/api/collateral/6/7
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "action": "saveLICCollaterals",
   "licCollaterals": [
     {
       "policyName": "LIC Jeevan Anand",
-      "policyType": "1",
+      "policyType": 1,
       "policyReceiptNo": "LIC123456",
       "policySurrenderValue": "250000",
       "policyStartDate": "2020-01-01",
@@ -403,18 +386,17 @@ Content-Type: application/json
   ]
 }
 
-
 //gov collateral 
 
 ### GET - Fetch all govt collaterals
-GET http://localhost:5173/api/collateral/1/2?action=getGovtCollaterals
+GET http://localhost:5173/api/collateral/6/7?action=getGovtCollaterals
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
-
-
-### POST - Save single govt collateral
-POST http://localhost:5173/api/collateral/1/2
+### POST - Save govt collateral
+POST http://localhost:5173/api/collateral/6/7
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "action": "saveGovtCollaterals",
@@ -431,7 +413,6 @@ Content-Type: application/json
     }
   ]
 }
-
 
 # Upload document section 
 

@@ -1,35 +1,49 @@
 
 import { json } from '@sveltejs/kit';
 import pool from '$lib/db.js';
+import { verifyToken } from '$lib/jwtverify';
+
+import { getMasters } from '$lib/server/getMasters.js';
 
 
 
-const masterRes = await fetch('http://localhost:5173/api/masters');
-const masterData = await masterRes.json();
-const masters = masterData.masters;
-// console.log("MAsters........",masters.m_gender);
+// const masterRes = await fetch('http://localhost:5173/api/masters');
+// const masterData = await masterRes.json();
+// const masters = masterData.masters;
+// // console.log("MAsters........",masters.m_gender);
 
 
-const genderMap     = Object.fromEntries(masters.m_gender.map(r => [r.id, r.eng_name]));
-const religionMap   = Object.fromEntries(masters.m_religion.map(r => [r.id, r.eng_name]));
-const maritalMap    = Object.fromEntries(masters.m_marital_status.map(r => [r.id, r.eng_name]));
-const occupationMap = Object.fromEntries(masters.m_occupation.map(r => [r.id, r.eng_name]));
-const eduQualMap    = Object.fromEntries(masters.m_educational_qualification.map(r => [r.id, r.eng_name]));
+// const genderMap     = Object.fromEntries(masters.m_gender.map(r => [r.id, r.eng_name]));
+// const religionMap   = Object.fromEntries(masters.m_religion.map(r => [r.id, r.eng_name]));
+// const maritalMap    = Object.fromEntries(masters.m_marital_status.map(r => [r.id, r.eng_name]));
+// const occupationMap = Object.fromEntries(masters.m_occupation.map(r => [r.id, r.eng_name]));
+// const eduQualMap    = Object.fromEntries(masters.m_educational_qualification.map(r => [r.id, r.eng_name]));
 
-const courseTypeMap  = Object.fromEntries(masters.m_course_type.map(r => [r.course_id, r.eng_name]));
-const modeStudyMap   = Object.fromEntries(masters.m_mode_of_study.map(r => [r.id, r.eng_name]));
-const admissionMap   = Object.fromEntries(masters.m_admission_status.map(r => [r.id, r.eng_name]));
-const purposeLoanMap = Object.fromEntries(masters.m_perpose_loan.map(r => [r.id, r.eng_name]));
+// const courseTypeMap  = Object.fromEntries(masters.m_course_type.map(r => [r.course_id, r.eng_name]));
+// const modeStudyMap   = Object.fromEntries(masters.m_mode_of_study.map(r => [r.id, r.eng_name]));
+// const admissionMap   = Object.fromEntries(masters.m_admission_status.map(r => [r.id, r.eng_name]));
+// const purposeLoanMap = Object.fromEntries(masters.m_perpose_loan.map(r => [r.id, r.eng_name]));
 
-const propertyTypeMap = Object.fromEntries(masters.m_property_type.map(r => [r.id, r.eng_name]));
-const policyTypeMap   = Object.fromEntries(masters.m_policy_type.map(r => [r.id, r.eng_name]));
-const districtMap     = Object.fromEntries(masters.m_district.map(r => [r.dist_id, r.eng_name]));
-const unitsMap        = Object.fromEntries(masters.m_units.map(r => [r.id, r.eng_name]));
+// const propertyTypeMap = Object.fromEntries(masters.m_property_type.map(r => [r.id, r.eng_name]));
+// const policyTypeMap   = Object.fromEntries(masters.m_policy_type.map(r => [r.id, r.eng_name]));
+// const districtMap     = Object.fromEntries(masters.m_district.map(r => [r.dist_id, r.eng_name]));
+// const unitsMap        = Object.fromEntries(masters.m_units.map(r => [r.id, r.eng_name]));
 
 
-export async function GET({ params }) {
+export async function GET({ params , request }) {
   const { user, applicationId } = params;
-  const client = await pool.connect();
+
+  const auth = verifyToken(request);
+  if (!auth.success) {
+      return json({ message: auth.message }, { status: 401 });
+  }
+
+const { genderMap, religionMap, maritalMap, occupationMap, eduQualMap,
+        courseTypeMap, modeStudyMap, admissionMap, purposeLoanMap,
+        propertyTypeMap, policyTypeMap, districtMap, unitsMap } = await getMasters();
+
+const client = await pool.connect();
+
 
   try {
     // 1. Personal Details (Step 1 + Step 2)

@@ -1,17 +1,29 @@
 import { token } from "$lib/stores/userStore";
 import { get } from "svelte/store";
 
-let access_token = get(token)
+function authHeaders() {
+    const t = get(token);
+   // console.log("TOKEN VALUE:", t);
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${t}`
+    };
+}
+
+function authHeadersFormData() {
+    return {
+        'Authorization': `Bearer ${get(token)}`
+    };
+}
+
+//let access_token = get(token)
 const fetchMasters = async () => {
-    console.log("fetchMasters called",access_token);
+    //console.log("fetchMasters called",access_token);
     
     try {
         const response = await fetch('/api/masters', {
             method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                 Authorization: `Bearer ${access_token}`
-            }
+            headers: authHeaders() 
         });
 
         if (!response.ok) {
@@ -62,7 +74,9 @@ const fetchTalukas = async ({ district_id, state_id, country_id }) => {
             country_id
         }).toString();
 
-        const response = await fetch(`/api/getTalukas?${query}`);
+        const response = await fetch(`/api/getTalukas?${query}`,{
+            headers: authHeaders() 
+        });
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -92,7 +106,9 @@ const featchStreams = async ({ course_id }) => {
             course_id
         }).toString();
 
-        const response = await fetch(`/api/getStream?${query}`);
+        const response = await fetch(`/api/getStream?${query}`,{
+            headers: authHeaders()  
+        });
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);

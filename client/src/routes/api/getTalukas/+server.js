@@ -1,7 +1,13 @@
 import { json } from '@sveltejs/kit';
 import pool from '$lib/db.js';
+import { verifyToken } from '$lib/jwtverify';
 
-export async function GET({ url }) {
+export async function GET({ url,request }) {
+
+  const auth = verifyToken(request);
+  if (!auth.success) {
+      return json({ message: auth.message }, { status: 401 });
+  }
   try {
     const districtId = url.searchParams.get('district_id');
     const stateId = url.searchParams.get('state_id');

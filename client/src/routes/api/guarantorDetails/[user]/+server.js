@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import pool from '$lib/db';
 import { DateTime } from 'luxon';
+import { verifyToken } from '$lib/jwtverify';
 
 // ==================== QUERY FUNCTIONS ====================
 
@@ -225,7 +226,13 @@ async function updateGuarantorDetailsQuery(client, applicationId, guarantorDetai
 //API 
 
 // GET
-export async function GET({ params, url }) {
+export async function GET({ params, url,request }) {
+
+    const auth = verifyToken(request);
+  if (!auth.success) {
+      return json({ message: auth.message }, { status: 401 });
+  }
+
     const client = await pool.connect();
 
     try {
@@ -292,6 +299,12 @@ export async function GET({ params, url }) {
 
 // POST
 export async function POST({ request, params }) {
+
+    const auth = verifyToken(request);
+    if (!auth.success) {
+        return json({ message: auth.message }, { status: 401 });
+    }
+
     const client = await pool.connect();
 
     try {

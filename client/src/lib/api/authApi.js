@@ -1,3 +1,22 @@
+import { token } from "$lib/stores/userStore";
+import { get } from "svelte/store";
+
+function authHeaders() {
+    const t = get(token);
+ //   console.log("TOKEN VALUE:", t);
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${t}`
+    };
+}
+
+function authHeadersFormData() {
+    return {
+        'Authorization': `Bearer ${get(token)}`
+    };
+}
+
+
 //REGISTRATION FLOW 
 
 const customVerifyApplicantAndSendOtp = async ({ mobile, name }) => {
@@ -214,6 +233,7 @@ const customLoginApplicant = async ({ mobile, password }) => {
         });
 
         const data = await response.json();
+        //console.log("RAW LOGIN RESPONSE:----", data);
         
         if (data.error && data.error !== 0) {
             return { error: data.error, errorMsg: data.errorMsg };
@@ -345,9 +365,7 @@ const customCreateApplication = async ({ userId }) => {
     try {
         const response = await fetch('/api/createApplication', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: authHeaders(),
             body: JSON.stringify({ userId }),
         });
 
@@ -375,7 +393,8 @@ async function getVerifiedContacts(applicationId) {
     const response = await fetch(
       `/api/getVerifiedContacts?applicationId=${applicationId}`,
       {
-        method: 'GET'
+        method: 'GET',
+        headers: authHeaders()  
       }
     );
 
@@ -418,10 +437,11 @@ async function getVerifiedContacts(applicationId) {
 //   return response.json();
 // }
 
+
 const getUserApplication = async (userId) => {
   const response = await fetch(`/api/createApplication/${userId}?action=getUserApplication`, {
     method: 'GET',
-    headers: { 'Content-Type': 'application/json' }
+    headers: authHeaders()  
   });
   const result = await response.json();
   
@@ -442,7 +462,7 @@ const customSaveApplicationStart = async ({ userId, applicationId, stepData }) =
     try {
         const response = await fetch(`/api/createApplication/${userId}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: authHeaders(),
             body: JSON.stringify({
                 action: 'saveApplicationStart',
                 userId,
@@ -475,7 +495,7 @@ const getApplicationData = async (applicationId) => {
     try {
         const response = await fetch(`/api/createApplication/${applicationId}?action=getApplicationData`, {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json' }
+            headers: authHeaders()  
         });
 
         if (!response.ok) {
@@ -504,7 +524,7 @@ const getPersonalDetailsData = async (applicationId) => {
     try {
         const response = await fetch(`/api/createApplication/${applicationId}?action=getPersonalDetails`, {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json' }
+             headers: authHeaders()  
         });
 
         if (!response.ok) {
@@ -531,7 +551,7 @@ const customSavePersonalDetails = async ({ applicationId, personalDetails }) => 
     try {
         const response = await fetch(`/api/createApplication/${applicationId}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: authHeaders() ,
             body: JSON.stringify({
                 action: 'savePersonalDetails',
                 applicationId,
@@ -565,7 +585,7 @@ const getEducationDetailsData = async (applicationId) => {
     try {
         const response = await fetch(`/api/createApplication/${applicationId}?action=getEducationDetails`, {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json' }
+            headers: authHeaders()
         });
 
         if (!response.ok) {
@@ -592,7 +612,7 @@ const customSaveEducationDetails = async ({ applicationId, educationDetails }) =
     try {
         const response = await fetch(`/api/createApplication/${applicationId}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: authHeaders(),
             body: JSON.stringify({
                 action: 'saveEducationDetails',
                 applicationId,
@@ -626,7 +646,7 @@ const getGuarantorDetailsData = async (applicationId) => {
     try {
         const response = await fetch(`/api/guarantorDetails/${applicationId}?action=getGuarantorDetails`, {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json' }
+            headers: authHeaders()
         });
 
         if (!response.ok) {
@@ -653,7 +673,7 @@ const customSaveGuarantorDetails = async ({ applicationId, guarantorDetails }) =
     try {
         const response = await fetch(`/api/guarantorDetails/${applicationId}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: authHeaders(),
             body: JSON.stringify({
                 action: 'saveGuarantorDetails',
                 applicationId,
@@ -691,7 +711,7 @@ const getCollateralProperties = async (userId, applicationId) => {
             `/api/collateral/${userId}/${applicationId}?action=getCollateralProperties`,
             {
                 method: 'GET',
-                headers: { 'Content-Type': 'application/json' }
+                headers: authHeaders()
             }
         );
 
@@ -718,7 +738,7 @@ const customSaveCollateralProperties = async (userId, applicationId, properties)
     try {
         const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: authHeaders(),
             body: JSON.stringify({
                 action: 'saveCollateralProperties',
                 properties
@@ -751,7 +771,7 @@ const getFDCollaterals = async (userId, applicationId) => {
             `/api/collateral/${userId}/${applicationId}?action=getFDCollaterals`,
             {
                 method: 'GET',
-                headers: { 'Content-Type': 'application/json' }
+                headers: authHeaders()
             }
         );
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -770,7 +790,7 @@ const saveFDCollaterals = async (userId, applicationId, fdCollaterals) => {
     try {
         const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: authHeaders(),
             body: JSON.stringify({
                 action: 'saveFDCollaterals',
                 fdCollaterals
@@ -795,7 +815,7 @@ const getLICCollaterals = async (userId, applicationId) => {
             `/api/collateral/${userId}/${applicationId}?action=getLICCollaterals`,
             {
                 method: 'GET',
-                headers: { 'Content-Type': 'application/json' }
+                headers: authHeaders()
             }
         );
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -814,7 +834,7 @@ const saveLICCollaterals = async (userId, applicationId, licCollaterals) => {
     try {
         const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: authHeaders(),
             body: JSON.stringify({
                 action: 'saveLICCollaterals',
                 licCollaterals
@@ -839,7 +859,7 @@ const getGovtCollaterals = async (userId, applicationId) => {
             `/api/collateral/${userId}/${applicationId}?action=getGovtCollaterals`,
             {
                 method: 'GET',
-                headers: { 'Content-Type': 'application/json' }
+                headers: authHeaders()
             }
         );
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -858,7 +878,7 @@ const saveGovtCollaterals = async (userId, applicationId, govtCollaterals) => {
     try {
         const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: authHeaders(),
             body: JSON.stringify({
                 action: 'saveGovtCollaterals',
                 govtCollaterals
@@ -879,7 +899,7 @@ const saveGovtCollaterals = async (userId, applicationId, govtCollaterals) => {
 const updateCollateralProperty = async (userId, applicationId, property) => {
     const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(),
         body: JSON.stringify({ action: 'updateCollateralProperty', property })
     });
     return response.json();
@@ -888,7 +908,7 @@ const updateCollateralProperty = async (userId, applicationId, property) => {
 const updateFDCollateral = async (userId, applicationId, fd) => {
     const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(),
         body: JSON.stringify({ action: 'updateFDCollateral', fd })
     });
     return response.json();
@@ -897,7 +917,7 @@ const updateFDCollateral = async (userId, applicationId, fd) => {
 const updateLICCollateral = async (userId, applicationId, lic) => {
     const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(),
         body: JSON.stringify({ action: 'updateLICCollateral', lic })
     });
     return response.json();
@@ -906,7 +926,7 @@ const updateLICCollateral = async (userId, applicationId, lic) => {
 const updateGovtCollateral = async (userId, applicationId, govt) => {
     const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(),
         body: JSON.stringify({ action: 'updateGovtCollateral', govt })
     });
     return response.json();
@@ -918,7 +938,7 @@ const updateGovtCollateral = async (userId, applicationId, govt) => {
  const deleteCollateralProperty = async (userId, applicationId, id) => {
     const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(),
         body: JSON.stringify({ action: 'deleteCollateralProperty', id })
     });
     return response.json();
@@ -927,7 +947,7 @@ const updateGovtCollateral = async (userId, applicationId, govt) => {
  const deleteFDCollateral = async (userId, applicationId, id) => {
     const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(),
         body: JSON.stringify({ action: 'deleteFDCollateral', id })
     });
     return response.json();
@@ -936,7 +956,7 @@ const updateGovtCollateral = async (userId, applicationId, govt) => {
  const deleteLICCollateral = async (userId, applicationId, id) => {
     const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(),
         body: JSON.stringify({ action: 'deleteLICCollateral', id })
     });
     return response.json();
@@ -945,7 +965,7 @@ const updateGovtCollateral = async (userId, applicationId, govt) => {
  const deleteGovtCollateral = async (userId, applicationId, id) => {
     const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(),
         body: JSON.stringify({ action: 'deleteGovtCollateral', id })
     });
     return response.json();
@@ -963,6 +983,7 @@ const uploadDocument = async (userId, applicationId, docKey, documentId, file) =
     `/api/uploaddoc/${userId}/${applicationId}/${docKey}`,
     {
       method: 'POST',
+       headers: authHeadersFormData(),
       body: formData
     }
   );
@@ -975,7 +996,7 @@ const getUploadedDocuments = async (userId, applicationId) => {
     `/api/uploaddoc/${userId}/${applicationId}/all`,
     {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
+     headers: authHeaders() 
     }
   );
   return response.json();
@@ -987,7 +1008,7 @@ const deleteDocument = async (userId, applicationId, docKey) => {
     `/api/uploaddoc/${userId}/${applicationId}/${docKey}`,
     {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' }
+      headers: authHeaders() 
     }
   );
   return response.json();
@@ -999,7 +1020,13 @@ const deleteDocument = async (userId, applicationId, docKey) => {
 async function getViewApplicationData(userId, applicationId) {
   try {
     const response = await fetch(
-      `/api/createApplication/${userId}/${applicationId}/view`
+      `/api/createApplication/${userId}/${applicationId}/view`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${get(token)}`
+        }
+      }
     );
     const data = await response.json();
     return data;
@@ -1014,7 +1041,10 @@ async function submitApplication(userId, applicationId) {
   try {
     const response = await fetch(
       `/api/createApplication/${userId}/${applicationId}/submit`,
-      { method: 'POST', headers: { 'Content-Type': 'application/json' } }
+      { 
+        method: 'POST',  
+        headers: authHeaders()  
+       }
     );
     const data = await response.json();
     return data;
@@ -1030,7 +1060,7 @@ export async function notifyApplicationSubmission(userId, applicationId) {
   try {
     const response = await fetch(
       `/api/createApplication/${userId}/${applicationId}/notify`,
-      { method: 'POST', headers: { 'Content-Type': 'application/json' } }
+      { method: 'POST',  headers: authHeaders()  }
     );
     const data = await response.json();
     return data;
@@ -1039,9 +1069,6 @@ export async function notifyApplicationSubmission(userId, applicationId) {
     return { error: -1, errorMsg: 'Failed to send notifications' };
   }
 }
-
-
-
 
 export {
   customVerifyApplicantAndSendOtp,
@@ -1085,7 +1112,6 @@ export {
   deleteFDCollateral,
   deleteLICCollateral,
   deleteGovtCollateral,
-
 
   uploadDocument,
   getUploadedDocuments,

@@ -1,7 +1,15 @@
 import { json } from '@sveltejs/kit';
 import pool from '$lib/db';
+import { verifyToken } from '$lib/jwtverify';
 
-export async function GET({ url }) {
+
+export async function GET({ url,request }) {
+
+    const auth = verifyToken(request);
+  if (!auth.success) {
+      return json({ message: auth.message }, { status: 401 });
+  }
+
     try {
         const applicationId = url.searchParams.get('applicationId');
 
