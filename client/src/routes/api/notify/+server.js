@@ -43,12 +43,24 @@ export async function POST({ request }) {
     }
 
     const { email_id_applicant, mobile_no_applicant } = contactResult.rows[0];
-    const applicantName = nameResult.rows[0]?.name || 'Applicant';
+const applicantName = nameResult.rows[0]?.name || 'Applicant';
 
-    if (email_id_applicant) {
+// Fallback: if contacts has no email, fetch from personal_details
+let emailToUse = email_id_applicant;
+if (!emailToUse) {
+  const pdResult = await client.query(
+    `SELECT email FROM personal_details WHERE id = $1`,
+    [applicationId]
+  );
+  emailToUse = pdResult.rows[0]?.email || null;
+}
+
+console.log('Email to use:', emailToUse);
+
+    if (emailToUse) {
       await transporter.sendMail({
         from: '"MAMFDC Education Loan" <erakshatas2003@gmail.com>',
-        to: email_id_applicant,
+        to: emailToUse,
         subject: `Application #${applicationId} Submitted Successfully`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -90,7 +102,7 @@ export async function POST({ request }) {
     return json({
       error: 0,
       errorMsg: 'Notification sent successfully',
-      emailSent: !!email_id_applicant
+      emailSent: !!emailToUse
     });
 
   } catch (err) {

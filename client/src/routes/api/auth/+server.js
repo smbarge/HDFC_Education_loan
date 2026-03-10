@@ -217,16 +217,10 @@ export async function POST({ request }) {
             );
 
             if (result.rows.length === 0) {
-                return json({
-                    error: -1,
-                    errorMsg: 'User not found'
-                });
+                return json({ error: -1, errorMsg: 'User not found' });
             }
 
-            return json({
-                error: 0,
-                errorMsg: 'Password changed successfully'
-            });
+            return json({ error: 0, errorMsg: 'Password changed successfully' });
         }
 
         return json({ 

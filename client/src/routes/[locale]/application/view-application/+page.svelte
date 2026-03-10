@@ -66,7 +66,7 @@
     try {
       const result = await submitApplication($user.id, $applicationId);
       if (result.error !== 0) { submitError = result.errorMsg || 'Submission failed'; return; }
-      notifyApplicationSubmission($user.id, $applicationId).catch(console.error);
+      await notifyApplicationSubmission($user.id, $applicationId).catch(console.error);
       showSuccessModal = true;
     } catch (e) {
       submitError = 'Server error. Please try again.';
