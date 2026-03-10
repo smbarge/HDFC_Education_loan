@@ -414,23 +414,10 @@ async function handleSubmit() {
     
     return;
   }
-   isSubmitting = true;
-  try {
-    const result = await submitApplication($user.id, $applicationId);
-    
-    if (result.error !== 0) {
-      submitError = result.errorMsg || 'Failed to submit application';
-      return;
-    }
-
+ 
     goto(`/${locale}/application/view-application?mode=review`);
     
-  } catch (error) {
-    console.error('Error:', error);
-    submitError = 'Failed to submit documents. Please try again.';
-  } finally {
-    isSubmitting = false;
-  }
+ 
 }
 // function handleGoToDashboard() {
 //   applicationId.set(null);
