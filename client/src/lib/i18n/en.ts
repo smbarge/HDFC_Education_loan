@@ -513,7 +513,7 @@ export const en = {
   backToHome: "Back to Home",
   backToDashboard:"Back to Dashboard",
   downloadPdf:"Download Pdf",
-  
+
   // Helper Text
   mandatoryFields: "All fields marked with * are mandatory",
   dataSecure: "Your data is secure and protected"
