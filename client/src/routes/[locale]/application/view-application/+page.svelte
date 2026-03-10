@@ -557,7 +557,7 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
             </svg>
-            Download PDF
+            {t.applicationStart.downloadPdf}
           </button>
         {/if}
         <button on:click={() => goto(`/${locale}/dashboard`)}
@@ -565,7 +565,7 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
           </svg>
-          Back to Dashboard
+          {t.applicationStart.backToDashboard}
         </button>
       </div>
     </div>
@@ -593,8 +593,8 @@
       <div class="bg-gradient-to-r from-purple-700 to-purple-900 px-6 sm:px-8 py-5">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <h3 class="text-white text-lg font-bold tracking-wide">EDUCATION LOAN APPLICATION</h3>
-            <p class="text-purple-200 text-sm mt-0.5">Application No: <span class="font-bold text-white">#{$applicationId}</span></p>
+            <h3 class="text-white text-lg font-bold tracking-wide">{t.step4.companyName}</h3>
+            <p class="text-purple-200 text-sm mt-0.5">{t.dashboard.applicationId} :<span class="font-bold text-white">#{$applicationId}</span></p>
           </div>
           {#if isReviewMode}
             <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-amber-400 text-amber-900 rounded-full text-xs font-bold self-start sm:self-auto">
@@ -604,7 +604,7 @@
           {:else}
             <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-green-400 text-green-900 rounded-full text-xs font-bold self-start sm:self-auto">
               <span class="w-2 h-2 rounded-full bg-green-700 animate-pulse"></span>
-              Submitted — Under Review
+              {t.dashboard.applicationSubmittedLabel} — {t.dashboard.UnderReview}
             </span>
           {/if}
         </div>
@@ -615,7 +615,7 @@
            ══════════════════════════════════════════════════════ -->
       <div class="border-b-4 border-purple-200 bg-gradient-to-br from-purple-50 to-white">
         <div class="px-6 sm:px-8 py-2 bg-purple-700">
-          <h4 class="text-white font-bold text-xs uppercase tracking-widest">Personal Information</h4>
+          <h4 class="text-white font-bold text-xs uppercase tracking-widest">{t.tabs.personal}</h4>
         </div>
 
         <div class="px-6 sm:px-8 py-6 flex flex-col lg:flex-row gap-6 items-start">
@@ -868,7 +868,7 @@
             {#if appData.collateral.properties?.length > 0}
               {#each appData.collateral.properties as prop, i}
                 <div>
-                  <p class="text-xs font-bold text-purple-700 uppercase mb-1">Property {i + 1}</p>
+                  <p class="text-xs font-bold text-purple-700 uppercase mb-1">{t.collateralDetails.property} {i + 1}</p>
                   <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-8 gap-y-0">
                     {#each [
                       { lbl: 'Survey No',  val: label(prop.survey_no) },
@@ -891,7 +891,7 @@
             {#if appData.collateral.fds?.length > 0}
               {#each appData.collateral.fds as fd, i}
                 <div>
-                  <p class="text-xs font-bold text-blue-700 uppercase mb-1">Fixed Deposit {i + 1}</p>
+                  <p class="text-xs font-bold text-blue-700 uppercase mb-1">{t.CollateralDocuments.fdCollateral} {i + 1}</p>
                   <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-0">
                     {#each [
                       { lbl: 'Bank Name',     val: label(fd.bank_name) },
@@ -912,7 +912,7 @@
             {#if appData.collateral.lics?.length > 0}
               {#each appData.collateral.lics as lic, i}
                 <div>
-                  <p class="text-xs font-bold text-green-700 uppercase mb-1">LIC Policy {i + 1}</p>
+                  <p class="text-xs font-bold text-green-700 uppercase mb-1">{t.CollateralDocuments.licCollateral} {i + 1}</p>
                   <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-0">
                     {#each [
                       { lbl: t.collateralDetails.policyName,          val: label(lic.policy_name) },
@@ -933,7 +933,7 @@
             {#if appData.collateral.govtEmployees?.length > 0}
               {#each appData.collateral.govtEmployees as govt, i}
                 <div>
-                  <p class="text-xs font-bold text-amber-700 uppercase mb-1">Govt. Employee Guarantor {i + 1}</p>
+                  <p class="text-xs font-bold text-amber-700 uppercase mb-1">{t.collateralDetails.govtEmployeeGaurantor} {i + 1}</p>
                   <div class="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-0">
                     {#each [
                       { lbl: t.collateralDetails.govtEmployeeModal.departmentName, val: label(govt.department_office_name) },
@@ -1038,9 +1038,9 @@
               </div>
             </div>
             <div>
-              <p class="text-sm font-bold text-gray-900 mb-1">Declaration</p>
+              <p class="text-sm font-bold text-gray-900 mb-1">{t.declaration}</p>
               <p class="text-sm text-gray-700 leading-relaxed">
-                I hereby declare that all the information provided in this application is <span class="font-semibold text-purple-700">true, correct and complete</span> to the best of my knowledge and belief. I understand that any false or misleading information may result in the <span class="font-semibold text-red-600">rejection of this application</span>.
+                {t.iHereBy} <span class="font-semibold text-purple-700">{t.trueCorrectComplete}</span> {t.toMyBest} <span class="font-semibold text-red-600">{t.rejection}</span>.
               </p>
             </div>
           </label>
