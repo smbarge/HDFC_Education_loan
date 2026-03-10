@@ -6,13 +6,10 @@
   import { i18n } from '$lib/i18n';
   import DashboardHeader from '$lib/components/dashboard/DashboardHeader.svelte';
   import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
-  import ApplicationStepper from '$lib/components/newapplication/ApplicationStepper.svelte';
   import { user, logout as logoutStore, applicationId } from '$lib/stores/userStore';
   import SubmissionSuccessModal from '$lib/components/upload-documents/SubmissionSuccessModal.svelte';
-  import { submitApplication,getViewApplicationData, notifyApplicationSubmission } from '$lib/api/authApi.js';
+  import { submitApplication, getViewApplicationData, notifyApplicationSubmission } from '$lib/api/authApi.js';
   import jsPDF from 'jspdf';
-
-
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
@@ -21,46 +18,26 @@
   let isLoading = true;
   let appData = null;
   let error = null;
+  let isSubmitting = false;
+  let submitError = '';
+  let showSuccessModal = false;
+  let agreeChecked = false;
 
-  $: userData = $user ? {
-    name: $user.name || 'Guest User',
-    phone: $user.mobile || '',
-    username: $user.username || ''
-  } : { name: 'Guest User', phone: '', username: '' };
-
-
-  // Active tab
-  $: mode = $page.url.searchParams.get('mode'); // 'review' = came from upload
-  $: activeTab = mode === 'review' ? 'review' : 'identity';
-  $: isReviewMode = mode === 'review';
-    const allTabs = [
-  { id: 'identity', reviewOnly: false },
-  { id: 'personal', reviewOnly: false },
-  { id: 'academic', reviewOnly: false },
-  { id: 'guarantor', reviewOnly: false },
-  { id: 'collateral', reviewOnly: false },
-  { id: 'documents', reviewOnly: false },
-  { id: 'review', reviewOnly: true }
-];
+  $: userData = $user
+    ? { name: $user.name || 'Guest User', phone: $user.mobile || '', username: $user.username || '' }
+    : { name: 'Guest User', phone: '', username: '' };
 
   $: isReviewMode = $page.url.searchParams.get('mode') === 'review';
-  $: activeTab = isReviewMode ? 'review' : 'identity';
-  $: tabs = isReviewMode
-    ? allTabs   // show ALL tabs including Review & Submit
-    : allTabs.filter(t => !t.reviewOnly);  // hide Review & Submit
 
-   onMount(async () => {
+  onMount(async () => {
     if (!$user) { goto(`/${locale}/login`); return; }
     if (!$applicationId) { goto(`/${locale}/dashboard`); return; }
-
     try {
       const result = await getViewApplicationData($user.id, $applicationId);
       if (result.error !== 0) {
         error = result.errorMsg || 'Failed to load application';
       } else {
         appData = result.data;
-        const stored = sessionStorage.getItem('submissionSuccess');
-        if (!stored) isSubmitted = false;
       }
     } catch (e) {
       error = 'Failed to load application data';
@@ -71,44 +48,26 @@
 
   function formatDate(val) {
     if (!val) return 'N/A';
-    return new Date(val).toLocaleDateString('en-IN', {
-      day: '2-digit', month: 'short', year: 'numeric'
-    });
+    return new Date(val).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   }
-
   function formatCurrency(val) {
     if (!val) return 'N/A';
     return '₹' + Number(val).toLocaleString('en-IN');
   }
+  function label(val, fallback = 'N/A') {
+    return val || fallback;
+  }
 
-
-//review 
-
-
-  let isSubmitting = false;
-  let submitError = '';
-  let showSuccessModal = false;
-
-  // true = already submitted (status=2), false = pending
-  $: isSubmitted = false; // will be set after load
-
-   async function handleSubmitApplication() {
-    if (!$user?.id || !$applicationId) {
-      submitError = 'Session expired. Please login again.';
-      return;
-    }
+  async function handleSubmitApplication() {
+    if (!agreeChecked) return;
+    if (!$user?.id || !$applicationId) { submitError = 'Session expired. Please login again.'; return; }
     isSubmitting = true;
     submitError = '';
     try {
-     const result = await submitApplication($user.id, $applicationId);
-      if (result.error !== 0) {
-        submitError = result.errorMsg || 'Submission failed';
-        return;
-      }
-      // Fire notification - don't block modal on success/fail
+      const result = await submitApplication($user.id, $applicationId);
+      if (result.error !== 0) { submitError = result.errorMsg || 'Submission failed'; return; }
       notifyApplicationSubmission($user.id, $applicationId).catch(console.error);
       showSuccessModal = true;
-
     } catch (e) {
       submitError = 'Server error. Please try again.';
     } finally {
@@ -116,14 +75,10 @@
     }
   }
 
- function label(val, fallback = 'N/A') {
-    return val || fallback;
-  }
-
-function handleDownloadPDF() {
+  async function handleDownloadPDF() {
     const doc = new jsPDF();
 
-     function pdfCurrency(val) {
+    function pdfCurrency(val) {
       if (!val || isNaN(Number(val))) return 'N/A';
       return 'Rs. ' + Number(val).toLocaleString('en-IN');
     }
@@ -133,174 +88,429 @@ function handleDownloadPDF() {
     const fileName = `${applicantName}_Application_${appId}.pdf`;
 
     let y = 15;
-    const lineH = 7;
+    const lineH = 6;
     const margin = 14;
+    const pageW = doc.internal.pageSize.width;
     const pageH = doc.internal.pageSize.height;
+    const contentWidth = pageW - (2 * margin);
 
     function checkPage() {
-      if (y > pageH - 20) { doc.addPage(); y = 15; }
+      if (y > pageH - 25) {
+        doc.addPage();
+        y = 15;
+      }
     }
 
-    function sectionTitle(title, color = [88, 28, 135]) {
+    function sectionTitle(title) {
       checkPage();
-      doc.setFillColor(...color);
-      doc.rect(margin, y, 182, 8, 'F');
+      doc.setFillColor(88, 28, 135);
+      doc.rect(margin, y, contentWidth, 7, 'F');
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(10);
+      doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
-      doc.text(title, margin + 3, y + 5.5);
-      y += 12;
+      doc.text(title, margin + 2, y + 4.5);
+      y += 10;
       doc.setTextColor(30, 30, 30);
     }
 
-    function field(label, value) {
+    function field(lbl, value) {
       checkPage();
-      doc.setFontSize(9);
+      doc.setFontSize(8);
       doc.setFont('helvetica', 'bold');
-      doc.text(label + ':', margin, y);
+      doc.setTextColor(80, 80, 80);
+      doc.text(lbl + ':', margin, y);
+
       doc.setFont('helvetica', 'normal');
-      doc.text(String(value || 'N/A'), margin + 55, y);
-      y += lineH;
+      doc.setTextColor(20, 20, 20);
+
+      // Split text if too long
+      const maxWidth = contentWidth - 52;
+      const textValue = String(value || 'N/A');
+      const lines = doc.splitTextToSize(textValue, maxWidth);
+
+      doc.text(lines, margin + 50, y);
+
+      // Dotted underline
+      doc.setDrawColor(180, 180, 180);
+      doc.setLineDash([1, 1], 0);
+      doc.line(margin, y + 1.5, pageW - margin, y + 1.5);
+      doc.setLineDash([], 0);
+
+      y += lineH + (lines.length > 1 ? (lines.length - 1) * 4 : 0);
     }
 
-    // Header
+    function subSectionHeader(title) {
+      checkPage();
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(88, 28, 135);
+      doc.text(title, margin, y);
+      y += 5;
+    }
+
+    // Helper function to load image and convert to base64
+    async function loadImageAsBase64(url) {
+      try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      } catch (e) {
+        console.error('Failed to load image:', e);
+        return null;
+      }
+    }
+
+    // ═══════════════════════════════════
+    // PDF HEADER BANNER
+    // ═══════════════════════════════════
     doc.setFillColor(88, 28, 135);
-    doc.rect(0, 0, 210, 22, 'F');
+    doc.rect(0, 0, pageW, 30, 'F');
+
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(13);
+    doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text('Education Loan Application', margin, 10);
+    doc.text('EDUCATION LOAN APPLICATION', pageW / 2, 12, { align: 'center' });
+
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Application ID: #${appId}   |   Applicant: ${applicantName}`, margin, 17);
-    y = 30;
+    doc.text(`Application No: #${appId}`, pageW / 2, 19, { align: 'center' });
+    doc.text(`Applicant: ${applicantName}`, pageW / 2, 25, { align: 'center' });
+
+    y = 38;
+
+    // ═══════════════════════════════════
+    // PHOTO, BASIC INFO, SIGNATURE ROW
+    // ═══════════════════════════════════
+    const photoUrl = appData.documents?.photo;
+    const signatureUrl = appData.documents?.signature;
+
+    // Load images if available
+    let photoBase64 = null;
+    let signatureBase64 = null;
+
+    if (photoUrl) {
+      photoBase64 = await loadImageAsBase64(photoUrl);
+    }
+    if (signatureUrl) {
+      signatureBase64 = await loadImageAsBase64(signatureUrl);
+    }
+
+    // Photo
+    if (photoBase64) {
+      try {
+        doc.addImage(photoBase64, 'JPEG', margin, y, 25, 30);
+      } catch (e) {
+        console.error('Failed to add photo:', e);
+        doc.setDrawColor(200, 200, 200);
+        doc.setLineWidth(0.3);
+        doc.rect(margin, y, 25, 30);
+        doc.setFontSize(7);
+        doc.setTextColor(150, 150, 150);
+        doc.text('Photo', margin + 12.5, y + 15, { align: 'center' });
+      }
+    } else {
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineWidth(0.3);
+      doc.rect(margin, y, 25, 30);
+      doc.setFontSize(7);
+      doc.setTextColor(150, 150, 150);
+      doc.text('Photo', margin + 12.5, y + 15, { align: 'center' });
+    }
+
+    // Basic info in middle
+    const infoX = margin + 28;
+    const infoY = y;
+    doc.setFontSize(8);
     doc.setTextColor(30, 30, 30);
 
-    // Identity
-    sectionTitle('IDENTITY CHECK', [37, 99, 235]);
+    const infoFields = [
+      { label: 'Name', value: applicantName, y: 3 },
+      { label: 'DOB', value: formatDate(appData.personal?.dob), y: 9 },
+      { label: 'Aadhar', value: label(appData.personal?.aadhar), y: 15 },
+      { label: 'Mobile', value: label(appData.personal?.mobile), y: 21 },
+      { label: 'Email', value: label(appData.personal?.email), y: 27 }
+    ];
+
+    infoFields.forEach(field => {
+      doc.setFont('helvetica', 'bold');
+      doc.text(field.label + ':', infoX, infoY + field.y);
+      doc.setFont('helvetica', 'normal');
+      const valueText = doc.splitTextToSize(field.value, 100);
+      doc.text(valueText, infoX + 18, infoY + field.y);
+    });
+
+    // Signature
+    const sigX = pageW - margin - 35;
+    if (signatureBase64) {
+      try {
+        doc.addImage(signatureBase64, 'PNG', sigX, y, 35, 15);
+        doc.setDrawColor(200, 200, 200);
+        doc.setLineWidth(0.3);
+        doc.rect(sigX, y, 35, 15);
+      } catch (e) {
+        console.error('Failed to add signature:', e);
+        doc.rect(sigX, y, 35, 15);
+        doc.setFontSize(7);
+        doc.setTextColor(150, 150, 150);
+        doc.text('Signature', sigX + 17.5, y + 8, { align: 'center' });
+      }
+    } else {
+      doc.rect(sigX, y, 35, 15);
+      doc.setFontSize(7);
+      doc.setTextColor(150, 150, 150);
+      doc.text('Signature', sigX + 17.5, y + 8, { align: 'center' });
+    }
+
+    y += 35;
+
+    // ═══════════════════════════════════
+    // IDENTITY CHECK
+    // ═══════════════════════════════════
+    sectionTitle('IDENTITY CHECK');
+
     field('Full Name', appData.personal?.name);
     field('Aadhar Number', appData.personal?.aadhar);
     field('Date of Birth', formatDate(appData.personal?.dob));
     field('Gender', appData.personal?.gender);
-    field('Religion', appData.personal?.religion);
-    field('Resident', appData.personal?.resident);
+    field('Religion/Community', appData.personal?.religion);
+    field('Resident', appData.personal?.resident === 1 ? 'Yes' : 'No');
 
-    // Personal
-    sectionTitle('PERSONAL DETAILS',[37, 99, 235]);
-    field('Mobile', appData.personal?.mobile);
-    field('Email', appData.personal?.email);
+    y += 3;
+
+    // ═══════════════════════════════════
+    // PERSONAL DETAILS
+    // ═══════════════════════════════════
+    sectionTitle('PERSONAL DETAILS');
+
+    field('Mobile Number', appData.personal?.mobile);
+    field('Email Address', appData.personal?.email);
     field('PAN Card', appData.personal?.pan);
     field('Marital Status', appData.personal?.marital_status);
-    field('Education Qual.', appData.personal?.education_qualification);
-    field('Guardian Name', appData.personal?.guardian_name);
+    field('Education Qualification', appData.personal?.education_qualification);
+    field('Guardian/Parent Name', appData.personal?.guardian_name);
     field('Occupation', appData.personal?.occupation);
     field('Annual Income', pdfCurrency(appData.personal?.income));
-    field('Current Address', `${appData.personal?.current_address || ''}, ${appData.personal?.current_place || ''} - ${appData.personal?.current_pincode || ''}`);
-    field('Permanent Address', `${appData.personal?.permanent_address || ''}, ${appData.personal?.permanent_place || ''} - ${appData.personal?.permanent_pincode || ''}`);
 
-    // Academic
-    sectionTitle('ACADEMIC INFORMATION', [37, 99, 235]);
-    field('Student Name', appData.education?.student_name);
-    field('Course Name', appData.education?.course_name);
-    field('Course Type', appData.education?.course_type);
-    field('Duration', `${appData.education?.course_duration || ''} Years`);
-    field('Mode of Study', appData.education?.mode_of_study);
-    field('Purpose of Loan', appData.education?.purpose_of_loan);
-    field('Institution', appData.education?.institution_name);
-    field('University', appData.education?.university);
-    field('Admission Status', appData.education?.admission_status);
-    field('Admission Year', appData.education?.admission_year);
-    field('Total Fee', pdfCurrency(appData.education?.total_course_fee));
-    field('Fee Paid', pdfCurrency(appData.education?.fee_paid));
-    field('Remaining Fee', pdfCurrency(appData.education?.remaining_fee));
-    field('Loan Required', pdfCurrency(appData.education?.loan_required_amount));
-    field('Bank Name', appData.education?.bank_name);
-    field('Branch', appData.education?.branch_name);
-    field('IFSC Code', appData.education?.ifsc_code);
-    field('Account No', appData.education?.account_number);
+    // Current Address - with proper text wrapping
+    checkPage();
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(80, 80, 80);
+    doc.text('Current Address:', margin, y);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(20, 20, 20);
+    const currentAddr = `${appData.personal?.current_address || ''}, ${appData.personal?.current_place || ''} - ${appData.personal?.current_pincode || ''}`;
+    const currentAddrLines = doc.splitTextToSize(currentAddr, contentWidth - 52);
+    doc.text(currentAddrLines, margin + 50, y);
+    doc.setDrawColor(180, 180, 180);
+    doc.setLineDash([1, 1], 0);
+    doc.line(margin, y + 1.5, pageW - margin, y + 1.5);
+    doc.setLineDash([], 0);
+    y += lineH + (currentAddrLines.length > 1 ? (currentAddrLines.length - 1) * 4 : 0);
 
-    // Guarantor
+    // Permanent Address - with proper text wrapping
+    checkPage();
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(80, 80, 80);
+    doc.text('Permanent Address:', margin, y);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(20, 20, 20);
+    const permAddr = `${appData.personal?.permanent_address || ''}, ${appData.personal?.permanent_place || ''} - ${appData.personal?.permanent_pincode || ''}`;
+    const permAddrLines = doc.splitTextToSize(permAddr, contentWidth - 52);
+    doc.text(permAddrLines, margin + 50, y);
+    doc.setDrawColor(180, 180, 180);
+    doc.setLineDash([1, 1], 0);
+    doc.line(margin, y + 1.5, pageW - margin, y + 1.5);
+    doc.setLineDash([], 0);
+    y += lineH + (permAddrLines.length > 1 ? (permAddrLines.length - 1) * 4 : 0);
+
+    y += 3;
+
+    // ═══════════════════════════════════
+    // ACADEMIC INFORMATION
+    // ═══════════════════════════════════
+    if (appData.education) {
+      sectionTitle('ACADEMIC INFORMATION');
+
+      field('Student Name', appData.education.student_name);
+      field('Course Name', appData.education.course_name);
+      field('Course Type', appData.education.course_type);
+      field('Course Duration', `${appData.education.course_duration || ''} Years`);
+      field('Mode of Study', appData.education.mode_of_study);
+      field('Purpose of Loan', appData.education.purpose_of_loan);
+
+      // Institution Name with proper wrapping
+      checkPage();
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(80, 80, 80);
+      doc.text('Institution Name:', margin, y);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(20, 20, 20);
+      const instLines = doc.splitTextToSize(String(appData.education.institution_name || 'N/A'), contentWidth - 52);
+      doc.text(instLines, margin + 50, y);
+      doc.setDrawColor(180, 180, 180);
+      doc.setLineDash([1, 1], 0);
+      doc.line(margin, y + 1.5, pageW - margin, y + 1.5);
+      doc.setLineDash([], 0);
+      y += lineH + (instLines.length > 1 ? (instLines.length - 1) * 4 : 0);
+
+      field('University Name', appData.education.university);
+      field('Admission Status', appData.education.admission_status);
+      field('Admission Year', appData.education.admission_year);
+      field('Total Course Fee', pdfCurrency(appData.education.total_course_fee));
+      field('Fee Paid', pdfCurrency(appData.education.fee_paid));
+      field('Remaining Fee', pdfCurrency(appData.education.remaining_fee));
+      field('Loan Required Amount', pdfCurrency(appData.education.loan_required_amount));
+
+      y += 2;
+      subSectionHeader('BANK DETAILS');
+      field('Bank Name', appData.education.bank_name);
+      field('Branch Name', appData.education.branch_name);
+      field('IFSC Code', appData.education.ifsc_code);
+      field('Account Number', appData.education.account_number);
+
+      y += 3;
+    }
+
+    // ═══════════════════════════════════
+    // GUARANTOR DETAILS
+    // ═══════════════════════════════════
     if (appData.guarantor) {
-      sectionTitle('GUARANTOR DETAILS', [37, 99, 235]);
-      field('Full Name', appData.guarantor?.name);
-      field('Mobile', appData.guarantor?.mobile);
-      field('Aadhar', appData.guarantor?.aadhar);
-      field('Current Address', `${appData.guarantor?.current_address || ''}, ${appData.guarantor?.current_place || ''}`);
-      field('Permanent Address', `${appData.guarantor?.permanent_address || ''}, ${appData.guarantor?.permanent_place || ''}`);
+      sectionTitle('GUARANTOR DETAILS');
+
+      field('Full Name', appData.guarantor.name);
+      field('Mobile Number', appData.guarantor.mobile);
+      field('Aadhar Number', appData.guarantor.aadhar);
+
+      // Guarantor Current Address
+      checkPage();
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(80, 80, 80);
+      doc.text('Current Address:', margin, y);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(20, 20, 20);
+      const gCurrentAddr = `${appData.guarantor?.current_address || ''}, ${appData.guarantor?.current_place || ''} - ${appData.guarantor?.current_pincode || ''}`;
+      const gCurrentLines = doc.splitTextToSize(gCurrentAddr, contentWidth - 52);
+      doc.text(gCurrentLines, margin + 50, y);
+      doc.setDrawColor(180, 180, 180);
+      doc.setLineDash([1, 1], 0);
+      doc.line(margin, y + 1.5, pageW - margin, y + 1.5);
+      doc.setLineDash([], 0);
+      y += lineH + (gCurrentLines.length > 1 ? (gCurrentLines.length - 1) * 4 : 0);
+
+      // Guarantor Permanent Address
+      checkPage();
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(80, 80, 80);
+      doc.text('Permanent Address:', margin, y);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(20, 20, 20);
+      const gPermAddr = `${appData.guarantor?.permanent_address || ''}, ${appData.guarantor?.permanent_place || ''} - ${appData.guarantor?.permanent_pincode || ''}`;
+      const gPermLines = doc.splitTextToSize(gPermAddr, contentWidth - 52);
+      doc.text(gPermLines, margin + 50, y);
+      doc.setDrawColor(180, 180, 180);
+      doc.setLineDash([1, 1], 0);
+      doc.line(margin, y + 1.5, pageW - margin, y + 1.5);
+      doc.setLineDash([], 0);
+      y += lineH + (gPermLines.length > 1 ? (gPermLines.length - 1) * 4 : 0);
+
+      y += 3;
     }
 
-    // Collateral
-    if (appData.collateral?.properties?.length > 0) {
-      sectionTitle('COLLATERAL — PROPERTY', [37, 99, 235]);
-      appData.collateral.properties.forEach((p, i) => {
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-        doc.text(`Property ${i + 1}`, margin, y); y += lineH;
-        doc.setFont('helvetica', 'normal');
-        field('Survey No', p.survey_no);
-        field('District', p.district_id);
-        field('Village', p.place);
-        field('Area', `${p.area_value || ''} ${p.units || ''}`);
-        field('Valuation', pdfCurrency(p.property_value));
-      });
+    // ═══════════════════════════════════
+    // COLLATERAL DETAILS
+    // ═══════════════════════════════════
+    if (appData.collateral && (appData.collateral.properties?.length || appData.collateral.fds?.length || appData.collateral.lics?.length || appData.collateral.govtEmployees?.length)) {
+      sectionTitle('COLLATERAL DETAILS');
+
+      if (appData.collateral.properties?.length > 0) {
+        appData.collateral.properties.forEach((p, i) => {
+          subSectionHeader(`Property ${i + 1}`);
+          field('Survey Number', p.survey_no);
+          field('District', p.district_id);
+          field('Village/Place', p.place);
+          field('Area', `${p.area_value || ''} ${p.units || ''}`);
+          field('Property Valuation', pdfCurrency(p.property_value));
+          y += 1;
+        });
+      }
+
+      if (appData.collateral.fds?.length > 0) {
+        appData.collateral.fds.forEach((fd, i) => {
+          subSectionHeader(`Fixed Deposit ${i + 1}`);
+          field('Bank Name', fd.bank_name);
+          field('Branch Name', fd.branch_name);
+          field('FD Amount', pdfCurrency(fd.amount));
+          field('Maturity Date', formatDate(fd.fd_maturity_date));
+          y += 1;
+        });
+      }
+
+      if (appData.collateral.lics?.length > 0) {
+        appData.collateral.lics.forEach((l, i) => {
+          subSectionHeader(`LIC Policy ${i + 1}`);
+          field('Policy Name', l.policy_name);
+          field('Policy Type', l.policy_type);
+          field('Surrender Value', pdfCurrency(l.policy_surrender_value));
+          field('Receipt Number', l.policy_receipt_no);
+          y += 1;
+        });
+      }
+
+      if (appData.collateral.govtEmployees?.length > 0) {
+        appData.collateral.govtEmployees.forEach((g, i) => {
+          subSectionHeader(`Govt. Employee ${i + 1}`);
+          field('Department/Office', g.department_office_name);
+          field('Designation', g.designation);
+          field('Employee ID', g.employee_id_number);
+          y += 1;
+        });
+      }
+
+      y += 2;
     }
 
-    if (appData.collateral?.fds?.length > 0) {
-      sectionTitle('COLLATERAL — FIXED DEPOSIT', [37, 99, 235]);
-      appData.collateral.fds.forEach((fd, i) => {
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-        doc.text(`FD ${i + 1}`, margin, y); y += lineH;
-        doc.setFont('helvetica', 'normal');
-        field('Bank', fd.bank_name);
-        field('Branch', fd.branch_name);
-        field('FD Amount', pdfCurrency(fd.amount));
-        field('Maturity Date', formatDate(fd.fd_maturity_date));
-      });
-    }
-
-    if (appData.collateral?.lics?.length > 0) {
-      sectionTitle('COLLATERAL — LIC POLICY',[37, 99, 235]);
-      appData.collateral.lics.forEach((l, i) => {
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-        doc.text(`LIC ${i + 1}`, margin, y); y += lineH;
-        doc.setFont('helvetica', 'normal');
-        field('Policy Name', l.policy_name);
-        field('Policy Type', l.policy_type);
-        field('Surrender Value', pdfCurrency(l.policy_surrender_value));
-        field('Receipt No', l.policy_receipt_no);
-      });
-    }
-
-    if (appData.collateral?.govtEmployees?.length > 0) {
-      sectionTitle('COLLATERAL — GOVT EMPLOYEE', [37, 99, 235]);
-      appData.collateral.govtEmployees.forEach((g, i) => {
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-        doc.text(`Govt Employee ${i + 1}`, margin, y); y += lineH;
-        doc.setFont('helvetica', 'normal');
-        field('Department', g.department_office_name);
-        field('Designation', g.designation);
-        field('Employee ID', g.employee_id_number);
-      });
-    }
-
-    // Documents list
+    // ═══════════════════════════════════
+    // UPLOADED DOCUMENTS
+    // ═══════════════════════════════════
     if (appData.allDocs?.length > 0) {
-      sectionTitle('UPLOADED DOCUMENTS', [37, 99, 235]);
-      appData.allDocs.forEach(doc2 => {
+      sectionTitle('UPLOADED DOCUMENTS');
+
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(40, 40, 40);
+
+      appData.allDocs.forEach((doc2, idx) => {
         checkPage();
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'normal');
-        doc.text(`• ${doc2.document_name}`, margin + 2, y);
-        y += lineH;
+        doc.text(`${idx + 1}. ${doc2.document_name}`, margin + 2, y);
+        y += lineH - 1;
       });
     }
 
-    // Footer on each page
+    // ═══════════════════════════════════
+    // FOOTER ON EACH PAGE
+    // ═══════════════════════════════════
     const totalPages = doc.internal.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i);
-      doc.setFontSize(8);
-      doc.setTextColor(150);
-      doc.text(`Page ${i} of ${totalPages}  |  ${applicantName}  |  Application #${appId}`, margin, pageH - 8);
+      doc.setFontSize(7);
+      doc.setTextColor(120, 120, 120);
+      doc.text(`Page ${i} of ${totalPages}`, pageW / 2, pageH - 10, { align: 'center' });
+      doc.text(`${applicantName}  |  Application #${appId}`, pageW / 2, pageH - 6, { align: 'center' });
+
+      // Footer line
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineWidth(0.2);
+      doc.line(margin, pageH - 13, pageW - margin, pageH - 13);
     }
 
     doc.save(fileName);
@@ -308,10 +518,10 @@ function handleDownloadPDF() {
 </script>
 
 <svelte:head>
-  <title>View Application - Education Loan</title>
+  <title>{isReviewMode ? 'Review & Submit' : 'View Application'} - Education Loan</title>
 </svelte:head>
 
-<div class="min-h-screen bg-gradient-to-br from-purple-50 via-purple-50 to-purple-100">
+<div class="min-h-screen bg-gray-100">
 
   <DashboardHeader {t} {locale} {userData} on:openProfile={() => showProfileModal = true} />
 
@@ -321,600 +531,558 @@ function handleDownloadPDF() {
     on:close={() => showProfileModal = false}
     on:logout={() => { logoutStore(); goto(`/${locale}/login`); }}
   />
-  
-   <SubmissionSuccessModal
+  <SubmissionSuccessModal
     bind:show={showSuccessModal}
     applicationId={$applicationId}
     on:goToDashboard={() => { applicationId.set(null); goto(`/${locale}/dashboard`); }}
   />
 
-  <!-- <ApplicationStepper currentStep={6} {locale} /> -->
+  <div class="w-full px-4 sm:px-6 lg:px-10 py-6 {isReviewMode ? 'pb-36' : 'pb-10'}">
 
-    <div class="w-full px-4 sm:px-6 lg:px-10 py-8 pb-16">
-
-    <!-- Page Header -->
-    <div class="flex items-center justify-between mb-6">
+    <!-- ── Page Header ── -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
       <div>
-        <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">{t.dashboard.viewApplication}</h2>
-        <p class="text-sm text-gray-500 mt-1">{t.dashboard.applicationId}: #{$applicationId}</p>
+        <h2 class="text-xl font-bold text-gray-800">
+          {isReviewMode ? 'Review & Submit Application' : t.dashboard.viewApplication}
+        </h2>
+        <p class="text-sm text-gray-500 mt-0.5">
+          {t.dashboard.applicationId}: <span class="font-semibold text-purple-700">#{$applicationId}</span>
+        </p>
       </div>
-       <div class="flex items-center gap-2">
-        <button
-          on:click={handleDownloadPDF}
-          class="flex items-center gap-2 px-4 py-2 text-white bg-purple-600 hover:bg-purple-700 rounded-lg text-sm font-semibold shadow"
-        >
+      <div class="flex items-center gap-2">
+        <button on:click={handleDownloadPDF}
+          class="flex items-center gap-2 px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white rounded-lg text-sm font-semibold shadow transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
           </svg>
-          {t.applicationStart.downloadPdf}
+          Download PDF
         </button>
-        <button
-          on:click={() => goto(`/${locale}/dashboard`)}
-          class="flex items-center gap-2 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
-        >
+        <button on:click={() => goto(`/${locale}/dashboard`)}
+          class="flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium shadow-sm transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
           </svg>
-          {t.applicationStart.backToDashboard}
+          Back to Dashboard
         </button>
       </div>
     </div>
 
     {#if isLoading}
-      <!-- Loading -->
-    <div class="bg-white rounded-2xl shadow p-16 text-center">
-        <svg class="animate-spin h-10 w-10 text-purple-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-20 text-center">
+        <svg class="animate-spin h-9 w-9 text-purple-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
         </svg>
         <p class="text-gray-500">Loading your application...</p>
-    </div>
+      </div>
 
     {:else if error}
-      <div class="bg-red-50 border border-red-200 rounded-xl p-6 text-center text-red-700">{error}</div>
+      <div class="bg-red-50 border border-red-200 rounded-xl p-8 text-center text-red-700">{error}</div>
 
     {:else if appData}
 
-      <!-- Photo + Signature Row -->
-      <div class="bg-white rounded-2xl shadow-md p-6 mb-6 flex flex-col sm:flex-row items-center gap-6">
-        <!-- Photo -->
-        <div class="text-center">
-          {#if appData.documents?.photo}
-            <img
-              src={appData.documents.photo}
-              alt="Applicant Photo"
-              class="w-28 h-28 rounded-full object-cover border-4 border-purple-200 shadow mx-auto"
-            />
-          {:else}
-            <div class="w-28 h-28 rounded-full bg-purple-100 flex items-center justify-center mx-auto border-4 border-purple-200">
-              <svg class="w-12 h-12 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-              </svg>
-            </div>
-          {/if}
-          <p class="text-xs text-gray-500 mt-2 font-medium">{t.dashboard.applicantPhoto}</p>
-        </div>
+    <!-- ═══════════════════════════════════════════════════════
+         MAIN APPLICATION FORM SHEET
+         ═══════════════════════════════════════════════════════ -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
 
-        <!-- Name + ID -->
-        <div class="flex-1 text-center sm:text-left">
-          <h3 class="text-2xl font-bold text-gray-900">{label(appData.personal?.name)}</h3>
-          <p class="text-gray-500 text-sm mt-1">{t.dashboard.applicationId}: <span class="font-semibold text-purple-600">#{$applicationId}</span></p>
+      <!-- ── Application Header Banner ── -->
+      <div class="bg-gradient-to-r from-purple-700 to-purple-900 px-6 sm:px-8 py-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 class="text-white text-lg font-bold tracking-wide">EDUCATION LOAN APPLICATION</h3>
+            <p class="text-purple-200 text-sm mt-0.5">Application No: <span class="font-bold text-white">#{$applicationId}</span></p>
+          </div>
           {#if isReviewMode}
-            <div class="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-yellow-100 rounded-full">
-              <div class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></div>
-              <span class="text-yellow-700 text-xs font-semibold">{t.dashboard.decisionPending}</span>
-            </div>
+            <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-amber-400 text-amber-900 rounded-full text-xs font-bold self-start sm:self-auto">
+              <span class="w-2 h-2 rounded-full bg-amber-700 animate-pulse"></span>
+              Pending Submission
+            </span>
           {:else}
-            <div class="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-green-100 rounded-full">
-              <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-              <span class="text-green-700 text-xs font-semibold">{t.dashboard.applicationSubmittedLabel} — {t.dashboard.UnderReview}</span>
-            </div>
+            <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-green-400 text-green-900 rounded-full text-xs font-bold self-start sm:self-auto">
+              <span class="w-2 h-2 rounded-full bg-green-700 animate-pulse"></span>
+              Submitted — Under Review
+            </span>
           {/if}
-        </div>
-
-        <!-- Signature -->
-        <div class="text-center">
-          {#if appData.documents?.signature}
-            <img
-              src={appData.documents.signature}
-              alt="Signature"
-              class="h-16 w-40 object-contain border border-gray-200 rounded-lg bg-gray-50 p-1"
-            />
-          {:else}
-            <div class="h-16 w-40 border border-dashed border-gray-300 rounded-lg bg-gray-50 flex items-center justify-center">
-              <span class="text-xs text-gray-400">No Signature</span>
-            </div>
-          {/if}
-          <p class="text-xs text-gray-500 mt-2 font-medium">{t.uploadDocuments.ApplicantDocument.signature}</p>
         </div>
       </div>
 
-      <!-- Tabs -->
-      <div class="bg-white rounded-2xl shadow-md overflow-hidden">
-
-        <!-- Tab Headers -->
-        <div class="flex overflow-x-auto border-b border-gray-200 scrollbar-hide">
-        {#each tabs as tab}
-        <button
-        on:click={() => activeTab = tab.id}
-        class="flex-shrink-0 px-5 py-3 text-sm font-semibold transition-colors whitespace-nowrap
-        {activeTab === tab.id
-        ? 'text-purple-600 border-b-2 border-purple-600 bg-purple-50'
-        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}"
-        >
-        {tab.id === 'review' ? t.tabs.reviewSubmit : t.tabs[tab.id]}
-        </button>
-        {/each}
+      <!-- ══════════════════════════════════════════════════════
+           PERSONAL INFORMATION CARD (Photo, Info, Signature)
+           ══════════════════════════════════════════════════════ -->
+      <div class="border-b-4 border-purple-200 bg-gradient-to-br from-purple-50 to-white">
+        <div class="px-6 sm:px-8 py-2 bg-purple-700">
+          <h4 class="text-white font-bold text-xs uppercase tracking-widest">Personal Information</h4>
         </div>
-        <!-- Tab Content -->
-            <div class="p-6 sm:p-8">
-       
 
-          {#if activeTab === 'identity'}
-            <h3 class="text-lg font-bold text-gray-800 mb-4">{t.stepper.step1}</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">{t.applicationStart.nameLabel}</p>
-                <p class="font-semibold text-gray-800">{label(appData.personal?.name)}</p>
+        <div class="px-6 sm:px-8 py-6 flex flex-col lg:flex-row gap-6 items-start">
+          <!-- Photo -->
+          <div class="flex flex-col items-center gap-2 flex-shrink-0">
+            {#if appData.documents?.photo}
+              <img src={appData.documents.photo} alt="Applicant Photo"
+                class="w-32 h-36 object-cover border-4 border-purple-300 rounded-lg shadow-lg" />
+            {:else}
+              <div class="w-32 h-36 border-4 border-dashed border-purple-300 rounded-lg bg-purple-50 flex flex-col items-center justify-center gap-2">
+                <svg class="w-10 h-10 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+                <span class="text-xs text-purple-400 font-medium">No Photo</span>
               </div>
-              <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">{t.applicationStart.aadharLabel}</p>
-                <p class="font-semibold text-gray-800">{label(appData.personal?.aadhar)}</p>
+            {/if}
+            <span class="text-xs text-purple-700 font-bold uppercase tracking-wide">{t.dashboard.applicantPhoto}</span>
+          </div>
+
+          <!-- Core Information -->
+          <div class="flex-1 bg-white rounded-lg border-2 border-purple-200 p-5 shadow-sm">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
+              <div class="flex flex-col gap-1">
+                <span class="text-xs font-semibold text-purple-700 uppercase tracking-wide">{t.applicationStart.nameLabel}</span>
+                <span class="text-base font-bold text-gray-900 border-b-2 border-dotted border-gray-300 pb-1">{label(appData.personal?.name)}</span>
               </div>
-              <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">{t.applicationStart.dobLabel}</p>
-                <p class="font-semibold text-gray-800">{formatDate(appData.personal?.dob)}</p>
+              <div class="flex flex-col gap-1">
+                <span class="text-xs font-semibold text-purple-700 uppercase tracking-wide">{t.applicationStart.dobLabel}</span>
+                <span class="text-base font-bold text-gray-900 border-b-2 border-dotted border-gray-300 pb-1">{formatDate(appData.personal?.dob)}</span>
               </div>
-              <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">{t.applicationStart.genderLabel}</p>
-                <p class="font-semibold text-gray-800">{label(appData.personal?.gender)}</p>
+              <div class="flex flex-col gap-1">
+                <span class="text-xs font-semibold text-purple-700 uppercase tracking-wide">{t.applicationStart.aadharLabel}</span>
+                <span class="text-base font-bold text-gray-900 border-b-2 border-dotted border-gray-300 pb-1">{label(appData.personal?.aadhar)}</span>
               </div>
-              <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">{t.applicationStart.religionCommunity}</p>
-                <p class="font-semibold text-gray-800">{label(appData.personal?.religion)}</p>
+              <div class="flex flex-col gap-1">
+                <span class="text-xs font-semibold text-purple-700 uppercase tracking-wide">{t.personalDetails.mobileLabel}</span>
+                <span class="text-base font-bold text-gray-900 border-b-2 border-dotted border-gray-300 pb-1">{label(appData.personal?.mobile)}</span>
               </div>
-              <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">{t.applicationStart.resident}</p>
-                <p class="font-semibold text-gray-800">{appData.personal?.resident === 1 ? 'Yes' : 'No'}</p>
+              <div class="flex flex-col gap-1 sm:col-span-2">
+                <span class="text-xs font-semibold text-purple-700 uppercase tracking-wide">{t.personalDetails.emailLabel}</span>
+                <span class="text-base font-bold text-gray-900 border-b-2 border-dotted border-gray-300 pb-1 break-all">{label(appData.personal?.email)}</span>
               </div>
             </div>
+          </div>
 
-          <!-- ===== PERSONAL DETAILS ===== -->
-          {:else if activeTab === 'personal'}
-            <h3 class="text-lg font-bold text-gray-800 mb-4">{t.stepper.step2}</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">{t.personalDetails.mobileLabel}</p>
-                <p class="font-semibold text-gray-800">{label(appData.personal?.mobile)}</p>
-              </div>
-              <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">{t.personalDetails.emailLabel}</p>
-                <p class="font-semibold text-gray-800">{label(appData.personal?.email)}</p>
-              </div>
-              <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">{t.personalDetails.panLabel}</p>
-                <p class="font-semibold text-gray-800">{label(appData.personal?.pan)}</p>
-              </div>
-              <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">{t.personalDetails.maritalStatusLabel}</p>
-                <p class="font-semibold text-gray-800">{label(appData.personal?.marital_status)}</p>
-              </div>
-              <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">{t.personalDetails.educationLabel}</p>
-                <p class="font-semibold text-gray-800">{label(appData.personal?.education_qualification)}</p>
-              </div>
-              <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">{t.personalDetails.parentNameLabel}</p>
-                <p class="font-semibold text-gray-800">{label(appData.personal?.guardian_name)}</p>
-              </div>
-              <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">{t.personalDetails.occupationLabel}</p>
-                <p class="font-semibold text-gray-800">{label(appData.personal?.occupation)}</p>
-              </div>
-              <div class="bg-gray-50 rounded-xl p-4">
-                <p class="text-xs text-gray-500 mb-1">{t.personalDetails.annualIncomeLabel}</p>
-                <p class="font-semibold text-gray-800">{formatCurrency(appData.personal?.income)}</p>
-              </div>
-            </div>
-
-            <!-- Addresses -->
-            <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
-                <p class="text-xs font-bold text-blue-700 mb-2">{t.personalDetails.currentStreetLabel}</p>
-                <p class="text-sm text-gray-700">{label(appData.personal?.current_address)}</p>
-                <p class="text-xs text-gray-500 mt-1">
-                  {label(appData.personal?.current_place)}, {label(appData.personal?.current_pincode)}
-                </p>
-              </div>
-              <div class="bg-purple-50 rounded-xl p-4 border border-purple-100">
-                <p class="text-xs font-bold text-purple-700 mb-2">{t.personalDetails.permanentStreetLabel}</p>
-                <p class="text-sm text-gray-700">{label(appData.personal?.permanent_address)}</p>
-                <p class="text-xs text-gray-500 mt-1">
-                  {label(appData.personal?.permanent_place)}, {label(appData.personal?.permanent_pincode)}
-                </p>
-              </div>
-            </div>
-
-          <!-- ===== ACADEMIC INFO ===== -->
-          {:else if activeTab === 'academic'}
-            <h3 class="text-lg font-bold text-gray-800 mb-4">{t.stepper.step3}</h3>
-            {#if appData.education}
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div class="bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs text-gray-500 mb-1">{t.academicInfo.studentNameLabel}</p>
-                  <p class="font-semibold text-gray-800">{label(appData.education.student_name)}</p>
-                </div>
-                <div class="bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs text-gray-500 mb-1">{t.academicInfo.courseNameLabel}</p>
-                  <p class="font-semibold text-gray-800">{label(appData.education.course_name)}</p>
-                </div>
-                <div class="bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs text-gray-500 mb-1">{t.academicInfo.courseTypeLabel}</p>
-                  <p class="font-semibold text-gray-800">{label(appData.education.course_type)}</p>
-                </div>
-                <div class="bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs text-gray-500 mb-1">{t.academicInfo.courseDurationLabel}</p>
-                  <p class="font-semibold text-gray-800">{label(appData.education.course_duration)} Years</p>
-                </div>
-                <div class="bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs text-gray-500 mb-1">{t.academicInfo.modeOfStudyLabel}</p>
-                  <p class="font-semibold text-gray-800">{label(appData.education.mode_of_study)}</p>
-                </div>
-                <div class="bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs text-gray-500 mb-1">{t.academicInfo.purposeOfLoanLabel}</p>
-                  <p class="font-semibold text-gray-800">{label(appData.education.purpose_of_loan)}</p>
-                </div>
-                <div class="bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs text-gray-500 mb-1">{t.academicInfo.instituteNameLabel}</p>
-                  <p class="font-semibold text-gray-800">{label(appData.education.institution_name)}</p>
-                </div>
-                <div class="bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs text-gray-500 mb-1">{t.academicInfo.universityNameLabel}</p>
-                  <p class="font-semibold text-gray-800">{label(appData.education.university)}</p>
-                </div>
-                <div class="bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs text-gray-500 mb-1">{t.academicInfo.admissionStatusLabel}</p>
-                  <p class="font-semibold text-gray-800">{label(appData.education.admission_status)}</p>
-                </div>
-                <div class="bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs text-gray-500 mb-1">{t.academicInfo.admissionYearLabel}</p>
-                  <p class="font-semibold text-gray-800">{label(appData.education.admission_year)}</p>
-                </div>
-              </div>
-
-              <!-- Fee Details -->
-              <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div class="bg-green-50 rounded-xl p-3 border border-green-100 text-center">
-                  <p class="text-xs text-gray-500">{t.academicInfo.totalCourseFeeLabel}</p>
-                  <p class="font-bold text-green-700 text-sm">{formatCurrency(appData.education.total_course_fee)}</p>
-                </div>
-                <div class="bg-blue-50 rounded-xl p-3 border border-blue-100 text-center">
-                  <p class="text-xs text-gray-500">{t.academicInfo.feePaidLabel}</p>
-                  <p class="font-bold text-blue-700 text-sm">{formatCurrency(appData.education.fee_paid)}</p>
-                </div>
-                <div class="bg-red-50 rounded-xl p-3 border border-red-100 text-center">
-                  <p class="text-xs text-gray-500">{t.academicInfo.remainingFeeLabel}</p>
-                  <p class="font-bold text-red-700 text-sm">{formatCurrency(appData.education.remaining_fee)}</p>
-                </div>
-                <div class="bg-purple-50 rounded-xl p-3 border border-purple-100 text-center">
-                  <p class="text-xs text-gray-500">{t.academicInfo.loanRequiredLabel}</p>
-                  <p class="font-bold text-purple-700 text-sm">{formatCurrency(appData.education.loan_required_amount)}</p>
-                </div>
-              </div>
-
-              <!-- Bank Details -->
-              <div class="mt-4 bg-gray-50 rounded-xl p-4">
-                <p class="text-xs font-bold text-gray-700 mb-3">{t.academicInfo.section5Title}</p>
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  <div><p class="text-xs text-gray-500">{t.academicInfo.bankNameLabel}</p><p class="font-semibold text-sm">{label(appData.education.bank_name)}</p></div>
-                  <div><p class="text-xs text-gray-500">{t.academicInfo.branchNameLabel}</p><p class="font-semibold text-sm">{label(appData.education.branch_name)}</p></div>
-                  <div><p class="text-xs text-gray-500">{t.academicInfo.ifscCodeLabel}</p><p class="font-semibold text-sm">{label(appData.education.ifsc_code)}</p></div>
-                  <div><p class="text-xs text-gray-500">{t.academicInfo.accountNumberLabel}</p><p class="font-semibold text-sm">{label(appData.education.account_number)}</p></div>
-                </div>
+          <!-- Signature -->
+          <div class="flex flex-col items-center gap-2 flex-shrink-0">
+            {#if appData.documents?.signature}
+              <div class="bg-white rounded-lg border-4 border-purple-300 shadow-lg p-2">
+                <img src={appData.documents.signature} alt="Signature"
+                  class="h-24 w-44 object-contain" />
               </div>
             {:else}
-              <p class="text-gray-400 text-sm">No academic info found.</p>
-            {/if}
-
-          <!-- ===== GUARANTOR DETAILS ===== -->
-          {:else if activeTab === 'guarantor'}
-            <h3 class="text-lg font-bold text-gray-800 mb-4">{t.stepper.step4}</h3>
-            {#if appData.guarantor}
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div class="bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs text-gray-500 mb-1">{t.guarantorDetails.guarantorFullNameLabel}</p>
-                  <p class="font-semibold text-gray-800">{label(appData.guarantor.name || appData.guarantor.name)}</p>
-                </div>
-                <div class="bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs text-gray-500 mb-1">{t.guarantorDetails.guarantorMobileLabel}</p>
-                  <p class="font-semibold text-gray-800">{label(appData.guarantor.mobile || appData.guarantor.mobile)}</p>
-                </div>
-                <div class="bg-gray-50 rounded-xl p-4">
-                  <p class="text-xs text-gray-500 mb-1">{t.guarantorDetails.guarantorAadharLabel}</p>
-                  <p class="font-semibold text-gray-800">{label(appData.guarantor.aadhar || appData.guarantor.aadhar)}</p>
-                </div>
-                 <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
-                        <p class="text-xs font-bold text-blue-700 mb-2">{t.guarantorDetails.currentStreetAddressLabel}</p>
-                        <p class="text-sm text-gray-700">{label(appData.guarantor?.current_address)}</p>
-                        <p class="text-xs text-gray-500 mt-1">
-                        {label(appData.guarantor?.current_place)}, {label(appData.guarantor?.current_pincode)}
-                        </p>
-                    </div>
-                    <div class="bg-purple-50 rounded-xl p-4 border border-purple-100">
-                        <p class="text-xs font-bold text-purple-700 mb-2">{t.guarantorDetails.permanentStreetAddressLabel}</p>
-                        <p class="text-sm text-gray-700">{label(appData.guarantor?.permanent_address)}</p>
-                        <p class="text-xs text-gray-500 mt-1">
-                        {label(appData.guarantor?.permanent_place)}, {label(appData.guarantor?.permanent_pincode)}
-                        </p>
-                 </div>
-            </div>
+              <div class="h-24 w-44 border-4 border-dashed border-purple-300 rounded-lg bg-purple-50 flex items-center justify-center">
+                <span class="text-xs text-purple-400 font-medium">No Signature</span>
               </div>
-            {:else}
-              <p class="text-gray-400 text-sm">No guarantor details found.</p>
             {/if}
+            <span class="text-xs text-purple-700 font-bold uppercase tracking-wide">{t.uploadDocuments.ApplicantDocument.signature}</span>
+          </div>
+        </div>
+      </div>
 
-          <!-- ===== COLLATERAL DETAILS ===== -->
-          {:else if activeTab === 'collateral'}
-            <h3 class="text-lg font-bold text-gray-800 mb-4">{t.stepper.step5}</h3>
+      <!-- ════════════════════════════
+           SECTION: IDENTITY CHECK
+           ════════════════════════════ -->
+      <div class="border-b border-gray-200">
+        <div class="bg-purple-700 px-6 sm:px-8 py-2">
+          <h4 class="text-white font-bold text-xs uppercase tracking-widest">{t.stepper.step1}</h4>
+        </div>
+        <div class="px-6 sm:px-8 py-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-0">
+          {#each [
+            { lbl: t.applicationStart.nameLabel,        val: label(appData.personal?.name) },
+            { lbl: t.applicationStart.aadharLabel,      val: label(appData.personal?.aadhar) },
+            { lbl: t.applicationStart.dobLabel,         val: formatDate(appData.personal?.dob) },
+            { lbl: t.applicationStart.genderLabel,      val: label(appData.personal?.gender) },
+            { lbl: t.applicationStart.religionCommunity, val: label(appData.personal?.religion) },
+            { lbl: t.applicationStart.resident,         val: appData.personal?.resident === 1 ? 'Yes' : 'No' },
+          ] as f}
+            <div class="flex items-baseline gap-2 py-2 border-b border-dotted border-gray-200">
+              <span class="text-xs text-gray-500 w-40 flex-shrink-0">{f.lbl}</span>
+              <span class="text-sm font-semibold text-gray-900">{f.val}</span>
+            </div>
+          {/each}
+        </div>
+      </div>
 
-            <!-- Property -->
+      <!-- ════════════════════════════
+           SECTION: PERSONAL DETAILS
+           ════════════════════════════ -->
+      <div class="border-b border-gray-200">
+        <div class="bg-purple-700 px-6 sm:px-8 py-2">
+          <h4 class="text-white font-bold text-xs uppercase tracking-widest">{t.stepper.step2}</h4>
+        </div>
+        <div class="px-6 sm:px-8 py-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-0">
+          {#each [
+            { lbl: t.personalDetails.mobileLabel,        val: label(appData.personal?.mobile) },
+            { lbl: t.personalDetails.emailLabel,         val: label(appData.personal?.email) },
+            { lbl: t.personalDetails.panLabel,           val: label(appData.personal?.pan) },
+            { lbl: t.personalDetails.maritalStatusLabel, val: label(appData.personal?.marital_status) },
+            { lbl: t.personalDetails.educationLabel,     val: label(appData.personal?.education_qualification) },
+            { lbl: t.personalDetails.parentNameLabel,    val: label(appData.personal?.guardian_name) },
+            { lbl: t.personalDetails.occupationLabel,    val: label(appData.personal?.occupation) },
+            { lbl: t.personalDetails.annualIncomeLabel,  val: formatCurrency(appData.personal?.income) },
+          ] as f}
+            <div class="flex items-baseline gap-2 py-2 border-b border-dotted border-gray-200">
+              <span class="text-xs text-gray-500 w-40 flex-shrink-0">{f.lbl}</span>
+              <span class="text-sm font-semibold text-gray-900">{f.val}</span>
+            </div>
+          {/each}
+        </div>
+        <!-- Addresses -->
+        <div class="px-6 sm:px-8 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="py-2">
+            <span class="text-xs text-gray-500 block mb-1 font-semibold">{t.personalDetails.currentStreetLabel}</span>
+            <span class="text-sm font-semibold text-gray-900 block border-b border-dotted border-gray-200 pb-2">
+              {label(appData.personal?.current_address)}, {label(appData.personal?.current_place)} — {label(appData.personal?.current_pincode)}
+            </span>
+          </div>
+          <div class="py-2">
+            <span class="text-xs text-gray-500 block mb-1 font-semibold">{t.personalDetails.permanentStreetLabel}</span>
+            <span class="text-sm font-semibold text-gray-900 block border-b border-dotted border-gray-200 pb-2">
+              {label(appData.personal?.permanent_address)}, {label(appData.personal?.permanent_place)} — {label(appData.personal?.permanent_pincode)}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════
+           SECTION: ACADEMIC INFO
+           ════════════════════════════ -->
+      {#if appData.education}
+        <div class="border-b border-gray-200">
+          <div class="bg-purple-700 px-6 sm:px-8 py-2">
+            <h4 class="text-white font-bold text-xs uppercase tracking-widest">{t.stepper.step3}</h4>
+          </div>
+          <div class="px-6 sm:px-8 py-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-0">
+            {#each [
+              { lbl: t.academicInfo.studentNameLabel,    val: label(appData.education.student_name) },
+              { lbl: t.academicInfo.courseNameLabel,     val: label(appData.education.course_name) },
+              { lbl: t.academicInfo.courseTypeLabel,     val: label(appData.education.course_type) },
+              { lbl: t.academicInfo.courseDurationLabel, val: `${label(appData.education.course_duration)} Years` },
+              { lbl: t.academicInfo.modeOfStudyLabel,    val: label(appData.education.mode_of_study) },
+              { lbl: t.academicInfo.purposeOfLoanLabel,  val: label(appData.education.purpose_of_loan) },
+              { lbl: t.academicInfo.universityNameLabel, val: label(appData.education.university) },
+              { lbl: t.academicInfo.admissionStatusLabel,val: label(appData.education.admission_status) },
+              { lbl: t.academicInfo.admissionYearLabel,  val: label(appData.education.admission_year) },
+            ] as f}
+              <div class="flex items-baseline gap-2 py-2 border-b border-dotted border-gray-200">
+                <span class="text-xs text-gray-500 w-40 flex-shrink-0">{f.lbl}</span>
+                <span class="text-sm font-semibold text-gray-900">{f.val}</span>
+              </div>
+            {/each}
+          </div>
+
+          <!-- Institution Name - Full Width -->
+          <div class="px-6 sm:px-8 pb-2">
+            <div class="py-2">
+              <span class="text-xs text-gray-500 block mb-1 font-semibold">{t.academicInfo.instituteNameLabel}</span>
+              <span class="text-sm font-semibold text-gray-900 block border-b border-dotted border-gray-200 pb-2">
+                {label(appData.education.institution_name)}
+              </span>
+            </div>
+          </div>
+
+          <!-- Fee Row -->
+          <div class="px-6 sm:px-8 pb-1 grid grid-cols-2 sm:grid-cols-4 gap-x-10 gap-y-0">
+            {#each [
+              { lbl: t.academicInfo.totalCourseFeeLabel,  val: formatCurrency(appData.education.total_course_fee),      color: 'text-gray-900' },
+              { lbl: t.academicInfo.feePaidLabel,         val: formatCurrency(appData.education.fee_paid),              color: 'text-blue-700' },
+              { lbl: t.academicInfo.remainingFeeLabel,    val: formatCurrency(appData.education.remaining_fee),         color: 'text-red-600' },
+              { lbl: t.academicInfo.loanRequiredLabel,    val: formatCurrency(appData.education.loan_required_amount),  color: 'text-purple-700' },
+            ] as f}
+              <div class="flex flex-col py-2 border-b border-dotted border-gray-200">
+                <span class="text-xs text-gray-500">{f.lbl}</span>
+                <span class="text-sm font-bold {f.color} mt-0.5">{f.val}</span>
+              </div>
+            {/each}
+          </div>
+
+          <!-- Bank Details Sub-section -->
+          <div class="mx-6 sm:mx-8 my-3 rounded-lg border border-gray-200 overflow-hidden">
+            <div class="bg-gray-100 px-4 py-1.5">
+              <span class="text-xs font-bold text-gray-600 uppercase tracking-wide">{t.academicInfo.section5Title}</span>
+            </div>
+            <div class="px-4 py-3 grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-0">
+              {#each [
+                { lbl: t.academicInfo.bankNameLabel,      val: label(appData.education.bank_name) },
+                { lbl: t.academicInfo.branchNameLabel,    val: label(appData.education.branch_name) },
+                { lbl: t.academicInfo.ifscCodeLabel,      val: label(appData.education.ifsc_code) },
+                { lbl: t.academicInfo.accountNumberLabel, val: label(appData.education.account_number) },
+              ] as f}
+                <div class="flex flex-col py-1.5 border-b border-dotted border-gray-200">
+                  <span class="text-xs text-gray-500">{f.lbl}</span>
+                  <span class="text-sm font-semibold text-gray-900 mt-0.5">{f.val}</span>
+                </div>
+              {/each}
+            </div>
+          </div>
+          <div class="pb-2"></div>
+        </div>
+      {/if}
+
+      <!-- ════════════════════════════
+           SECTION: GUARANTOR DETAILS
+           ════════════════════════════ -->
+      {#if appData.guarantor}
+        <div class="border-b border-gray-200">
+          <div class="bg-purple-700 px-6 sm:px-8 py-2">
+            <h4 class="text-white font-bold text-xs uppercase tracking-widest">{t.stepper.step4}</h4>
+          </div>
+          <div class="px-6 sm:px-8 py-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-0">
+            {#each [
+              { lbl: t.guarantorDetails.guarantorFullNameLabel, val: label(appData.guarantor.name) },
+              { lbl: t.guarantorDetails.guarantorMobileLabel,   val: label(appData.guarantor.mobile) },
+              { lbl: t.guarantorDetails.guarantorAadharLabel,   val: label(appData.guarantor.aadhar) },
+            ] as f}
+              <div class="flex items-baseline gap-2 py-2 border-b border-dotted border-gray-200">
+                <span class="text-xs text-gray-500 w-40 flex-shrink-0">{f.lbl}</span>
+                <span class="text-sm font-semibold text-gray-900">{f.val}</span>
+              </div>
+            {/each}
+          </div>
+          <div class="px-6 sm:px-8 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="py-2">
+              <span class="text-xs text-gray-500 block mb-1 font-semibold">{t.guarantorDetails.currentStreetAddressLabel}</span>
+              <span class="text-sm font-semibold text-gray-900 block border-b border-dotted border-gray-200 pb-2">
+                {label(appData.guarantor?.current_address)}, {label(appData.guarantor?.current_place)} — {label(appData.guarantor?.current_pincode)}
+              </span>
+            </div>
+            <div class="py-2">
+              <span class="text-xs text-gray-500 block mb-1 font-semibold">{t.guarantorDetails.permanentStreetAddressLabel}</span>
+              <span class="text-sm font-semibold text-gray-900 block border-b border-dotted border-gray-200 pb-2">
+                {label(appData.guarantor?.permanent_address)}, {label(appData.guarantor?.permanent_place)} — {label(appData.guarantor?.permanent_pincode)}
+              </span>
+            </div>
+          </div>
+        </div>
+      {/if}
+
+      <!-- ════════════════════════════
+           SECTION: COLLATERAL DETAILS
+           ════════════════════════════ -->
+      {#if appData.collateral && (appData.collateral.properties?.length || appData.collateral.fds?.length || appData.collateral.lics?.length || appData.collateral.govtEmployees?.length)}
+        <div class="border-b border-gray-200">
+          <div class="bg-purple-700 px-6 sm:px-8 py-2">
+            <h4 class="text-white font-bold text-xs uppercase tracking-widest">{t.stepper.step5}</h4>
+          </div>
+          <div class="px-6 sm:px-8 py-4 space-y-4">
+
             {#if appData.collateral.properties?.length > 0}
-              <p class="text-xs font-bold text-purple-700 uppercase mb-2">Property Collateral</p>
-
-              {#each appData.collateral.properties as prop}
-                <div class="bg-gray-50 rounded-xl p-4 mb-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  <div><p class="text-xs text-gray-500">{t.collateralDetails.surveyNo}</p><p class="font-semibold text-sm">{label(prop.survey_no)}</p></div>
-                  <div><p class="text-xs text-gray-500">{t.collateralDetails.propertyCollateralModal.district}</p><p class="font-semibold text-sm">{label(prop.district_id)}</p></div>
-                  <div><p class="text-xs text-gray-500">{t.collateralDetails.village}</p><p class="font-semibold text-sm">{label(prop.place)}</p></div>
-                  <div><p class="text-xs text-gray-500">{t.collateralDetails.propertyCollateralModal.units}</p><p class="font-semibold text-sm">{label(prop.units)}</p></div>
-                  <div><p class="text-xs text-gray-500">{t.personalDetails.areaLabel}</p><p class="font-semibold text-sm">{label(prop.area_value)}</p></div>
-                  <div><p class="text-xs text-gray-500">{t.collateralDetails.valuation}</p><p class="font-semibold text-sm">{formatCurrency(prop.property_value)}</p></div>
-
-                </div>
-              {/each}
-
-            {/if}
-
-            <!-- FD -->
-            {#if appData.collateral.fds?.length > 0}
-              <p class="text-xs font-bold text-blue-700 uppercase mb-2 mt-4">FD Collateral</p>
-              {#each appData.collateral.fds as fd}
-                <div class="bg-gray-50 rounded-xl p-4 mb-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  <div><p class="text-xs text-gray-500">Bank Name</p><p class="font-semibold text-sm">{label(fd.bank_name)}</p></div>
-                  <div><p class="text-xs text-gray-500">Branch</p><p class="font-semibold text-sm">{label(fd.branch_name)}</p></div>
-                  <div><p class="text-xs text-gray-500">FD Amount</p><p class="font-semibold text-sm">{formatCurrency(fd.amount)}</p></div>
-                  <div><p class="text-xs text-gray-500">Maturity Date</p><p class="font-semibold text-sm">{formatDate(fd.fd_maturity_date)}</p></div>
-                </div>
-              {/each}
-            {/if}
-
-            <!-- LIC -->
-            {#if appData.collateral.lics?.length > 0}
-              <p class="text-xs font-bold text-green-700 uppercase mb-2 mt-4">LIC Collateral</p>
-              {#each appData.collateral.lics as lic}
-                <div class="bg-gray-50 rounded-xl p-4 mb-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  <div><p class="text-xs text-gray-500">{t.collateralDetails.policyName}</p><p class="font-semibold text-sm">{label(lic.policy_name)}</p></div>
-                  <div><p class="text-xs text-gray-500">{t.collateralDetails.policyType}</p><p class="font-semibold text-sm">{label(lic.policy_type)}</p></div>
-                  <div><p class="text-xs text-gray-500">{t.collateralDetails.policySurrenderValue}</p><p class="font-semibold text-sm">{formatCurrency(lic.policy_surrender_value)}</p></div>
-                  <div><p class="text-xs text-gray-500">{t.collateralDetails.policyReceiptNo}</p><p class="font-semibold text-sm">{label(lic.policy_receipt_no)}</p></div>
-                </div>
-              {/each}
-            {/if}
-
-            <!-- Govt Employee -->
-            {#if appData.collateral.govtEmployees?.length > 0}
-              <p class="text-xs font-bold text-yellow-700 uppercase mb-2 mt-4">Govt Employee Guarantor</p>
-              {#each appData.collateral.govtEmployees as govt}
-                <div class="bg-gray-50 rounded-xl p-4 mb-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  <div><p class="text-xs text-gray-500">{t.collateralDetails.govtEmployeeModal.departmentName}</p><p class="font-semibold text-sm">{label(govt.department_office_name)}</p></div>
-                  <div><p class="text-xs text-gray-500">{t.collateralDetails.govtEmployeeModal.designation}</p><p class="font-semibold text-sm">{label(govt.designation)}</p></div>
-                  <div><p class="text-xs text-gray-500">{t.collateralDetails.govtEmployeeModal.employeeID}</p><p class="font-semibold text-sm">{label(govt.employee_id_number)}</p></div>
-                </div>
-              {/each}
-            {/if}
-
-            {#if !appData.collateral.properties?.length && !appData.collateral.fds?.length && !appData.collateral.lics?.length && !appData.collateral.govtEmployees?.length}
-              <p class="text-gray-400 text-sm">No collateral details found.</p>
-            {/if}
-
-
-
-          <!-- document -->
-          <!-- ===== DOCUMENT UPLOAD ===== -->
-          {:else if activeTab === 'documents'}
-            {@const sectionNameMap = {
-              1: 'APPLICANT DOCUMENTS',
-              2: 'APPLICANT DOCUMENTS',
-              3: 'APPLICANT DOCUMENTS',
-              4: 'APPLICANT DOCUMENTS',
-              5: 'APPLICANT DOCUMENTS',
-              6: 'CO-APPLICANT DOCUMENTS',
-              7: 'COLLATERAL DOCUMENT — Property',
-              8: 'COLLATERAL DOCUMENT — Govt Employee',
-              9: 'COLLATERAL DOCUMENT — LIC Policy',
-              10: 'COLLATERAL DOCUMENT — Fixed Deposit',
-              11: 'STUDY ABROAD DOCUMENTS',
-              12: 'GUARANTOR DOCUMENTS',
-            }}
-            {@const sectionOrderMap = { 1:1, 2:1, 3:1, 4:1, 5:1, 6:2, 12:3, 7:4, 8:5, 9:6, 10:7, 11:8 }}
-            {@const groupedSections = (() => {
-              const sections = {};
-              (appData.allDocs || []).forEach(doc => {
-                const sid = doc.section_id;
-                const sname = sectionNameMap[sid] || doc.section_name || 'Other Documents';
-                if (!sections[sname]) sections[sname] = { section_name: sname, order: sectionOrderMap[sid] || 99, docs: [] };
-                sections[sname].docs.push(doc);
-              });
-              return Object.values(sections).sort((a, b) => a.order - b.order);
-            })()}
-
-          <h3 class="text-lg font-bold text-gray-800 mb-6">{t.stepper.step6}</h3>
-
-            {#if groupedSections.length > 0}
-              {#each groupedSections as section}
-                <div class="mb-6">
-                  <!-- Section Header -->
-                  <div class="bg-gradient-to-r from-purple-600 to-purple-700 rounded-t-xl px-5 py-3">
-                    <h4 class="text-white font-bold text-sm uppercase tracking-wide">{section.section_name}</h4>
-                  </div>
-
-                  <!-- Column Headers -->
-                  <div class="bg-gray-100 border-x border-gray-200 px-5 py-2 grid grid-cols-12">
-                    <p class="col-span-9 text-xs font-bold text-gray-500 uppercase">{t.uploadDocuments.ApplicantDocument.documentName}</p>
-                    <p class="col-span-3 text-xs font-bold text-gray-500 uppercase text-right">{t.uploadDocuments.ApplicantDocument.uploadView}</p>
-                  </div>
-
-                  <!-- Docs -->
-                  <div class="border border-t-0 border-gray-200 rounded-b-xl overflow-hidden divide-y divide-gray-100">
-                    {#each section.docs as doc}
-                      <div class="flex items-center justify-between px-5 py-3 bg-white hover:bg-gray-50 transition-colors">
-                        <div class="flex items-center gap-3">
-                          <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                            </svg>
-                          </div>
-                          <div>
-                            <p class="text-sm font-semibold text-gray-800">{doc.document_name}</p>
-                            <p class="text-xs text-gray-400">{doc.org_filename || ''}</p>
-                          </div>
-                        </div>
-                        <a
-                          href={doc.file_name}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          class="flex items-center gap-1.5 px-4 py-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-semibold rounded-lg transition-colors flex-shrink-0"
-                        >
-                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                          </svg>
-                          {t.uploadDocuments.ApplicantDocument.view}
-                        </a>
+              {#each appData.collateral.properties as prop, i}
+                <div>
+                  <p class="text-xs font-bold text-purple-700 uppercase mb-1">Property {i + 1}</p>
+                  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-8 gap-y-0">
+                    {#each [
+                      { lbl: 'Survey No',  val: label(prop.survey_no) },
+                      { lbl: 'District',   val: label(prop.district_id) },
+                      { lbl: 'Village',    val: label(prop.place) },
+                      { lbl: 'Units',      val: label(prop.units) },
+                      { lbl: 'Area',       val: label(prop.area_value) },
+                      { lbl: 'Valuation',  val: formatCurrency(prop.property_value) },
+                    ] as f}
+                      <div class="flex flex-col py-1.5 border-b border-dotted border-gray-200">
+                        <span class="text-xs text-gray-500">{f.lbl}</span>
+                        <span class="text-sm font-semibold text-gray-900 mt-0.5">{f.val}</span>
                       </div>
                     {/each}
                   </div>
                 </div>
               {/each}
-           {:else}
-              <p class="text-gray-400 text-sm">No documents uploaded yet.</p>
             {/if}
 
-            <!-- Review the application -------------- -->
-            {:else if activeTab === 'review'}
-            <h3 class="text-lg font-bold text-gray-800 mb-6">{t.dashboard.reviewAndSubmit}</h3>
-
-            <!-- Summary Cards -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-              <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-center">
-                <p class="text-sm font-bold text-blue-600">{$applicationId}</p>
-                <p class="text-xs text-gray-500 mt-1">{t.dashboard.applicationId}</p>
-              </div>
-              <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-center">
-                <p class="text-sm font-bold text-blue-600">{label(appData.personal?.name)}</p>
-                <p class="text-xs text-gray-500 mt-1">{t.applicationStart.nameLabel}</p>
-              </div>
-              <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-center">
-                <p class="text-sm font-bold text-blue-600">{label(appData.education?.course_name)}</p>
-                <p class="text-xs text-gray-500 mt-1">{t.academicInfo.courseNameLabel}</p>
-              </div>
-              <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-center">
-                <p class="text-sm font-bold text-blue-600">{formatCurrency(appData.education?.loan_required_amount)}</p>
-                <p class="text-xs text-gray-500 mt-1">{t.academicInfo.loanRequiredLabel}</p>
-              </div>
-            </div>
-
-            <!-- Checklist -->
-           <!-- Checklist -->
-<div class="mb-6 space-y-2">
-{#each [
-   { label: 'personalDetails', done: !!appData.personal?.mobile },
-   { label: 'academicInformation', done: !!appData.education?.course_name },
-   { label: 'guarantorDetails', done: !!appData.guarantor },
-   { label: 'collateralDetails', done: (appData.collateral?.properties?.length > 0 || appData.collateral?.fds?.length > 0 || appData.collateral?.lics?.length > 0 || appData.collateral?.govtEmployees?.length > 0) },
-   { label: 'documentsUploaded', done: appData.allDocs?.length > 0 },
-] as item}
-
-<div class="flex items-center gap-3 p-3 rounded-lg {item.done ? 'bg-green-20 border border-green-100' : 'bg-red-50 border border-red-100'}">
-
-  <div class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 {item.done ? 'bg-green-500' : 'bg-red-400'}">
-    {#if item.done}
-      <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-      </svg>
-    {:else}
-      <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/>
-      </svg>
-    {/if}
-  </div>
-
-  <span class="text-sm font-medium {item.done ? 'text-green-800' : 'text-red-700'}">
-   {t.checklist[item.label] ?? item.label}
-  </span>
-
-  <span class="ml-auto text-xs font-semibold {item.done ? 'text-green-600' : 'text-red-500'}">
-      {item.done ? t.checklist.complete : t.checklist.pending}
-  </span>
-
-</div>
-{/each}
-</div>
-
-            <!-- Declaration -->
-            <div class="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-xl mb-6">
-              <svg class="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              <p class="text-sm text-yellow-800">
-                <span class="font-bold">{t.declaration}: </span>
-                {t.iHereBy}
-              </p>
-            </div>
-
-            {#if submitError}
-              <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p class="text-sm text-red-600 font-medium">{submitError}</p>
-              </div>
+            {#if appData.collateral.fds?.length > 0}
+              {#each appData.collateral.fds as fd, i}
+                <div>
+                  <p class="text-xs font-bold text-blue-700 uppercase mb-1">Fixed Deposit {i + 1}</p>
+                  <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-0">
+                    {#each [
+                      { lbl: 'Bank Name',     val: label(fd.bank_name) },
+                      { lbl: 'Branch',        val: label(fd.branch_name) },
+                      { lbl: 'FD Amount',     val: formatCurrency(fd.amount) },
+                      { lbl: 'Maturity Date', val: formatDate(fd.fd_maturity_date) },
+                    ] as f}
+                      <div class="flex flex-col py-1.5 border-b border-dotted border-gray-200">
+                        <span class="text-xs text-gray-500">{f.lbl}</span>
+                        <span class="text-sm font-semibold text-gray-900 mt-0.5">{f.val}</span>
+                      </div>
+                    {/each}
+                  </div>
+                </div>
+              {/each}
             {/if}
 
-            <!-- Action Buttons -->
-            <div class="flex justify-between items-center">
-              <button
-                on:click={() => goto(`/${locale}/application/upload-documents`)}
-                class="flex items-center gap-2 px-5 py-3 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors text-sm"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                </svg>
-                {t.uploadDocuments.backToDocs}
-              </button>
+            {#if appData.collateral.lics?.length > 0}
+              {#each appData.collateral.lics as lic, i}
+                <div>
+                  <p class="text-xs font-bold text-green-700 uppercase mb-1">LIC Policy {i + 1}</p>
+                  <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-0">
+                    {#each [
+                      { lbl: t.collateralDetails.policyName,          val: label(lic.policy_name) },
+                      { lbl: t.collateralDetails.policyType,          val: label(lic.policy_type) },
+                      { lbl: t.collateralDetails.policySurrenderValue, val: formatCurrency(lic.policy_surrender_value) },
+                      { lbl: t.collateralDetails.policyReceiptNo,     val: label(lic.policy_receipt_no) },
+                    ] as f}
+                      <div class="flex flex-col py-1.5 border-b border-dotted border-gray-200">
+                        <span class="text-xs text-gray-500">{f.lbl}</span>
+                        <span class="text-sm font-semibold text-gray-900 mt-0.5">{f.val}</span>
+                      </div>
+                    {/each}
+                  </div>
+                </div>
+              {/each}
+            {/if}
+
+            {#if appData.collateral.govtEmployees?.length > 0}
+              {#each appData.collateral.govtEmployees as govt, i}
+                <div>
+                  <p class="text-xs font-bold text-amber-700 uppercase mb-1">Govt. Employee Guarantor {i + 1}</p>
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-0">
+                    {#each [
+                      { lbl: t.collateralDetails.govtEmployeeModal.departmentName, val: label(govt.department_office_name) },
+                      { lbl: t.collateralDetails.govtEmployeeModal.designation,    val: label(govt.designation) },
+                      { lbl: t.collateralDetails.govtEmployeeModal.employeeID,     val: label(govt.employee_id_number) },
+                    ] as f}
+                      <div class="flex flex-col py-1.5 border-b border-dotted border-gray-200">
+                        <span class="text-xs text-gray-500">{f.lbl}</span>
+                        <span class="text-sm font-semibold text-gray-900 mt-0.5">{f.val}</span>
+                      </div>
+                    {/each}
+                  </div>
+                </div>
+              {/each}
+            {/if}
+
+          </div>
+        </div>
+      {/if}
+
+      <!-- ════════════════════════════
+           SECTION: UPLOADED DOCUMENTS
+           ════════════════════════════ -->
+      {#if appData.allDocs?.length > 0}
+        {@const sectionNameMap = {
+          1:'APPLICANT DOCUMENTS',2:'APPLICANT DOCUMENTS',3:'APPLICANT DOCUMENTS',
+          4:'APPLICANT DOCUMENTS',5:'APPLICANT DOCUMENTS',6:'CO-APPLICANT DOCUMENTS',
+          7:'COLLATERAL — Property',8:'COLLATERAL — Govt Employee',
+          9:'COLLATERAL — LIC Policy',10:'COLLATERAL — Fixed Deposit',
+          11:'STUDY ABROAD DOCUMENTS',12:'GUARANTOR DOCUMENTS',
+        }}
+        {@const sectionOrderMap={1:1,2:1,3:1,4:1,5:1,6:2,12:3,7:4,8:5,9:6,10:7,11:8}}
+        {@const groupedSections=(()=>{
+          const sections={};
+          (appData.allDocs||[]).forEach(doc=>{
+            const sid=doc.section_id;
+            const sname=sectionNameMap[sid]||doc.section_name||'Other Documents';
+            if(!sections[sname])sections[sname]={section_name:sname,order:sectionOrderMap[sid]||99,docs:[]};
+            sections[sname].docs.push(doc);
+          });
+          return Object.values(sections).sort((a,b)=>a.order-b.order);
+        })()}
+
+        <div class="border-b border-gray-200">
+          <div class="bg-purple-700 px-6 sm:px-8 py-2 flex items-center justify-between">
+            <h4 class="text-white font-bold text-xs uppercase tracking-widest">{t.stepper.step6}</h4>
+            <span class="text-purple-200 text-xs font-medium">{appData.allDocs.length} files</span>
+          </div>
+          <div class="px-6 sm:px-8 py-4 space-y-5">
+            {#each groupedSections as section}
               <div>
-              <button
-                on:click={handleSubmitApplication}
-                disabled={isSubmitting}
-                class="px-10 py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:from-gray-400 disabled:to-gray-400 text-white font-bold rounded-xl transition-all shadow-lg text-sm flex items-center gap-2"
-              >
-                {#if isSubmitting}
-                  <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                <div class="flex items-center gap-2 mb-2 pb-1 border-b-2 border-purple-200">
+                  <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                   </svg>
-                  Submitting...
-                {:else}
-                  {t.uploadDocuments.submitApplication}
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                  <p class="text-xs font-bold text-purple-700 uppercase tracking-wide">{section.section_name}</p>
+                  <span class="ml-auto text-xs text-gray-500">({section.docs.length})</span>
+                </div>
+                <div class="space-y-2">
+                  {#each section.docs as doc}
+                    <div class="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-purple-50 hover:border-purple-300 transition-colors group">
+                      <div class="flex items-center gap-3 flex-1 min-w-0">
+                        <div class="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                          <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                          </svg>
+                        </div>
+                        <span class="text-sm font-medium text-gray-800 truncate">{doc.document_name}</span>
+                      </div>
+                      <a href={doc.file_name} target="_blank" rel="noopener noreferrer"
+                        class="flex-shrink-0 ml-3 px-4 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all flex items-center gap-1.5 group-hover:shadow-md">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        {t.uploadDocuments.ApplicantDocument.view}
+                      </a>
+                    </div>
+                  {/each}
+                </div>
+              </div>
+            {/each}
+          </div>
+        </div>
+      {/if}
+
+      <!-- ════════════════════════════
+           REVIEW MODE: I AGREE + SUBMIT
+           ════════════════════════════ -->
+      {#if isReviewMode}
+        <div class="px-6 sm:px-8 py-6 bg-gradient-to-br from-purple-50 to-white border-t-2 border-purple-200">
+          <!-- I Agree Checkbox -->
+          <label class="flex items-start gap-3 cursor-pointer group mb-5 p-4 bg-white rounded-xl border-2 border-gray-200 hover:border-purple-400 transition-colors">
+            <div class="relative mt-0.5 flex-shrink-0">
+              <input type="checkbox" bind:checked={agreeChecked} class="sr-only peer" />
+              <div class="w-6 h-6 rounded-md border-2 {agreeChecked ? 'border-purple-600 bg-purple-600' : 'border-gray-400 bg-white'} transition-all flex items-center justify-center shadow-sm">
+                {#if agreeChecked}
+                  <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
                   </svg>
                 {/if}
-              </button>
+              </div>
             </div>
+            <div>
+              <p class="text-sm font-bold text-gray-900 mb-1">Declaration</p>
+              <p class="text-sm text-gray-700 leading-relaxed">
+                I hereby declare that all the information provided in this application is <span class="font-semibold text-purple-700">true, correct and complete</span> to the best of my knowledge and belief. I understand that any false or misleading information may result in the <span class="font-semibold text-red-600">rejection of this application</span>.
+              </p>
             </div>
+          </label>
 
+          {#if submitError}
+            <div class="mb-4 flex items-center gap-2 px-4 py-3 bg-red-50 border-2 border-red-300 rounded-lg text-sm text-red-700">
+              <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              {submitError}
+            </div>
           {/if}
+
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <button
+              on:click={() => goto(`/${locale}/application/upload-documents`)}
+              class="flex items-center gap-2 px-5 py-2.5 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 hover:border-gray-400 text-sm transition-all w-full sm:w-auto justify-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+              </svg>
+              Back to Documents
+            </button>
+
+            <button
+              on:click={handleSubmitApplication}
+              disabled={!agreeChecked || isSubmitting}
+              class="flex items-center gap-2 px-10 py-3 bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed text-white font-bold rounded-lg shadow-lg hover:shadow-xl disabled:shadow-none transition-all text-sm w-full sm:w-auto justify-center">
+              {#if isSubmitting}
+                <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+                Submitting...
+              {:else}
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Submit Application
+              {/if}
+            </button>
+          </div>
         </div>
-      </div>
+      {/if}
+
+    </div><!-- end main sheet -->
 
     {/if}
   </div>
