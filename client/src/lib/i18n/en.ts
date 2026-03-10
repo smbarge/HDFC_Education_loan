@@ -1009,6 +1009,7 @@ export const en = {
       fdCollateral: 'FD Collateral',
       licCollateral: 'LIC Collateral',
       govtEmployee: 'Govt Employee',
+      govtEmployeeGaurantor:'Govt. Employee Guarantor',
       
       // Card Field Labels
       type: 'Type',
@@ -1591,7 +1592,11 @@ export const en = {
 
   //Declaration
   declaration: "Declaration",
-  iHereBy:"I hereby declare that all the information provided in this application is true and correct to the best of my knowledge. I understand that providing false information may result in rejection of my application.",
+  iHereBy:" I hereby declare that all the information provided in this application is",
+  trueCorrectComplete:"true, correct and complete",
+  toMyBest:" to the best of my knowledge and belief. I understand that any false or misleading information may result in the ",
+  rejection:"rejection of this application.",
+
 
   footer: {
     about: {
