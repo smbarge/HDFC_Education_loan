@@ -437,7 +437,7 @@ function handleGoToDashboard() {
     loanAmount: loanAmount,
     submittedDate: today
   }));
-  applicationId.set(null);
+  //applicationId.set(null);
   goto(`/${locale}/dashboard`);
 }
 

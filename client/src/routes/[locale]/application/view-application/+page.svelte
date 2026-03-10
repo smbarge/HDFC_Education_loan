@@ -534,7 +534,7 @@
   <SubmissionSuccessModal
     bind:show={showSuccessModal}
     applicationId={$applicationId}
-    on:goToDashboard={() => { applicationId.set(null); goto(`/${locale}/dashboard`); }}
+    on:goToDashboard={() => { goto(`/${locale}/dashboard`); }}
   />
 
   <div class="w-full px-4 sm:px-6 lg:px-10 py-6 {isReviewMode ? 'pb-36' : 'pb-10'}">
