@@ -5,7 +5,7 @@
   import DashboardHeader from '$lib/components/dashboard/DashboardHeader.svelte';
   import ProfileModal from '$lib/components/dashboard/ProfileModal.svelte';
   import DocumentsSection from '$lib/components/dashboard/DocumentsSection.svelte';
-  import { customCreateApplication,getUserApplication } from '$lib/api/authApi';
+  import { customCreateApplication,getUserApplication ,getViewApplicationData } from '$lib/api/authApi';
   import SubmittedApplicationCard from '$lib/components/dashboard/SubmittedApplicationCard.svelte';
 
   import { user, logout as logoutStore , applicationId } from '$lib/stores/userStore';
@@ -24,7 +24,8 @@
     } : {
       name: "Guest User",
       phone: "",
-      username: ""
+      username: "",
+      photo: null
     };
 
 
@@ -56,6 +57,7 @@
   let submissionInfo = null;
 
   let isLoading = true;
+  let applicantPhoto = null;
 
 
 
@@ -124,6 +126,20 @@ let submittedDate = null;
                         eduData.data.loan_required || ''
           };
         }
+
+        const viewData = await getViewApplicationData($user.id, result.applicationId);
+        //console.log("Datat view>>>>>>>>>>>>>>>>>>>",viewData);
+          if (viewData.error === 0 && viewData.data?.documents?.photo) {
+            applicantPhoto = viewData.data.documents.photo;
+            userData = {
+                ...$user,
+                name: $user.name || 'Guest User',
+                phone: $user.mobile || '',
+                username: $user.username || '',
+                photo: applicantPhoto
+              };
+          }
+       console.log("View data >>>>>>>>",applicantPhoto);
       } catch(e) {
         console.error('Could not fetch education data:', e);
       }

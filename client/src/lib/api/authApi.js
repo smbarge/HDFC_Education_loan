@@ -1059,8 +1059,12 @@ async function submitApplication(userId, applicationId) {
 export async function notifyApplicationSubmission(userId, applicationId) {
   try {
     const response = await fetch(
-      `/api/createApplication/${userId}/${applicationId}/notify`,
-      { method: 'POST',  headers: authHeaders()  }
+      `/api/notify`,
+      { 
+        method: 'POST',  
+        headers: authHeaders(),
+        body: JSON.stringify({ userId, applicationId })
+      }
     );
     const data = await response.json();
     return data;
