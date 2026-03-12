@@ -890,12 +890,12 @@
                   <p class="text-xs font-bold text-purple-700 uppercase mb-1">{t.collateralDetails.property} {i + 1}</p>
                   <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-8 gap-y-0">
                     {#each [
-                      { lbl: 'Survey No',  val: label(prop.survey_no) },
-                      { lbl: 'District',   val: label(prop.district_id) },
-                      { lbl: 'Village',    val: label(prop.place) },
-                      { lbl: 'Units',      val: label(prop.units) },
-                      { lbl: 'Area',       val: label(prop.area_value) },
-                      { lbl: 'Valuation',  val: formatCurrency(prop.property_value) },
+                      { lbl: t.collateralDetails.surveyNo,  val: label(prop.survey_no) },
+                      { lbl: t.personalDetails.districtLabel,   val: label(prop.district_id) },
+                      { lbl: t.collateralDetails.village,    val: label(prop.place) },
+                      { lbl: t.collateralDetails.propertyCollateralModal.units,      val: label(prop.units) },
+                      { lbl: t.personalDetails.areaLabel,       val: label(prop.area_value) },
+                      { lbl:  t.collateralDetails.valuation,  val: formatCurrency(prop.property_value) },
                     ] as f}
                       <div class="flex flex-col py-1.5 border-b border-dotted border-gray-200">
                         <span class="text-xs text-gray-500">{f.lbl}</span>

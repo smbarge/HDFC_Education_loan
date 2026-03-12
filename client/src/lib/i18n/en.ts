@@ -1029,7 +1029,7 @@ export const en = {
       dept: 'Dept',
       designation: 'Designation',
       employeeID: 'Employee ID',
-      valuation:"",
+      valuation:"Valuation",
       
       // Tooltips
       deleteTooltip: 'Delete',
