@@ -11,6 +11,9 @@
   import { submitApplication, getViewApplicationData, notifyApplicationSubmission } from '$lib/api/authApi.js';
   import jsPDF from 'jspdf';
 
+  import { token } from '$lib/stores/userStore';
+  import { get } from 'svelte/store';
+
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
 
@@ -24,14 +27,57 @@
   let agreeChecked = false;
 
   $: userData = $user
-    ? { name: $user.name || 'Guest User', phone: $user.mobile || '', username: $user.username || '' }
-    : { name: 'Guest User', phone: '', username: '' };
+    ? { name: $user.name || '', phone: $user.mobile || '', username: $user.username || '' }
+    : { name: '', phone: '', username: '' };
 
   $: isReviewMode = $page.url.searchParams.get('mode') === 'review';
 
+  // onMount(async () => {
+
+  //   const  currentToken = get(token);
+      
+  //   if (!$user || !currentToken) { goto(`/${locale}/login`); return; }
+  //   if (!$applicationId) { goto(`/${locale}/dashboard`); return; }
+  //   try {
+  //     const result = await getViewApplicationData($user.id, $applicationId);
+  //     if (result.error !== 0) {
+  //       error = result.errorMsg || 'Failed to load application';
+  //     } else {
+  //       appData = result.data;
+  //     }
+  //   } catch (e) {
+  //     error = 'Failed to load application data';
+  //   } finally {
+  //     isLoading = false;
+  //   }
+  // });
+
   onMount(async () => {
-    if (!$user) { goto(`/${locale}/login`); return; }
-    if (!$applicationId) { goto(`/${locale}/dashboard`); return; }
+
+    const  currentToken = get(token);
+    //console.log("Toakn_ view application--------",currentToken);
+      
+    if (!$user || !currentToken) { goto(`/${locale}/login`); return; }
+    if (!$applicationId) {
+        const { getUserApplication } = await import('$lib/api/authApi.js');
+        const appResult = await getUserApplication($user.id);
+        if (appResult.error === 0 && appResult.applicationId) {
+          applicationId.set(appResult.applicationId);
+        } else {
+          goto(`/${locale}/dashboard`);
+          return;
+        }
+      }
+
+      // Block review mode if application already submitted
+      const { getUserApplication } = await import('$lib/api/authApi.js');
+      const statusCheck = await getUserApplication($user.id);
+      const isReview = $page.url.searchParams.get('mode') === 'review';
+      if (isReview && statusCheck.error === 0 && statusCheck.status === 'submitted') {
+        goto(`/${locale}/application/view-application`);
+        return;
+      }
+      
     try {
       const result = await getViewApplicationData($user.id, $applicationId);
       if (result.error !== 0) {
@@ -165,9 +211,7 @@
       }
     }
 
-    // ═══════════════════════════════════
     // PDF HEADER BANNER
-    // ═══════════════════════════════════
     doc.setFillColor(88, 28, 135);
     doc.rect(0, 0, pageW, 30, 'F');
 
@@ -183,9 +227,7 @@
 
     y = 38;
 
-    // ═══════════════════════════════════
     // PHOTO, BASIC INFO, SIGNATURE ROW
-    // ═══════════════════════════════════
     const photoUrl = appData.documents?.photo;
     const signatureUrl = appData.documents?.signature;
 
@@ -268,9 +310,7 @@
 
     y += 35;
 
-    // ═══════════════════════════════════
     // IDENTITY CHECK
-    // ═══════════════════════════════════
     sectionTitle('IDENTITY CHECK');
 
     field('Full Name', appData.personal?.name);
@@ -282,9 +322,7 @@
 
     y += 3;
 
-    // ═══════════════════════════════════
     // PERSONAL DETAILS
-    // ═══════════════════════════════════
     sectionTitle('PERSONAL DETAILS');
 
     field('Mobile Number', appData.personal?.mobile);
@@ -332,9 +370,7 @@
 
     y += 3;
 
-    // ═══════════════════════════════════
     // ACADEMIC INFORMATION
-    // ═══════════════════════════════════
     if (appData.education) {
       sectionTitle('ACADEMIC INFORMATION');
 
@@ -379,9 +415,7 @@
       y += 3;
     }
 
-    // ═══════════════════════════════════
     // GUARANTOR DETAILS
-    // ═══════════════════════════════════
     if (appData.guarantor) {
       sectionTitle('GUARANTOR DETAILS');
 
@@ -426,9 +460,7 @@
       y += 3;
     }
 
-    // ═══════════════════════════════════
     // COLLATERAL DETAILS
-    // ═══════════════════════════════════
     if (appData.collateral && (appData.collateral.properties?.length || appData.collateral.fds?.length || appData.collateral.lics?.length || appData.collateral.govtEmployees?.length)) {
       sectionTitle('COLLATERAL DETAILS');
 
@@ -479,9 +511,7 @@
       y += 2;
     }
 
-    // ═══════════════════════════════════
     // UPLOADED DOCUMENTS
-    // ═══════════════════════════════════
     if (appData.allDocs?.length > 0) {
       sectionTitle('UPLOADED DOCUMENTS');
 
@@ -496,9 +526,7 @@
       });
     }
 
-    // ═══════════════════════════════════
     // FOOTER ON EACH PAGE
-    // ═══════════════════════════════════
     const totalPages = doc.internal.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i);
@@ -520,6 +548,10 @@
 <svelte:head>
   <title>{isReviewMode ? 'Review & Submit' : 'View Application'} - Education Loan</title>
 </svelte:head>
+
+{#if !$user || !get(token)}
+
+{:else}
 
 <div class="min-h-screen bg-gray-100">
 
@@ -584,9 +616,7 @@
 
     {:else if appData}
 
-    <!-- ═══════════════════════════════════════════════════════
-         MAIN APPLICATION FORM SHEET
-         ═══════════════════════════════════════════════════════ -->
+         <!-- MAIN APPLICATION FORM SHEET -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
 
       <!-- ── Application Header Banner ── -->
@@ -610,9 +640,7 @@
         </div>
       </div>
 
-      <!-- ══════════════════════════════════════════════════════
-           PERSONAL INFORMATION CARD (Photo, Info, Signature)
-           ══════════════════════════════════════════════════════ -->
+           <!-- PERSONAL INFORMATION CARD (Photo, Info, Signature) -->
       <div class="border-b-4 border-purple-200 bg-gradient-to-br from-purple-50 to-white">
         <div class="px-6 sm:px-8 py-2 bg-purple-700">
           <h4 class="text-white font-bold text-xs uppercase tracking-widest">{t.tabs.personal}</h4>
@@ -678,9 +706,8 @@
         </div>
       </div>
 
-      <!-- ════════════════════════════
-           SECTION: IDENTITY CHECK
-           ════════════════════════════ -->
+      
+           <!-- SECTION: IDENTITY CHECK -->
       <div class="border-b border-gray-200">
         <div class="bg-purple-700 px-6 sm:px-8 py-2">
           <h4 class="text-white font-bold text-xs uppercase tracking-widest">{t.stepper.step1}</h4>
@@ -702,9 +729,7 @@
         </div>
       </div>
 
-      <!-- ════════════════════════════
-           SECTION: PERSONAL DETAILS
-           ════════════════════════════ -->
+           <!-- SECTION: PERSONAL DETAILS -->
       <div class="border-b border-gray-200">
         <div class="bg-purple-700 px-6 sm:px-8 py-2">
           <h4 class="text-white font-bold text-xs uppercase tracking-widest">{t.stepper.step2}</h4>
@@ -743,9 +768,7 @@
         </div>
       </div>
 
-      <!-- ════════════════════════════
-           SECTION: ACADEMIC INFO
-           ════════════════════════════ -->
+           <!-- SECTION: ACADEMIC INFO -->
       {#if appData.education}
         <div class="border-b border-gray-200">
           <div class="bg-purple-700 px-6 sm:px-8 py-2">
@@ -818,9 +841,7 @@
         </div>
       {/if}
 
-      <!-- ════════════════════════════
-           SECTION: GUARANTOR DETAILS
-           ════════════════════════════ -->
+           <!-- SECTION: GUARANTOR DETAILS -->
       {#if appData.guarantor}
         <div class="border-b border-gray-200">
           <div class="bg-purple-700 px-6 sm:px-8 py-2">
@@ -855,9 +876,7 @@
         </div>
       {/if}
 
-      <!-- ════════════════════════════
-           SECTION: COLLATERAL DETAILS
-           ════════════════════════════ -->
+           <!-- SECTION: COLLATERAL DETAILS -->
       {#if appData.collateral && (appData.collateral.properties?.length || appData.collateral.fds?.length || appData.collateral.lics?.length || appData.collateral.govtEmployees?.length)}
         <div class="border-b border-gray-200">
           <div class="bg-purple-700 px-6 sm:px-8 py-2">
@@ -954,9 +973,7 @@
         </div>
       {/if}
 
-      <!-- ════════════════════════════
-           SECTION: UPLOADED DOCUMENTS
-           ════════════════════════════ -->
+      <!-- SECTION: UPLOADED DOCUMENTS -->
       {#if appData.allDocs?.length > 0}
         {@const sectionNameMap = {
           1:'APPLICANT DOCUMENTS',2:'APPLICANT DOCUMENTS',3:'APPLICANT DOCUMENTS',
@@ -1085,8 +1102,9 @@
         </div>
       {/if}
 
-    </div><!-- end main sheet -->
+    </div>
 
     {/if}
   </div>
 </div>
+{/if}

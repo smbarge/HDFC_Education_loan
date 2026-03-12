@@ -22,7 +22,7 @@
   let activeSection = 'personal';
 
   $: userData = $user ? {
-    name: $user.name || 'Guest User',
+    name: $user.name || '',
     phone: $user.mobile || '',
     username: $user.username || '',
     id: $user.id || null

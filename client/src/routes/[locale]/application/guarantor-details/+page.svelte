@@ -11,6 +11,8 @@
   import { fetchMasters, fetchTalukas } from '$lib/api/auth';
   import { getGuarantorDetailsData, customSaveGuarantorDetails } from '$lib/api/authApi';
 
+  import { get } from 'svelte/store';
+  import { token } from '$lib/stores/userStore';
 
 
   $: locale = $page.params.locale || 'en';
@@ -21,7 +23,7 @@
   let showProfileModal = false;
 
   $: userData = $user ? {
-  name: $user.name || "Guest User",
+  name: $user.name || "",
   phone: $user.mobile || "",
   username: $user.username || "",
   id: $user.id || null
@@ -44,12 +46,20 @@
   let isLoadingPermanentTalukas = false;
 
   onMount(async () => {
-    if (!$user) {
+    const currentToken =  get(token);
+    if (!$user || !currentToken) {
       goto(`/${locale}/login`);
       return;
     }
 
     if (!$applicationId) {
+      goto(`/${locale}/dashboard`);
+      return;
+    }
+
+    const { getUserApplication } = await import('$lib/api/authApi');
+    const appCheck = await getUserApplication($user.id);
+    if (appCheck.error === 0 && appCheck.status === 'submitted') {
       goto(`/${locale}/dashboard`);
       return;
     }

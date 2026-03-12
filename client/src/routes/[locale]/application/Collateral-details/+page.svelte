@@ -14,6 +14,9 @@
   import collateralDetailsValidation from '$lib/validation/collateral/collateralDetails';
   import { user, logout as logoutStore, applicationId } from '$lib/stores/userStore';
 
+  import { token } from '$lib/stores/userStore';
+  import { get } from 'svelte/store';
+
   
   import { getCollateralProperties, 
           customSaveCollateralProperties , 
@@ -49,7 +52,7 @@
 
 
   $: userData = $user ? {
-  name: $user.name || "Guest User",
+  name: $user.name || "",
   phone: $user.mobile || "",
   username: $user.username || "",
   id: $user.id || null
@@ -58,8 +61,16 @@
 
 
 onMount(async () => {
-    if (!$user) { goto(`/${locale}/login`); return; }
+    const currentToken = get(token);
+    if (!$user || !currentToken) { goto(`/${locale}/login`); return; }
     if (!$applicationId) { goto(`/${locale}/dashboard`); return; }
+
+    const { getUserApplication } = await import('$lib/api/authApi');
+    const appCheck = await getUserApplication($user.id);
+    if (appCheck.error === 0 && appCheck.status === 'submitted') {
+      goto(`/${locale}/dashboard`);
+      return;
+    }
 
     // Load property collaterals from DB
     const collateralData = await getCollateralProperties($user.id, $applicationId);

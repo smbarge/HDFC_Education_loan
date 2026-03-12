@@ -12,11 +12,11 @@
   $: t = i18n[locale];
 
   $: userData = $user ? {
-    name: $user.name || "Guest User",
+    name: $user.name || "",
     phone: $user.mobile || "",
     username: $user.username || ""
   } : {
-    name: "Guest User",
+    name: "",
     phone: "",
     username: ""
   };

@@ -11,6 +11,10 @@
   import { customSaveApplicationStart,getApplicationData } from '$lib/api/authApi';
   import { user, logout as logoutStore, applicationId } from '$lib/stores/userStore';
 
+  import { get } from 'svelte/store';
+  import { token } from '$lib/stores/userStore';
+
+
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
@@ -19,7 +23,7 @@
   let showProfileModal = false;
 
   $: userData = $user ? {
-  name: $user.name || "Guest User",
+  name: $user.name || "",
   phone: $user.mobile || "",
   username: $user.username || "",
   id: $user.id || null 
@@ -61,9 +65,27 @@
 // });
 
 onMount(async () => {
-  if (!$user) {
+
+  const currentToken = get(token);
+  console.log('Token on dashboard mount:----------------------------', get(token));
+
+  if (!$user || !currentToken) {
     goto(`/${locale}/login`);
     return;
+  }
+
+   // Already submitted → back to dashboard
+  const { getUserApplication } = await import('$lib/api/authApi');
+  const result = await getUserApplication($user.id);
+  
+  if (result.error === 0) {
+    applicationId.set(result.applicationId);
+    
+    if (result.status === 'submitted') {
+     
+      goto(`/${locale}/dashboard`);
+      return;
+    }
   }
 
   console.log('Loaded user data:', userData);
@@ -79,7 +101,7 @@ onMount(async () => {
         ...appData.data
       };
       console.log('Pre-filled form data:', formData);
-       formData = formData;
+      formData = formData;
     }
   }
 
