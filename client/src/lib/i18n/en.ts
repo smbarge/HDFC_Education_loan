@@ -134,6 +134,7 @@ export const en = {
   },
   documents: {
     title: "Required Documents",
+    subtitle:"Please prepare the following documents for a smooth application process",
     applicant: {
       title: "Required Documents for Applicant",
       items: [
