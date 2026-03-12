@@ -16,10 +16,7 @@
   import { getEducationDetailsData,submitApplication } from '$lib/api/authApi';
 
   import { get } from 'svelte/store';
-  import { token } from '$lib/stores/userStore';
-
-
-  import { user, logout as logoutStore, applicationId } from '$lib/stores/userStore';
+  import { user, logout as logoutStore, applicationId, token } from '$lib/stores/userStore';
 
 //   import { 
 //   getGuarantorDetailsData,
@@ -174,6 +171,11 @@ onMount(async () => {
   }
 
   // Build reverse map: masterId -> all docId keys
+   const guarantorResult = await getGuarantorDetailsData($applicationId);
+  if (guarantorResult.error === 0 && guarantorResult.data && guarantorResult.data.guarantorFullName) {
+    guarantorData = guarantorResult.data;
+  }
+
   const masterIdToAllDocIdsMap = {};
   Object.entries(docIdToMasterIdMap).forEach(([docKey, masterId]) => {
     const key = String(masterId);
