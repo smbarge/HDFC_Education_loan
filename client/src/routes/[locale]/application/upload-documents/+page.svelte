@@ -69,7 +69,7 @@ import {
   let showProfileModal = false;
 
   $: userData = $user ? {
-  name: $user.name || "Guest User",
+  name: $user.name || "",
   phone: $user.mobile || "",
   username: $user.username || "",
   id: $user.id || null
@@ -153,7 +153,9 @@ import {
 };
 
 onMount(async () => {
-  if (!$user) {
+ const currentToken = get(token);
+
+  if (!$user || !currentToken) {
     goto(`/${locale}/login`);
     return;
   }
@@ -164,13 +166,11 @@ onMount(async () => {
   }
 
   // Check if guarantor exists
-  const guarantorResult = await getGuarantorDetailsData($applicationId);
-  if (guarantorResult.error === 0 && guarantorResult.data) {
-    guarantorData = {
-      exists: true,
-      guarantorFullName: guarantorResult.data.guarantorFullName,
-      guarantorMobile: guarantorResult.data.guarantorMobile
-    };
+ const { getUserApplication } = await import('$lib/api/authApi');
+  const appCheck = await getUserApplication($user.id);
+  if (appCheck.error === 0 && appCheck.status === 'submitted') {
+    goto(`/${locale}/dashboard`);
+    return;
   }
 
   // Build reverse map: masterId -> all docId keys

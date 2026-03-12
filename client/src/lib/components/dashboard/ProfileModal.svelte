@@ -4,7 +4,7 @@
   
   export let showProfileModal = false;
   export let userData = {
-    name: "Guest User",
+    name: "",
     phone: "",
     username: ""
   };

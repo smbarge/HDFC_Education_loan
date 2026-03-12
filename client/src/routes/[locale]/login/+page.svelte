@@ -106,7 +106,11 @@
     user.set(response.user);
     token.set(response.token);
 
-    
+
+    //document.cookie = `token=${response.token}; path=/; max-age=86400; SameSite=Strict`;
+    document.cookie = `token=${response.token}; path=/; max-age=86400; SameSite=Strict`;
+
+
     goto(`/${locale}/dashboard`);
 
   } catch (err) {

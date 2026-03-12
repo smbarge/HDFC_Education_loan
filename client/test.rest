@@ -68,7 +68,18 @@ Content-Type: application/json
 }
 
 
-### Respected Tokan=====
+### Change Password
+POST http://localhost:5173/api/auth
+Content-Type: application/json
+
+{
+  "action": "changePassword",
+  "mobile": "9999999999",
+  "password": "Admin@2024",
+  "userId": null
+}
+
+### Respected Tokan__________
 
 @token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwidXNlcm5hbWUiOiI5OTk5OTk5OTk5IiwibW9iaWxlIjoiOTk5OTk5OTk5OSIsInN1YiI6Ijk5OTk5OTk5OTkiLCJpYXQiOjE3NzMwMzkyMjMsImV4cCI6MTc3MzEyNTYyM30.eKD-33IoqvXBVKClWurfzZthXWHMi4ugqggq8cGB-GE
 
@@ -417,7 +428,9 @@ Authorization: Bearer {{token}}
 # Upload document section 
 
 ### Get all
-GET http://localhost:5173/api/uploaddoc/3/4/all
+GET http://localhost:5173/api/uploaddoc/6/7/all
+Authorization: Bearer {{token}}
+
 
 
 ###POST

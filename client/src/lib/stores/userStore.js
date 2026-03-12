@@ -78,13 +78,25 @@ export const token = {
     }
 };;
 
+// export const logout = () => {
+//   if (browser) {
+//     localStorage.removeItem('authUser');
+//     localStorage.removeItem('accessToken');
+//      localStorage.removeItem('currentApplicationId');
+//   }
+//   userStore.set(null);
+//   tokenStore.set(null);
+//   applicationIdStore.set(null); 
+// };
+
 export const logout = () => {
   if (browser) {
     localStorage.removeItem('authUser');
     localStorage.removeItem('accessToken');
-     localStorage.removeItem('currentApplicationId');
+    localStorage.removeItem('currentApplicationId');
+    document.cookie = 'token=; path=/; max-age=0'; // clear cookie
   }
   userStore.set(null);
   tokenStore.set(null);
-  applicationIdStore.set(null); 
+  applicationIdStore.set(null);
 };

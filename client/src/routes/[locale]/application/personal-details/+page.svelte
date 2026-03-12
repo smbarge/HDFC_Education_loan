@@ -13,6 +13,9 @@
 
   import { fetchMasters,fetchTalukas } from '$lib/api/auth';
   import { user, logout as logoutStore, applicationId } from '$lib/stores/userStore';
+  import { get } from 'svelte/store';
+  import { token } from '$lib/stores/userStore';
+
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
@@ -20,7 +23,7 @@
   let showProfileModal = false;
 
   $: userData = $user ? {
-  name: $user.name || "Guest User",
+  name: $user.name || "",
   phone: $user.mobile || "",
   username: $user.username || "",
   id: $user.id || null
@@ -89,12 +92,21 @@
 // });
 
 onMount(async () => {
-  if (!$user) {
+
+  const currentTokan = get(token);
+  if (!$user|| !currentTokan) {
     goto(`/${locale}/login`);
     return;
   }
 
   if (!$applicationId) {
+    goto(`/${locale}/dashboard`);
+    return;
+  }
+
+  const { getUserApplication } = await import('$lib/api/authApi');
+  const result = await getUserApplication($user.id);
+  if (result.error === 0 && result.status === 'submitted') {
     goto(`/${locale}/dashboard`);
     return;
   }
@@ -115,6 +127,7 @@ onMount(async () => {
       ...formData,
       ...personalDetailsData.data
     };
+
     console.log('Pre-filled personal details:', formData);
 
     console.log("Distrct Id _____:",formData.currentDistrict);
