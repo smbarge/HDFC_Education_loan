@@ -1,6 +1,12 @@
 <script>
   import { createEventDispatcher } from 'svelte';
   import { customSendOtp, customVerifyOtp, customChangePassword } from '$lib/api/authApi.js';
+   import { i18n } from '$lib/i18n';
+    import { logout } from '$lib/stores/userStore';
+
+  export let locale = 'en';
+
+  $: t = i18n[locale]?.logout || i18n.en.logout;
   
   export let showProfileModal = false;
   export let userData = {
@@ -8,7 +14,7 @@
     phone: "",
     username: ""
   };
-  export let locale = 'en';
+
   
   const dispatch = createEventDispatcher();
   
@@ -154,7 +160,7 @@ async function handleVerifyOtp() {
           <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          Password changed successfully!
+         {t.passwordChangedSuccessfully}
         </div>
       {/if}
       
@@ -218,7 +224,7 @@ async function handleVerifyOtp() {
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
               </svg>
-              <span>Change Password</span>
+              <span>{t.changePassword}</span>
             </button>
 
             <button
@@ -228,7 +234,7 @@ async function handleVerifyOtp() {
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
               </svg>
-              <span>Logout</span>
+              <span>{t.logout}</span>
             </button>
           </div>
         </div>
@@ -243,29 +249,29 @@ async function handleVerifyOtp() {
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
         </svg>
       </button>
-      <h3 class="text-xl font-bold text-gray-900">Change Password</h3>
+      <h3 class="text-xl font-bold text-gray-900">{t.changePassword}</h3>
     </div>
     <div class="space-y-4">
      
       <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1">New Password</label>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">{t.newPassword}</label>
         <div class="relative">
-          <input type={showNew ? 'text' : 'password'} value={newPassword} on:input={(e) => newPassword = e.target.value} placeholder="Enter new password" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none text-sm pr-12"/>
+          <input type={showNew ? 'text' : 'password'} value={newPassword} on:input={(e) => newPassword = e.target.value} placeholder={t.enterNewPassword} class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none text-sm pr-12"/>
           <button type="button" on:click={() => showNew = !showNew} class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">{#if showNew}<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>{:else}<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>{/if}</svg>
           </button>
         </div>
       </div>
       <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1">Confirm New Password</label>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">{t.confirmNewPassword}</label>
         <div class="relative">
-         <input type={showConfirm ? 'text' : 'password'} value={confirmPassword} on:input={(e) => confirmPassword = e.target.value} placeholder="Re-enter new password" class="w-full px-4 py-3 border-2 rounded-lg focus:outline-none text-sm pr-12 {confirmPassword && confirmPassword !== newPassword ? 'border-red-400' : confirmPassword && confirmPassword === newPassword ? 'border-green-400' : 'border-gray-200 focus:border-purple-500'}"/>
+         <input type={showConfirm ? 'text' : 'password'} value={confirmPassword} on:input={(e) => confirmPassword = e.target.value} placeholder={t.reEnterNewPassword} class="w-full px-4 py-3 border-2 rounded-lg focus:outline-none text-sm pr-12 {confirmPassword && confirmPassword !== newPassword ? 'border-red-400' : confirmPassword && confirmPassword === newPassword ? 'border-green-400' : 'border-gray-200 focus:border-purple-500'}"/>
           <button type="button" on:click={() => showConfirm = !showConfirm} class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">{#if showConfirm}<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>{:else}<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>{/if}</svg>
           </button>
         </div>
-        {#if confirmPassword && confirmPassword !== newPassword}<p class="text-xs text-red-500 mt-1">Passwords do not match</p>
-        {:else if confirmPassword && confirmPassword === newPassword}<p class="text-xs text-green-600 mt-1">✓ Passwords match</p>{/if}
+        {#if confirmPassword && confirmPassword !== newPassword}<p class="text-xs text-red-500 mt-1">{t.passwordsDoNotMatch}</p>
+        {:else if confirmPassword && confirmPassword === newPassword}<p class="text-xs text-green-600 mt-1">✓ {t.passwordsMatch}</p>{/if}
       </div>
       {#if cpError}
         <div class="flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
@@ -273,9 +279,9 @@ async function handleVerifyOtp() {
           {cpError}
         </div>
       {/if}
-      <p class="text-xs text-gray-500 text-center">An OTP will be sent to <span class="font-semibold text-purple-700">{userData.phone}</span></p>
+      <p class="text-xs text-gray-500 text-center">{t.otpWillBeSent} <span class="font-semibold text-purple-700">{userData.phone}</span></p>
         <button on:click={handleSendOtp} disabled={isSendingOtp} class="w-full py-3.5 bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 disabled:opacity-50 text-white font-bold rounded-lg transition-all shadow-md">
-          {isSendingOtp ? 'Sending OTP...' : 'Send OTP & Change Password'}
+          {isSendingOtp ? t.sendingOtp : t.sendOtpChangePassword}
         </button>
     </div>
   </div>
@@ -287,18 +293,18 @@ async function handleVerifyOtp() {
       <button on:click={() => showOtpScreen = false} class="text-gray-400 hover:text-gray-600">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
       </button>
-      <h3 class="text-xl font-bold text-gray-900">Verify OTP</h3>
+      <h3 class="text-xl font-bold text-gray-900">{t.verifyOtp}</h3>
     </div>
     <div class="text-center mb-6">
       <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
         <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
       </div>
-      <p class="text-sm text-gray-600">OTP sent to <span class="font-semibold text-purple-700">{userData.phone}</span></p>
-      <p class="text-xs text-gray-400 mt-1">Enter the OTP to confirm your password change</p>
+      <p class="text-sm text-gray-600">{t.otpSentTo} <span class="font-semibold text-purple-700">{userData.phone}</span></p>
+      <p class="text-xs text-gray-400 mt-1">{t.enterOtpToConfirm}</p>
     </div>
     <div class="space-y-4">
       <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1">Enter OTP</label>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">{t.enterOtp}</label>
         <input type="text" bind:value={otpValue} placeholder="_ _ _ _ _ _" maxlength="6" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none text-center text-2xl font-bold tracking-[0.5em]"/>
       </div>
       {#if cpError}
@@ -309,12 +315,12 @@ async function handleVerifyOtp() {
       {/if}
 
         <button on:click={handleVerifyOtp} disabled={isVerifying} class="w-full py-3.5 bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 disabled:opacity-50 text-white font-bold rounded-lg transition-all shadow-md">
-    {isVerifying ? 'Verifying...' : 'Verify & Change Password'}
+    {isVerifying ? t.verifying: t.verifyChangePassword}
   </button>
 
       <div class="text-center">
-        <span class="text-sm text-gray-500">Didn't receive OTP? </span>
-        <button on:click={() => { otpValue = ''; cpError = ''; }} class="text-sm text-purple-600 font-semibold hover:text-purple-800">Resend OTP</button>
+        <span class="text-sm text-gray-500">{t.didntReceiveOtp} </span>
+        <button on:click={() => { otpValue = ''; cpError = ''; }} class="text-sm text-purple-600 font-semibold hover:text-purple-800">{t.resendOtp}</button>
       </div>
     </div>
   </div>
@@ -331,10 +337,10 @@ async function handleVerifyOtp() {
           </div>
           
           <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3">
-            Are you sure to logout?
+            {t.sureLogout}
           </h3>
           <p class="text-gray-600 mb-8">
-            You will need to login again to access your account
+            {t.loginAgain}
           </p>
 
           <div class="flex gap-3">
@@ -342,13 +348,13 @@ async function handleVerifyOtp() {
               on:click={cancelLogout}
               class="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
             >
-              Cancel
+              {t.cancel}
             </button>
             <button
               on:click={confirmLogout}
               class="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
             >
-              Yes, Logout
+              {t.yesLogout}
             </button>
           </div>
         </div>

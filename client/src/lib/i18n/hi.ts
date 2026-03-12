@@ -1553,6 +1553,53 @@ export const hi = {
     pending: "लंबित"
   },
 
+  //Components
+
+  //Logout
+  logout:{
+  passwordChangedSuccessfully: "पासवर्ड सफलतापूर्वक बदल दिया गया!",
+  changePassword: "पासवर्ड बदलें",
+  logout: "लॉग आउट",
+  newPassword: "नया पासवर्ड",
+  confirmNewPassword: "नए पासवर्ड की पुष्टि करें",
+  otpWillBeSent: "एक ओटीपी भेजा जाएगा",
+  verifyOtp: "ओटीपी सत्यापित करें",
+  otpSentTo: "ओटीपी भेजा गया है",
+  enterOtpToConfirm: "पासवर्ड परिवर्तन की पुष्टि करने के लिए ओटीपी दर्ज करें",
+  enterOtp: "ओटीपी दर्ज करें",
+  didntReceiveOtp: "ओटीपी प्राप्त नहीं हुआ?",
+  loginAgain: "अपने खाते तक पहुंचने के लिए आपको फिर से लॉगिन करना होगा",
+  yesLogout: "हाँ, लॉग आउट करें",
+  cancel: "रद्द करें",
+  sureLogout: "क्या आप वाकई लॉगआउट करना चाहते हैं?",
+  sendingOtp: "ओटीपी भेजा जा रहा है...",
+  sendOtpChangePassword: "ओटीपी भेजें और पासवर्ड बदलें",
+  verifying: "सत्यापित किया जा रहा है...",
+  verifyChangePassword: "सत्यापित करें और पासवर्ड बदलें",
+  resendOtp: "ओटीपी पुनः भेजें",
+  passwordsDoNotMatch: "पासवर्ड मेल नहीं खाते",
+  passwordsMatch: "पासवर्ड मेल खाते हैं",
+  enterNewPassword: "नया पासवर्ड दर्ज करें",       
+  reEnterNewPassword: "नया पासवर्ड पुनः दर्ज करें",
+  },
+
+  //Submission Success
+  success:{
+    title: "आवेदन सफलतापूर्वक जमा हो गया!",
+  successMessage: "आपका आवेदन सफलतापूर्वक जमा हो गया है। हमारी टीम जल्द ही इसकी समीक्षा करेगी और आपसे संपर्क करेगी।",
+  applicationIdLabel: "आपका आवेदन आईडी",
+  applicationId: "आवेदन आईडी :",
+  saveIdMessage: "कृपया भविष्य के संदर्भ के लिए इस आईडी को सुरक्षित रखें",
+
+  nextStepsTitle: "आगे क्या होगा?",
+  reviewDocuments: "हमारी टीम आपके दस्तावेज़ों की समीक्षा करेगी",
+  receiveUpdates: "आपको ईमेल/एसएमएस के माध्यम से अपडेट मिलते रहेंगे",
+  checkDashboard: "स्थिति अपडेट के लिए अपना डैशबोर्ड देखें",
+
+  goToDashboard: "डैशबोर्ड पर जाएँ",
+  thankYou: "हमारी सेवा चुनने के लिए धन्यवाद!"
+  },
+
   //Declaration
   declaration:"घोषणा ",
   iHereBy: "मैं एतद् द्वारा घोषणा करता/करती हूँ कि इस आवेदन में प्रदान की गई सभी जानकारी",

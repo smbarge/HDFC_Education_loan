@@ -71,28 +71,28 @@
 
         <!-- Success Message -->
         <h2 class="text-3xl font-bold text-gray-900 mb-3">
-          {t.uploadDocuments?.successModal?.title || 'Application Submitted!'}
+          {t.uploadDocuments?.successModal?.title || t.success.title}
         </h2>
         
         <p class="text-gray-600 mb-6 leading-relaxed">
-          {t.uploadDocuments?.successModal?.message || 'Your application has been submitted successfully. Our team will review it shortly and get back to you.'}
+          {t.uploadDocuments?.successModal?.message || t.success.successMessage}
         </p>
 
         <!-- Application ID Card -->
         <div class="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-5 mb-6 border border-purple-200">
           <p class="text-sm text-gray-600 mb-2 font-medium">
-            {t.uploadDocuments?.successModal?.applicationIdLabel || 'Your Application ID'}
+            {t.uploadDocuments?.successModal?.applicationIdLabel || t.success.applicationIdLabel}
           </p>
           <div class="flex items-center justify-center gap-2">
             <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
             <p class="text-2xl font-bold text-purple-600">
-              Application ID :{applicationId}
+              {t.success.applicationId} :{applicationId}
             </p>
           </div>
           <p class="text-xs text-gray-500 mt-2">
-            {t.uploadDocuments?.successModal?.saveIdNote || 'Please save this ID for future reference'}
+            {t.uploadDocuments?.successModal?.saveIdNote || t.success.saveIdMessage}
           </p>
         </div>
 
@@ -104,12 +104,12 @@
             </svg>
             <div class="text-sm text-gray-700">
               <p class="font-semibold text-blue-900 mb-1">
-                {t.uploadDocuments?.successModal?.whatNextTitle || 'What happens next?'}
+                {t.uploadDocuments?.successModal?.whatNextTitle || t.success.nextStepsTitle}
               </p>
               <ul class="space-y-1 text-xs">
-                <li>• {t.uploadDocuments?.successModal?.step1 || 'Our team will review your documents'}</li>
-                <li>• {t.uploadDocuments?.successModal?.step2 || 'You will receive updates via email/SMS'}</li>
-                <li>• {t.uploadDocuments?.successModal?.step3 || 'Check your dashboard for status updates'}</li>
+                <li>• {t.uploadDocuments?.successModal?.step1 || t.success.reviewDocuments}</li>
+                <li>• {t.uploadDocuments?.successModal?.step2 || t.success.receiveUpdates}</li>
+                <li>• {t.uploadDocuments?.successModal?.step3 || t.success.checkDashboard}</li>
               </ul>
             </div>
           </div>
@@ -120,14 +120,14 @@
           on:click={handleGoToDashboard}
           class="w-full py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center gap-2"
         >
-          <span>{t.uploadDocuments?.successModal?.dashboardButton || 'Go to Dashboard'}</span>
+          <span>{t.uploadDocuments?.successModal?.dashboardButton || t.success.goToDashboard}</span>
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
           </svg>
         </button>
 
         <p class="text-xs text-gray-500 mt-4">
-          {t.uploadDocuments?.successModal?.thankYou || 'Thank you for choosing our service!'}
+          {t.uploadDocuments?.successModal?.thankYou || t.success.thankYou}
         </p>
       </div>
     </div>

@@ -1552,6 +1552,53 @@ CollateralDocuments: {
     pending: "प्रलंबित"
   },
 
+  //Components
+
+  //Logout
+  logout:{
+    passwordChangedSuccessfully: "पासवर्ड यशस्वीरित्या बदलला गेला!",
+    changePassword: "पासवर्ड बदला",
+    logout: "लॉग आउट",
+    newPassword: "नवीन पासवर्ड",
+    confirmNewPassword: "नवीन पासवर्डची पुष्टी करा",
+    otpWillBeSent: "एक ओटीपी पाठवला जाईल",
+    verifyOtp: "ओटीपी पडताळा",
+    otpSentTo: "ओटीपी पाठवला आहे",
+    enterOtpToConfirm: "पासवर्ड बदलाची पुष्टी करण्यासाठी ओटीपी प्रविष्ट करा",
+    enterOtp: "ओटीपी प्रविष्ट करा",
+    didntReceiveOtp: "ओटीपी प्राप्त झाला नाही?",
+    loginAgain: "आपल्या खात्यात प्रवेश करण्यासाठी पुन्हा लॉगिन करावे लागेल",
+    yesLogout: "होय, लॉग आउट करा",
+    cancel: "रद्द करा",
+    sureLogout: "तुम्हाला नक्की लॉगआउट करायचे आहे का?",
+    sendingOtp: "ओटीपी पाठवला जात आहे...",
+    sendOtpChangePassword: "ओटीपी पाठवा आणि पासवर्ड बदला",
+    verifying: "पडताळणी सुरू आहे...",
+    verifyChangePassword: "पडताळा आणि पासवर्ड बदला",
+    resendOtp: "ओटीपी पुन्हा पाठवा",
+    passwordsDoNotMatch: "पासवर्ड जुळत नाहीत",
+    passwordsMatch: "पासवर्ड जुळले",
+    enterNewPassword: "नवीन पासवर्ड प्रविष्ट करा",       
+    reEnterNewPassword: "नवीन पासवर्ड पुन्हा प्रविष्ट करा",
+  },
+
+  //Submission Success
+  success:{
+    title: "अर्ज यशस्वीरित्या सबमिट झाला!",
+  successMessage: "आपला अर्ज यशस्वीरित्या सबमिट झाला आहे. आमची टीम लवकरच त्याची तपासणी करून आपल्याशी संपर्क साधेल.",
+  applicationIdLabel: "आपला अर्ज आयडी",
+  applicationId: "अर्ज आयडी :",
+  saveIdMessage: "कृपया भविष्यातील संदर्भासाठी हा आयडी जतन करून ठेवा",
+
+  nextStepsTitle: "पुढे काय होईल?",
+  reviewDocuments: "आमची टीम आपले कागदपत्र तपासेल",
+  receiveUpdates: "आपल्याला ईमेल/एसएमएसद्वारे अपडेट मिळतील",
+  checkDashboard: "स्थिती अपडेटसाठी आपला डॅशबोर्ड तपासा",
+
+  goToDashboard: "डॅशबोर्डवर जा",
+  thankYou: "आमची सेवा निवडल्याबद्दल धन्यवाद!"
+  },
+
   //Declaration
   declaration:"घोषणा ",
   iHereBy: "मी यान्वये घोषित करतो/करते की या अर्जामध्ये दिलेली सर्व माहिती",

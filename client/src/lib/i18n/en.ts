@@ -1590,6 +1590,54 @@ export const en = {
     pending: "Pending"
   },
 
+  //Components
+
+  //Logout
+  logout:{
+    passwordChangedSuccessfully: "Password changed successfully!",
+    changePassword: "Change Password",
+    logout: "Logout",
+    newPassword: "New Password",
+    confirmNewPassword: "Confirm New Password",
+    otpWillBeSent: "An OTP will be sent to",
+    verifyOtp: "Verify OTP",
+    otpSentTo: "OTP sent to",
+    enterOtpToConfirm: "Enter the OTP to confirm your password change",
+    enterOtp: "Enter OTP",
+    didntReceiveOtp: "Didn't receive OTP?",
+    loginAgain: "You will need to login again to access your account",
+    yesLogout: "Yes, Logout",
+    cancel:"Cancel",
+    sureLogout:"Are you sure to logout?",
+    sendingOtp: "Sending OTP...",
+    sendOtpChangePassword: "Send OTP & Change Password",
+    verifying: "Verifying...",
+    verifyChangePassword: "Verify & Change Password",
+    resendOtp: "Resend OTP",
+    passwordsDoNotMatch: "Passwords do not match",
+    passwordsMatch: "Passwords match",
+    enterNewPassword: "Enter new password",
+    reEnterNewPassword: "Re-enter new password",
+  },
+
+  //Submission Success
+  success:{
+     title: "Application Submitted!",
+  successMessage: "Your application has been submitted successfully. Our team will review it shortly and get back to you.",
+  applicationIdLabel: "Your Application ID",
+  applicationId: "Application ID :",
+  saveIdMessage: "Please save this ID for future reference",
+
+  nextStepsTitle: "What happens next?",
+  reviewDocuments: "Our team will review your documents",
+  receiveUpdates: "You will receive updates via email/SMS",
+  checkDashboard: "Check your dashboard for status updates",
+
+  goToDashboard: "Go to Dashboard",
+  thankYou: "Thank you for choosing our service!"
+
+  },
+
   //Declaration
   declaration: "Declaration",
   iHereBy:" I hereby declare that all the information provided in this application is",
