@@ -9,6 +9,7 @@
   function handleAdminLogin() {
     goto(`/${locale}/admin/login`);
   }
+  
 </script>
 
 <svelte:head>
@@ -102,7 +103,7 @@
           <h3 class="font-bold text-gray-900 mb-1">Document Verification</h3>
           <p class="text-sm text-gray-500">Verify uploaded documents and approve or reject submissions.</p>
         </div>
-
+        
         <div class="bg-white rounded-xl shadow-md p-5 flex flex-col items-center text-center border border-purple-50 hover:shadow-lg transition-shadow">
           <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mb-3">
             <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

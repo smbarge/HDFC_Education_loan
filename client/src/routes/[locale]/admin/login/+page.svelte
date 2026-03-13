@@ -3,6 +3,7 @@
   import { page } from '$app/stores';
   import { i18n } from '$lib/i18n';
   import { onMount } from 'svelte';
+  import { adminLogin } from '$lib/api/adminapi.js';
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
@@ -15,7 +16,7 @@
 
   onMount(() => {
     const adminToken = localStorage.getItem('adminToken');
-    if (adminToken) goto(`/${locale}/admin/dashboard`);
+    if (adminToken) goto(`/${locale}/admin/dashboard1`);
   });
 
   function validateField(field) {
@@ -42,27 +43,30 @@
     return Object.keys(errors).length === 0;
   }
 
-  async function handleLogin() {
-    submitError = '';
-    if (!validateForm()) return;
-    isSubmitting = true;
-    try {
-      const response = await fetch('/api/admin/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'adminLogin', username: formData.username, password: formData.password })
-      });
-      const result = await response.json();
-      if (result.error !== 0) { submitError = result.errorMsg || 'Invalid username or password'; return; }
-      localStorage.setItem('adminToken', result.token);
-      localStorage.setItem('adminUser', JSON.stringify(result.user));
-      goto(`/${locale}/admin/dashboard`);
-    } catch (err) {
-      submitError = 'Server error. Please try again.';
-    } finally {
-      isSubmitting = false;
-    }
+async function handleLogin() {
+  submitError = '';
+
+  if (!validateForm()) return;
+
+  isSubmitting = true;
+
+  try {
+    const result = await adminLogin(formData.username, formData.password);
+
+    // store token
+    localStorage.setItem('adminToken', result.access_token);
+    localStorage.setItem('refreshToken', result.refresh_token);
+
+    // redirect to dashboard
+    goto(`/${locale}/admin/dashboard1`);
+
+  } catch (error) {
+    submitError = error.message || "Server error. Please try again.";
+
+  } finally {
+    isSubmitting = false;
   }
+}
 
   function handleKeydown(e) { if (e.key === 'Enter') handleLogin(); }
 </script>
