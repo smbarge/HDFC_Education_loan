@@ -130,7 +130,7 @@ async function handleLogin() {
         <img
           src="/admin/login.png"
           alt="District Login"
-          class="w-full max-w-sm lg:max-w-xl object-contain mix-blend-multiply"
+          class="w-full max-w-sm lg:max-w-xl object-contain rounded-2xl"
         />
       </div>
 
@@ -237,7 +237,16 @@ async function handleLogin() {
             {/if}
           </button>
 
-          
+          <!-- Register link -->
+          <p class="text-center text-sm lg:text-base text-gray-500 mt-4 lg:mt-5">
+            Don't have an account yet?
+            <button
+              on:click={() => goto(`/${locale}/admin/register`)}
+              class="text-purple-600 hover:text-purple-800 font-semibold transition-colors"
+            >
+              Register Here
+            </button>
+          </p>
 
         </div>
       </div>
