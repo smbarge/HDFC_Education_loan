@@ -42,10 +42,27 @@
     return Object.keys(errors).length === 0;
   }
 
+  // Temporary credentials (remove once real API is ready)
+  const TEMP_CREDENTIALS = { username: 'admin', password: 'Admin@2024' };
+
   async function handleLogin() {
     submitError = '';
     if (!validateForm()) return;
     isSubmitting = true;
+
+    // --- Temporary mock login ---
+    if (formData.username === TEMP_CREDENTIALS.username && formData.password === TEMP_CREDENTIALS.password) {
+      localStorage.setItem('adminToken', 'temp-mock-token');
+      localStorage.setItem('adminUser', JSON.stringify({ username: 'admin' }));
+      goto(`/${locale}/admin/dashboard`);
+      isSubmitting = false;
+      return;
+    } else {
+      submitError = 'Invalid username or password';
+      isSubmitting = false;
+      return;
+    }
+
     try {
       const response = await fetch('/api/admin/auth', {
         method: 'POST',
@@ -126,7 +143,7 @@
         <img
           src="/admin/login.png"
           alt="District Login"
-          class="w-full max-w-sm lg:max-w-xl object-contain mix-blend-multiply"
+          class="w-full max-w-sm lg:max-w-xl object-contain rounded-2xl"
         />
       </div>
 
@@ -233,7 +250,16 @@
             {/if}
           </button>
 
-          
+          <!-- Register link -->
+          <p class="text-center text-sm lg:text-base text-gray-500 mt-4 lg:mt-5">
+            Don't have an account yet?
+            <button
+              on:click={() => goto(`/${locale}/admin/register`)}
+              class="text-purple-600 hover:text-purple-800 font-semibold transition-colors"
+            >
+              Register Here
+            </button>
+          </p>
 
         </div>
       </div>
