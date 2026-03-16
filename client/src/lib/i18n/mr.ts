@@ -1607,6 +1607,29 @@ CollateralDocuments: {
   toMyBest: "माझ्या सर्वोत्तम माहितीनुसार आणि विश्वासानुसार आहे. कोणतीही चुकीची किंवा दिशाभूल करणारी माहिती दिल्यास",
   rejection: "हा अर्ज नाकारला जाऊ शकतो याची मला जाणीव आहे.",
 
+
+  //Admin Landing Page
+  adminPortal: {
+  title: "अॅडमिन व्यवस्थापन पोर्टल",
+  mamfdcLoan: "MAMFDC शिक्षण कर्ज",
+  administrationPanel: "प्रशासन पॅनेल",
+  description: "कर्ज अर्ज व्यवस्थापित करा, कागदपत्रांची पडताळणी करा आणि एकाच केंद्रीकृत डॅशबोर्डमधून शिक्षण कर्ज प्रक्रियेवर देखरेख ठेवा.",
+  footerLogin: "अॅडमिन पोर्टलमध्ये लॉगिन करा",
+  copyright: "© 2026 MAMFDC. सर्व हक्क राखीव. | अॅडमिन पोर्टल"
+},
+
+  //Login page
+  loginPage: {
+  backToHome: "मुख्यपृष्ठावर परत जा",
+  districtLogin: "जिल्हा लॉगिन",
+  username: "वापरकर्ता नाव",
+  password: "पासवर्ड",
+  forgotPassword: "पासवर्ड विसरलात?",
+  login: "लॉगिन",
+  noAccount: "अजून खाते नाही?",
+  registerHere: "येथे नोंदणी करा"
+},
+
   footer: {
     about: {
       title: "एमएएमएफडीसी बद्दल",

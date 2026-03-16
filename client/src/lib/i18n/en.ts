@@ -1647,6 +1647,29 @@ export const en = {
   rejection:"rejection of this application.",
 
 
+  //Admin Landing Page
+  adminPortal: {
+  title: "Admin Management Portal",
+  mamfdcLoan: "MAMFDC Education Loan",
+  administrationPanel: "Administration Panel",
+  description: "Manage loan applications, review documents, and oversee the education loan process from one centralized dashboard.",
+  footerLogin: "Login to Admin Portal",
+  copyright: "© 2026 MAMFDC. All rights reserved. | Admin Portal"
+  },
+
+  //Login Page
+  loginPage: {
+  backToHome: "Back to Home",
+  districtLogin: "District Login",
+  username: "User Name",
+  password: "Password",
+  forgotPassword: "Forgot Password?",
+  login: "Login",
+  noAccount: "Don't have an account yet?",
+  registerHere: "Register Here"
+},
+
+
   footer: {
     about: {
       title: "About MAMFDC",

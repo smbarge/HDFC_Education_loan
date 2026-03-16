@@ -2,6 +2,7 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { i18n } from '$lib/i18n';
+  import Header from '$lib/components/landingpage/Header.svelte';
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
@@ -20,40 +21,7 @@
 <div class="min-h-screen bg-gradient-to-br from-purple-50 via-purple-50 to-purple-100 flex flex-col">
 
   <!-- Header -->
-  <header class="bg-white shadow-sm border-b border-purple-100">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-    <div class="flex items-center gap-2 sm:gap-3 md:gap-4 flex-1 min-w-0">
-        <!-- Logo -->
-        <div class="flex-shrink-0">
-          <img
-            src="/MaulanaAzad.jpg"
-            alt="MAMFDC Logo"
-            class="h-8 sm:h-10 md:h-12 lg:h-14 w-auto object-contain"
-          />
-        </div>
-        <!-- Title and Subtitle -->
-        <div class="leading-tight min-w-0 flex-1">
-          <h1 class="text-xs sm:text-sm md:text-base lg:text-lg font-semibold text-gray-900 truncate">
-            {t.header.title}
-          </h1>
-          <p class="text-[9px] sm:text-[10px] md:text-xs text-gray-600 truncate">
-            {t?.header?.subtitle || 'A Govt. of Maharashtra Undertaking'}
-          </p>
-        </div>
-      </div>
-
-      <button
-        on:click={handleAdminLogin}
-        class="inline-flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-all shadow-md text-sm"
-      >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-        </svg>
-        Admin Login
-      </button>
-    </div>
-  </header>
+  <Header />
 
   <!-- Hero Section -->
   <main class="flex-1 flex flex-col items-center justify-center px-4 py-12">
@@ -65,18 +33,18 @@
       <div class="flex justify-center mb-6">
         <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-purple-100 text-purple-700 text-sm font-semibold rounded-full">
           <span class="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></span>
-          Admin Management Portal
+          {t.adminPortal.title}
         </span>
       </div>
 
       <!-- Title -->
       <div class="text-center mb-10">
         <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-          MAMFDC Education Loan
-          <span class="block text-purple-600 mt-1">Administration Panel</span>
+          {t.adminPortal.mamfdcLoan}
+          <span class="block text-purple-600 mt-1">{t.adminPortal.administrationPanel}</span>
         </h2>
         <p class="text-gray-500 text-base sm:text-lg max-w-2xl mx-auto">
-          Manage loan applications, review documents, and oversee the education loan process from one centralized dashboard.
+          {t.adminPortal.description}
         </p>
       </div>
 
@@ -126,7 +94,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
           </svg>
-          Login to Admin Portal
+          {t.adminPortal.footerLogin}
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
           </svg>
@@ -139,7 +107,7 @@
   <!-- Footer -->
   <footer class="bg-white border-t border-gray-100 py-4">
     <div class="max-w-7xl mx-auto px-4 text-center">
-      <p class="text-sm text-gray-400">© {new Date().getFullYear()} MAMFDC. All rights reserved. | Admin Portal</p>
+      <p class="text-sm text-gray-400">© {new Date().getFullYear()} {t.adminPortal.copyright}</p>
     </div>
   </footer>
 

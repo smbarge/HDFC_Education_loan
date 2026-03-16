@@ -1608,6 +1608,28 @@ export const hi = {
   toMyBest: "मेरी सर्वोत्तम जानकारी और विश्वास के अनुसार है। मैं समझता/समझती हूँ कि कोई भी गलत या भ्रामक जानकारी",
   rejection: "इस आवेदन की अस्वीकृति का कारण बन सकती है।",
 
+    //Admin Landing Page
+  adminPortal: {
+  title: "एडमिन प्रबंधन पोर्टल",
+  mamfdcLoan: "MAMFDC शिक्षा ऋण",
+  administrationPanel: "प्रशासन पैनल",
+  description: "ऋण आवेदनों का प्रबंधन करें, दस्तावेज़ों की समीक्षा करें और एक केंद्रीकृत डैशबोर्ड से शिक्षा ऋण प्रक्रिया की निगरानी करें।",
+  footerLogin: "एडमिन पोर्टल में लॉगिन करें",
+  copyright: "© 2026 MAMFDC. सर्वाधिकार सुरक्षित। | एडमिन पोर्टल"
+  },
+
+  //Login Page
+  loginPage: {
+  backToHome: "होम पर वापस जाएं",
+  districtLogin: "जिला लॉगिन",
+  username: "उपयोगकर्ता नाम",
+  password: "पासवर्ड",
+  forgotPassword: "पासवर्ड भूल गए?",
+  login: "लॉगिन",
+  noAccount: "क्या आपके पास अभी तक खाता नहीं है?",
+  registerHere: "यहाँ पंजीकरण करें"
+},
+
   footer: {
     about: {
       title: "एमएएमएफडीसी के बारे में",

@@ -123,7 +123,7 @@ async function handleLogin() {
       <svg class="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
       </svg>
-      Back to Home
+      {t.loginPage.backToHome}
     </button>
   </div>
 
@@ -145,7 +145,7 @@ async function handleLogin() {
         <div class="bg-white rounded-2xl border border-gray-200 shadow-lg p-8 lg:p-10">
 
           <!-- Title -->
-          <h2 class="text-3xl lg:text-4xl font-bold text-purple-600 mb-6 lg:mb-8">District Login</h2>
+          <h2 class="text-3xl lg:text-4xl font-bold text-purple-600 mb-6 lg:mb-8">{t.loginPage.districtLogin}</h2>
 
           <!-- Error -->
           {#if submitError}
@@ -160,7 +160,7 @@ async function handleLogin() {
           <!-- User Name -->
           <div class="mb-4 lg:mb-5">
             <label class="block text-sm lg:text-base font-semibold text-gray-800 mb-1.5 lg:mb-2">
-              User Name
+              {t.loginPage.username}
             </label>
             <input
               type="text"
@@ -179,7 +179,7 @@ async function handleLogin() {
           <!-- Password -->
           <div class="mb-3 lg:mb-4">
             <div class="flex items-center justify-between mb-1.5 lg:mb-2">
-              <label class="text-sm lg:text-base font-semibold text-gray-800">Password</label>
+              <label class="text-sm lg:text-base font-semibold text-gray-800">{t.loginPage.password}</label>
               <!-- View checkbox — exactly like reference image -->
               <label class="flex items-center gap-1.5 cursor-pointer select-none">
                 <input
@@ -219,7 +219,7 @@ async function handleLogin() {
           <!-- Forgot Password -->
           <div class="mb-5 lg:mb-7">
             <button class="text-sm lg:text-base text-purple-600 hover:text-purple-800 font-medium underline underline-offset-2 transition-colors">
-              Forgot Password?
+              {t.loginPage.forgotPassword}
             </button>
           </div>
 
@@ -239,18 +239,18 @@ async function handleLogin() {
                 Signing in...
               </span>
             {:else}
-              Login
+              {t.loginPage.login}
             {/if}
           </button>
 
           <!-- Register link -->
           <p class="text-center text-sm lg:text-base text-gray-500 mt-4 lg:mt-5">
-            Don't have an account yet?
+            {t.loginPage.noAccount}
             <button
               on:click={() => goto(`/${locale}/admin/register`)}
               class="text-purple-600 hover:text-purple-800 font-semibold transition-colors"
             >
-              Register Here
+              {t.loginPage.registerHere}
             </button>
           </p>
 
