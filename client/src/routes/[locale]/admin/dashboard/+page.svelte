@@ -3,7 +3,10 @@
   import { page } from '$app/stores';
   import { i18n } from '$lib/i18n';
   import { onMount } from 'svelte';
-  import { getDistrictApplications} from '$lib/api/adminapi.js';
+  import { getDistrictApplicationsPaginated} from '$lib/api/adminapi.js';
+
+  
+  // getDistrictApplications
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
@@ -20,15 +23,20 @@
   let searchQuery = '';
   let filterStatus = 'all';
   let filterDistrict = 'all';
+
+  //pagination
+
   let currentPage = 1;
   const perPage = 10;
+  let serverTotalPages = 1;
+  let serverTotal = 0;
 
   // Modal
   let selectedCandidate = null;
   let showModal = false;
 
   // Stats
-  $: totalCandidates = candidates.length;
+  $: totalCandidates = serverTotal || candidates.length;
   $: approved = candidates.filter(c => c.status === 'Approved').length;
   $: pending = candidates.filter(c => c.status === 'Pending').length;
   $: rejected = candidates.filter(c => c.status === 'Rejected').length;
@@ -50,8 +58,8 @@
     return matchSearch && matchStatus && matchDistrict;
   });
 
-  $: totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
-  $: paginated = filtered.slice((currentPage - 1) * perPage, currentPage * perPage);
+  $: totalPages = serverTotalPages;
+  $: paginated = filtered;
   $: pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1)
     .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1);
 
@@ -74,15 +82,6 @@
     } catch {}
   }
 
-  function openModal(candidate) {
-    selectedCandidate = candidate;
-    showModal = true;
-  }
-
-  function closeModal() {
-    showModal = false;
-    selectedCandidate = null;
-  }
 
   onMount(async () => {
     const adminToken = localStorage.getItem('adminToken');
@@ -100,45 +99,57 @@
       adminUser = { username: userName };
     }
 
-    await fetchCandidates();
+    await fetchCandidates(1);
   });
 
-  async function fetchCandidates() {
-    isLoading = true;
-    fetchError = '';
-    try {
-      const result = await getDistrictApplications(district);
-      if (result.error !== 0) {
-        fetchError = result.errorMsg || 'Failed to load candidates';
-      } else {
-        candidates = (result.applications || []).map(app => ({
-          id:            app.id,
-          applicationId: app.form_no || `APP-${app.id}`,
-          name:          app.name,
-          email:         app.email,
-          mobile:        app.mobile,
-          district:      app.district_name,
-          dob:           app.dob,
-          gender:        app.gender,
-          aadhar:        app.aadhar,
-          address:       app.address,
-          religion:      app.religion || '',
-          loanAmount:    app.loan_amount || '',
-          course:        app.course_name || '',
-          loanType:      'Education Loan',
-          appliedOn:     app.updated_at,
-          status:        app.application_status === 'submitted' ? 'Pending'
-                       : app.application_status === 'approved'  ? 'Approved'
-                       : app.application_status === 'rejected'  ? 'Rejected'
-                       : 'Pending',
-          documents:     []
-        }));
-      }
-    } catch (err) {
-      fetchError = 'Server error. Could not load candidate data.';
-    } finally {
-      isLoading = false;
+  async function fetchCandidates(page = 1) {
+  isLoading = true;
+  fetchError = '';
+  try {
+    const result = await getDistrictApplicationsPaginated(district, page, perPage);
+    if (result.error !== 0) {
+      fetchError = result.errorMsg || 'Failed to load candidates';
+    } else {
+      serverTotal      = result.total;
+      serverTotalPages = result.totalPages;
+      currentPage      = result.page;
+
+      candidates = (result.applications || []).map(app => ({
+        id:            app.id,
+        applicationId: app.form_no || `APP-${app.id}`,
+        name:          app.name,
+        email:         app.email,
+        mobile:        app.mobile,
+        district:      app.district_name,
+        dob:           app.dob,
+        gender:        app.gender,
+        aadhar:        app.aadhar,
+        address:       app.address,
+        religion:      app.community || '',
+        loanAmount:    app.loan_required_amount || '',
+        course:        app.course_name || '',
+        loanType:      'Education Loan',
+        appliedOn:     app.updated_at,
+        status:        app.application_status === 'submitted' ? 'Pending'
+                     : app.application_status === 'approved'  ? 'Approved'
+                     : app.application_status === 'rejected'  ? 'Rejected'
+                     : 'Pending',
+        documents:     []
+      }));
     }
+  } catch (err) {
+    fetchError = 'Server error. Could not load candidate data.';
+  } finally {
+    isLoading = false;
+  }
+  }
+
+  function openViewApplication(candidate) {
+    window.open(`/${locale}/admin/view-application?appId=${candidate.id}`, '_blank');
+  }
+
+  function openVerifyApplication(candidate) {
+    goto(`/${locale}/admin/verify-application?appId=${candidate.id}&name=${encodeURIComponent(candidate.name || '')}&formNo=${encodeURIComponent(candidate.applicationId || '')}`, '_blank');
   }
 
   function handleLogout() {
@@ -171,18 +182,6 @@
   <title>Admin Dashboard - MAMFDC</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
 </svelte:head>
-
-<!-- Click-outside modal close -->
-{#if showModal}
-  <div
-    class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
-    on:click={closeModal}
-    on:keydown={(e) => e.key === 'Escape' && closeModal()}
-    role="button"
-    tabindex="-1"
-    aria-label="Close modal"
-  ></div>
-{/if}
 
 <div class="min-h-screen flex flex-col" style="background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 40%, #e0f2fe 100%)">
 
@@ -474,14 +473,13 @@
                   <!-- View Application -->
                   <td class="px-3 lg:px-4 py-3">
                     <button
-                      on:click={() => openModal(candidate)}
+                      on:click={() => openViewApplication(candidate)}
                       class="text-xs font-semibold text-purple-600 hover:text-purple-800 hover:underline transition-colors"
                     >
                       View
                     </button>
                   </td>
-                  <!-- Verify -->
-                  <td class="px-3 lg:px-4 py-3">
+                   <td class="px-3 lg:px-4 py-3">
                     {#if candidate.status === 'Approved'}
                       <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-green-50 text-green-600 border border-green-200">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -491,7 +489,7 @@
                       </span>
                     {:else}
                       <button
-                        on:click={() => updateStatus(candidate.id, 'Approved')}
+                        on:click={() => openVerifyApplication(candidate)}
                         class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-purple-600 hover:bg-purple-700 text-white transition-colors whitespace-nowrap shadow-sm"
                       >
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -510,12 +508,12 @@
         <!-- Pagination -->
         <div class="mt-3 sm:mt-4 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3">
           <p class="text-xs text-gray-500">
-            Showing <span class="font-semibold text-gray-700">{(currentPage - 1) * perPage + 1}–{Math.min(currentPage * perPage, filtered.length)}</span>
-            of <span class="font-semibold text-gray-700">{filtered.length}</span> candidates
+            Showing <span class="font-semibold text-gray-700">{(currentPage - 1) * perPage + 1}–{Math.min(currentPage * perPage, serverTotal)}</span>
+            of <span class="font-semibold text-gray-700">{serverTotal}</span> candidates
           </p>
           <div class="flex items-center gap-1 sm:gap-1.5">
             <button
-              on:click={() => currentPage = Math.max(1, currentPage - 1)}
+              on:click={() => fetchCandidates(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
               class="px-2.5 sm:px-3 lg:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >← Prev</button>
@@ -525,14 +523,14 @@
                 <span class="text-gray-400 px-0.5 text-xs">…</span>
               {/if}
               <button
-                on:click={() => currentPage = p}
+                on:click={() => fetchCandidates(p)}
                 class="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 rounded-lg text-xs sm:text-sm font-semibold transition-colors
                   {currentPage === p ? 'bg-purple-600 text-white shadow-sm' : 'border border-gray-200 bg-white text-gray-600 hover:bg-gray-50'}"
               >{p}</button>
             {/each}
 
             <button
-              on:click={() => currentPage = Math.min(totalPages, currentPage + 1)}
+              on:click={() => fetchCandidates(Math.min(serverTotalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
               class="px-2.5 sm:px-3 lg:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >Next →</button>
@@ -544,130 +542,3 @@
   </main>
 </div>
 
-<!-- Candidate Detail Modal -->
-{#if showModal && selectedCandidate}
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-2xl w-full max-w-lg sm:max-w-2xl lg:max-w-3xl max-h-[92vh] overflow-y-auto">
-
-      <!-- Modal Header -->
-      <div class="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-5 border-b border-gray-100 sticky top-0 bg-white rounded-t-2xl z-10">
-        <div>
-          <h3 class="text-base sm:text-lg lg:text-xl font-bold text-purple-600">Candidate Details</h3>
-          <p class="text-xs text-gray-400 mt-0.5">Application ID: {selectedCandidate.applicationId || '—'}</p>
-        </div>
-        <button
-          on:click={closeModal}
-          class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
-        </button>
-      </div>
-
-      <!-- Modal Body -->
-      <div class="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 space-y-4 sm:space-y-5 lg:space-y-6">
-
-        <!-- Status badge + update -->
-        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold border {statusColor(selectedCandidate.status)}">
-            <span class="w-2 h-2 rounded-full {statusDot(selectedCandidate.status)}"></span>
-            {selectedCandidate.status || 'Pending'}
-          </span>
-          <div class="flex gap-1.5 sm:gap-2 ml-auto flex-wrap">
-            <button
-              on:click={() => updateStatus(selectedCandidate.id, 'Approved')}
-              class="px-2.5 sm:px-3 lg:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-green-100 hover:bg-green-200 text-green-700 border border-green-200 transition-colors"
-            >✓ Approve</button>
-            <button
-              on:click={() => updateStatus(selectedCandidate.id, 'Rejected')}
-              class="px-2.5 sm:px-3 lg:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-red-100 hover:bg-red-200 text-red-700 border border-red-200 transition-colors"
-            >✕ Reject</button>
-            <button
-              on:click={() => updateStatus(selectedCandidate.id, 'Pending')}
-              class="px-2.5 sm:px-3 lg:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-yellow-100 hover:bg-yellow-200 text-yellow-700 border border-yellow-200 transition-colors"
-            >⟳ Pending</button>
-          </div>
-        </div>
-
-        <!-- Personal Info -->
-        <div>
-          <h4 class="text-sm font-bold text-gray-700 mb-3 pb-2 border-b border-gray-100">Personal Information</h4>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 lg:gap-4">
-            {#each [
-              ['Full Name', selectedCandidate.name],
-              ['Date of Birth', formatDate(selectedCandidate.dob)],
-              ['Gender', selectedCandidate.gender],
-              ['Category', selectedCandidate.category],
-              ['Religion', selectedCandidate.religion],
-              ['Aadhar No.', selectedCandidate.aadhar],
-              ['Mobile', selectedCandidate.mobile],
-              ['Email', selectedCandidate.email],
-              ['District', selectedCandidate.district],
-              ['Taluka', selectedCandidate.taluka],
-              ['Address', selectedCandidate.address],
-            ] as [label, value]}
-              <div class="bg-gray-50 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3">
-                <p class="text-[10px] sm:text-xs text-gray-400 font-medium mb-0.5">{label}</p>
-                <p class="text-xs sm:text-sm text-gray-800 font-semibold break-words">{value || '—'}</p>
-              </div>
-            {/each}
-          </div>
-        </div>
-
-        <!-- Loan Info -->
-        <div>
-          <h4 class="text-sm font-bold text-gray-700 mb-3 pb-2 border-b border-gray-100">Loan Details</h4>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 lg:gap-4">
-            {#each [
-              ['Loan Type', selectedCandidate.loanType],
-              ['Loan Amount', selectedCandidate.loanAmount ? `₹${Number(selectedCandidate.loanAmount).toLocaleString('en-IN')}` : null],
-              ['Course Name', selectedCandidate.course],
-              ['Institution', selectedCandidate.institution],
-              ['Applied On', formatDate(selectedCandidate.appliedOn)],
-              ['Bank Name', selectedCandidate.bankName],
-              ['Account No.', selectedCandidate.accountNo],
-              ['IFSC Code', selectedCandidate.ifsc],
-            ] as [label, value]}
-              <div class="bg-gray-50 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3">
-                <p class="text-[10px] sm:text-xs text-gray-400 font-medium mb-0.5">{label}</p>
-                <p class="text-xs sm:text-sm text-gray-800 font-semibold break-words">{value || '—'}</p>
-              </div>
-            {/each}
-          </div>
-        </div>
-
-        <!-- Documents -->
-        {#if selectedCandidate.documents?.length}
-          <div>
-            <h4 class="text-sm font-bold text-gray-700 mb-3 pb-2 border-b border-gray-100">Uploaded Documents</h4>
-            <div class="flex flex-wrap gap-2">
-              {#each selectedCandidate.documents as doc}
-                <a
-                  href={doc.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="flex items-center gap-2 px-3 py-2 bg-purple-50 border border-purple-200 rounded-lg text-xs text-purple-700 font-medium hover:bg-purple-100 transition-colors"
-                >
-                  <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
-                  </svg>
-                  {doc.name}
-                </a>
-              {/each}
-            </div>
-          </div>
-        {/if}
-
-      </div>
-
-      <!-- Modal Footer -->
-      <div class="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-5 border-t border-gray-100 flex justify-end">
-        <button
-          on:click={closeModal}
-          class="px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 rounded-lg text-sm font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors"
-        >Close</button>
-      </div>
-    </div>
-  </div>
-{/if}

@@ -9,9 +9,32 @@ import { getMasters } from '$lib/server/getMasters.js';
 export async function GET({ params , request }) {
   const { user, applicationId } = params;
 
+  // const auth = verifyToken(request);
+  // if (!auth.success) {
+  //     return json({ message: auth.message }, { status: 401 });
+  // }
+  
+
+  // Accept both user JWT and admin Keycloak token
+  const authHeader = request.headers.get('authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return json({ error: -1, errorMsg: 'Unauthorized' }, { status: 401 });
+  }
   const auth = verifyToken(request);
   if (!auth.success) {
-      return json({ message: auth.message }, { status: 401 });
+    try {
+      const tokenStr = authHeader.split(' ')[1];
+      const parts = tokenStr.split('.');
+      if (parts.length !== 3) {
+        return json({ error: -1, errorMsg: 'Unauthorized' }, { status: 401 });
+      }
+      const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
+      if (!payload.iss || !payload.iss.includes('keycloak')) {
+        return json({ error: -1, errorMsg: 'Unauthorized' }, { status: 401 });
+      }
+    } catch (e) {
+      return json({ error: -1, errorMsg: 'Unauthorized' }, { status: 401 });
+    }
   }
 
 const { genderMap, religionMap, maritalMap, occupationMap, eduQualMap,

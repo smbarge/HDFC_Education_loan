@@ -3,6 +3,8 @@ import { json } from '@sveltejs/kit';
 export async function POST({ request }) {
 
   const { username, password } = await request.json();
+  console.log("Login request received----");
+  console.log("Username:", username);
 
   try {
 
@@ -25,6 +27,8 @@ export async function POST({ request }) {
     );
 
     const data = await response.json();
+   // console.log("Key cloak responce _:",data);
+    
 
     if (!response.ok) {
       return json({
@@ -37,9 +41,16 @@ export async function POST({ request }) {
         Buffer.from(data.access_token.split('.')[1], 'base64').toString()
         );
 
-        const district = payload.district        // from Keycloak user attribute
-        || payload.given_name                  // fallback: First name = "Pune"
-        || username.replace('_admin', '');     // fallback: "pune_admin" → "pune"
+   // console.log("Decoded tokan payload :", payload);
+    
+
+        const district = payload.district        
+        || payload.given_name                 
+        || username.replace('_admin', '');    
+
+    console.log("Distrct decoded :",district);
+    console.log("preferd username :",payload.preferred_username);
+
 
         return json({
         error: 0,
@@ -48,6 +59,8 @@ export async function POST({ request }) {
         district: district,
         username: payload.preferred_username
         });
+
+      
 
   } catch (error) {
 

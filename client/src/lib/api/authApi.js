@@ -1019,12 +1019,13 @@ const deleteDocument = async (userId, applicationId, docKey) => {
 
 async function getViewApplicationData(userId, applicationId) {
   try {
+     const authToken = get(token) || localStorage.getItem('accessToken');
     const response = await fetch(
       `/api/createApplication/${userId}/${applicationId}/view`,
       {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${get(token)}`
+          'Authorization': `Bearer ${authToken}`
         }
       }
     );
