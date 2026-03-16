@@ -1037,9 +1037,8 @@
         </div>
       {/if}
 
-      <!-- ════════════════════════════
-           REVIEW MODE: I AGREE + SUBMIT
-           ════════════════════════════ -->
+        <!-- REVIEW MODE: I AGREE + SUBMIT -->
+
       {#if isReviewMode}
         <div class="px-6 sm:px-8 py-6 bg-gradient-to-br from-purple-50 to-white border-t-2 border-purple-200">
           <!-- I Agree Checkbox -->

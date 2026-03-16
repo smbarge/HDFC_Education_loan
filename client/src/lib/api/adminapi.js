@@ -92,8 +92,49 @@ async function getDistrictApplications(district) {
   }
 }
 
+// ── Fetch district-wise applications with pagination ──
+async function getDistrictApplicationsPaginated(district, page = 1, limit = 10) {
+  try {
+    const token = localStorage.getItem('adminToken');
+
+    const response = await fetch(
+      `/api/admin/applications?district=${encodeURIComponent(district)}&page=${page}&limit=${limit}`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || result.error !== 0) {
+      return { error: 1, errorMsg: result.errorMsg || 'Failed to fetch applications' };
+    }
+
+    return {
+      error:        0,
+      total:        result.total,
+      approved:     result.approved,
+      pending:      result.pending,
+      rejected:     result.rejected,
+      page:         result.page,
+      perPage:      result.perPage,
+      totalPages:   result.totalPages,
+      applications: result.applications,
+      district:     result.district
+    };
+
+  } catch (err) {
+    console.error('getDistrictApplicationsPaginated error:', err);
+    return { error: 1, errorMsg: 'Server error' };
+  }
+}
+
 
 export {
     adminLogin,
-    getDistrictApplications
+    getDistrictApplications,
+    getDistrictApplicationsPaginated
 };
