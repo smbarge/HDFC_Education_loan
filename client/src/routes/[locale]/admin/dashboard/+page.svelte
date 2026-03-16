@@ -3,6 +3,8 @@
   import { page } from '$app/stores';
   import { i18n } from '$lib/i18n';
   import { onMount } from 'svelte';
+  import { getDistrictApplications} from '$lib/api/adminapi.js';
+
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
@@ -11,6 +13,9 @@
   let candidates = [];
   let isLoading = true;
   let fetchError = '';
+  
+  let district = '';    
+  let userName = ''; 
 
   // Filters & search
   let searchQuery = '';
@@ -54,38 +59,7 @@
   // Reset to page 1 on filter change
   $: if (searchQuery || filterStatus || filterDistrict) currentPage = 1;
 
-  onMount(async () => {
-    const token = localStorage.getItem('adminToken');
-    if (!token) { goto(`/${locale}/admin/login`); return; }
 
-    try {
-      const raw = localStorage.getItem('adminUser');
-      if (raw) adminUser = JSON.parse(raw);
-    } catch {}
-
-    await fetchCandidates();
-  });
-
-  async function fetchCandidates() {
-    isLoading = true;
-    fetchError = '';
-    try {
-      const token = localStorage.getItem('adminToken');
-      const res = await fetch('/api/admin/candidates', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const result = await res.json();
-      if (result.error !== 0) {
-        fetchError = result.errorMsg || 'Failed to load candidates';
-      } else {
-        candidates = result.data || [];
-      }
-    } catch (err) {
-      fetchError = 'Server error. Could not load candidate data.';
-    } finally {
-      isLoading = false;
-    }
-  }
 
   async function updateStatus(id, status) {
     try {
@@ -113,11 +87,69 @@
     selectedCandidate = null;
   }
 
-  function handleLogout() {
-    localStorage.removeItem('adminToken');
-    localStorage.removeItem('adminUser');
-    goto(`/${locale}/admin/login`);
+
+onMount(async () => {
+  const adminToken = localStorage.getItem('adminToken');
+  if (!adminToken) { goto(`/${locale}/admin/login`); return; }
+
+  // Read district and username from localStorage (set during login)
+  district = localStorage.getItem('adminDistrict') || '';
+  userName = localStorage.getItem('adminUsername') || 'Admin';
+
+  try {
+    const raw = localStorage.getItem('adminUser');
+    if (raw) adminUser = JSON.parse(raw);
+  } catch {}
+
+  // Store adminUser with username if not already set
+  if (!adminUser) {
+    adminUser = { username: userName };
   }
+
+  await fetchCandidates();
+});
+
+async function fetchCandidates() {
+  isLoading = true;
+  fetchError = '';
+  try {
+    const result = await getDistrictApplications(district);
+
+    if (result.error !== 0) {
+      fetchError = result.errorMsg || 'Failed to load candidates';
+    } else {
+      candidates = (result.applications || []).map(app => ({
+        id:            app.id,
+        applicationId: app.form_no || `APP-${app.id}`,
+        name:          app.name,
+        email:         app.email,
+        mobile:        app.mobile,
+        district:      app.district_name,
+        dob:           app.dob,
+        gender:        app.gender,
+        aadhar:        app.aadhar,
+        address:       app.address,
+        loanType:      'Education Loan',
+        appliedOn:     app.updated_at,
+        status:        app.application_status === 'submitted' ? 'Pending'
+                     : app.application_status === 'approved'  ? 'Approved'
+                     : app.application_status === 'rejected'  ? 'Rejected'
+                     : 'Pending',
+        documents:     []
+      }));
+    }
+  } catch (err) {
+    fetchError = 'Server error. Could not load candidate data.';
+  } finally {
+    isLoading = false;
+  }
+}
+
+	function handleLogout() {
+    localStorage.removeItem("adminToken");   // ✅ matches what login saves
+    localStorage.removeItem("refreshToken"); // ✅ also clear refresh token
+    goto(`/${locale}/admin`);
+}
 
   function statusColor(status) {
     if (status === 'Approved') return 'bg-green-100 text-green-700 border-green-200';
@@ -189,13 +221,18 @@
           {/each}
         </div>
 
-        <!-- Admin badge -->
+                <!-- Admin badge + district -->
         {#if adminUser}
           <div class="hidden md:flex items-center gap-2 px-3 py-1.5 bg-purple-50 border border-purple-200 rounded-lg">
             <div class="w-6 h-6 lg:w-7 lg:h-7 rounded-full bg-purple-600 flex items-center justify-center text-white text-xs font-bold">
               {adminUser.username?.[0]?.toUpperCase() || 'A'}
             </div>
-            <span class="text-sm lg:text-base font-medium text-purple-700">{adminUser.username}</span>
+            <div class="flex flex-col">
+              <span class="text-sm lg:text-base font-medium text-purple-700">{adminUser.username}</span>
+              {#if district}
+                <span class="text-xs text-purple-500 font-medium">📍 {district} District</span>
+              {/if}
+            </div>
           </div>
         {/if}
 
@@ -217,9 +254,15 @@
   <main class="flex-1 w-full px-4 sm:px-6 lg:px-10 xl:px-16 py-6 lg:py-10">
 
     <!-- Page heading -->
-    <div class="mb-6 lg:mb-8">
+   <div class="mb-6 lg:mb-8">
       <h2 class="text-2xl lg:text-3xl font-bold text-purple-600">Dashboard</h2>
-      <p class="text-sm lg:text-base text-gray-500 mt-1">Manage and review all candidate applications</p>
+      <p class="text-sm lg:text-base text-gray-500 mt-1">
+        {#if district}
+          Showing applications for <span class="font-semibold text-purple-600">{district} District</span>
+        {:else}
+          Manage and review all candidate applications
+        {/if}
+      </p>
     </div>
 
     <!-- Stats cards -->

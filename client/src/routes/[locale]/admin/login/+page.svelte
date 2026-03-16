@@ -3,7 +3,7 @@
   import { page } from '$app/stores';
   import { i18n } from '$lib/i18n';
   import { onMount } from 'svelte';
-  import { adminLogin } from '$lib/api/adminapi.js';
+  import { adminLogin, getDistrictApplications} from '$lib/api/adminapi.js';
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
@@ -16,7 +16,7 @@
 
   onMount(() => {
     const adminToken = localStorage.getItem('adminToken');
-    if (adminToken) goto(`/${locale}/admin/dashboard1`);
+    if (adminToken) goto(`/${locale}/admin/dashboard`);
   });
 
   function validateField(field) {
@@ -51,14 +51,20 @@ async function handleLogin() {
   isSubmitting = true;
 
   try {
-    const result = await adminLogin(formData.username, formData.password);
+        const result = await adminLogin(formData.username, formData.password);
 
-    // store token
-    localStorage.setItem('adminToken', result.access_token);
-    localStorage.setItem('refreshToken', result.refresh_token);
+        if (result.error !== 0) {
+        submitError = result.errorMsg;
+        return;
+        }
 
-    // redirect to dashboard
-    goto(`/${locale}/admin/dashboard1`);
+        // store token + district
+        localStorage.setItem('adminToken', result.access_token);
+        localStorage.setItem('refreshToken', result.refresh_token);
+        localStorage.setItem('adminDistrict', result.district || '');
+        localStorage.setItem('adminUsername', result.username || '');
+
+        goto(`/${locale}/admin/dashboard`);
 
   } catch (error) {
     submitError = error.message || "Server error. Please try again.";

@@ -33,11 +33,21 @@ export async function POST({ request }) {
       }, { status: 401 });
     }
 
-    return json({
-      error: 0,
-      access_token: data.access_token,
-      refresh_token: data.refresh_token
-    });
+    const payload = JSON.parse(
+        Buffer.from(data.access_token.split('.')[1], 'base64').toString()
+        );
+
+        const district = payload.district        // from Keycloak user attribute
+        || payload.given_name                  // fallback: First name = "Pune"
+        || username.replace('_admin', '');     // fallback: "pune_admin" → "pune"
+
+        return json({
+        error: 0,
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
+        district: district,
+        username: payload.preferred_username
+        });
 
   } catch (error) {
 

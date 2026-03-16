@@ -44,13 +44,56 @@ async function adminLogin(username, password) {
     throw new Error(data.errorMsg || "Login failed"); 
   }
 
-  return {
+//   return {
+//     access_token: data.access_token,
+//     refresh_token: data.refresh_token
+//   };
+
+    return {
+    error: 0,
     access_token: data.access_token,
-    refresh_token: data.refresh_token
-  };
+    refresh_token: data.refresh_token,
+    district: data.district,
+    username: data.username
+    };
+}
+
+// ── Fetch district-wise applications ──
+async function getDistrictApplications(district) {
+  try {
+    const token = localStorage.getItem('adminToken');
+
+    const response = await fetch(`/api/admin/applications?district=${district}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || result.error !== 0) {
+      return { error: 1, errorMsg: result.errorMsg || 'Failed to fetch applications' };
+    }
+
+    return {
+      error: 0,
+      total: result.total,
+      approved: result.approved,
+      pending: result.pending,
+      rejected: result.rejected,
+      applications: result.applications,
+      district: result.district
+    };
+
+  } catch (err) {
+    console.error('getDistrictApplications error:', err);
+    return { error: 1, errorMsg: 'Server error' };
+  }
 }
 
 
 export {
-    adminLogin
+    adminLogin,
+    getDistrictApplications
 };
