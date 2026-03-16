@@ -99,6 +99,10 @@ export async function GET({ url, request }) {
 }
 
 
+//without pagination 
+
+
+
 // import { json } from '@sveltejs/kit';
 // import pool from '$lib/db.js';
 

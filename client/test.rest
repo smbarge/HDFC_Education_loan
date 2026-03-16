@@ -544,3 +544,19 @@ GET http://localhost:5173/api/admin/applications?district=Pune
 ### Get applications - another district
 GET http://localhost:5173/api/admin/applications?district=Nagpur
 Authorization: Bearer {{token}}
+
+
+
+# view application admin 
+### Get admin token first
+POST http://localhost:5173/api/admin/auth
+Content-Type: application/json
+
+{
+  "username": "pune_admin",
+  "password": "pune_admin@123"
+}
+
+### Test view API directly with admin token (paste token from above)
+GET http://localhost:5173/api/createApplication/0/YOUR_APP_ID/view
+Authorization: Bearer paste_admin_token_here
