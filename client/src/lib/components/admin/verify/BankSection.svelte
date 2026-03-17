@@ -3,29 +3,31 @@
   function lbl(val) { return val || '—'; }
 </script>
 
-<div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-  <div class="bg-purple-700 px-4 py-2.5">
-    <h3 class="text-white font-bold text-xs uppercase tracking-widest">🏦 Bank Documents</h3>
+<div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+  <div class="px-4 py-2.5 border-b border-gray-100 bg-gray-50">
+    <h3 class="text-sm font-semibold text-gray-600 uppercase tracking-wider">Bank Documents</h3>
   </div>
-  <div class="p-4">
+  <div class="p-3">
     {#if education}
-      <div class="space-y-2">
-        {#each [
-          ['Bank Name',      lbl(education.bank_name)],
-          ['Branch Name',    lbl(education.branch_name)],
-          ['IFSC Code',      lbl(education.ifsc_code)],
-          ['Account Number', lbl(education.account_number)],
-          ['Bank Address',   lbl(education.bank_address)],
-          ['GST Number',     lbl(education.gst_number)],
-        ] as [l, v]}
-          <div class="flex items-baseline gap-2 py-1.5 border-b border-dotted border-gray-100 last:border-0">
-            <span class="text-xs text-gray-500 w-36 flex-shrink-0">{l}</span>
-            <span class="text-xs font-semibold text-gray-800 font-mono break-all">{v}</span>
-          </div>
-        {/each}
-      </div>
+      <table class="w-full text-sm">
+        <tbody>
+          {#each [
+            ['Bank Name',      lbl(education.bank_name)],
+            ['Branch Name',    lbl(education.branch_name)],
+            ['IFSC Code',      lbl(education.ifsc_code)],
+            ['Account Number', lbl(education.account_number)],
+            ['Bank Address',   lbl(education.bank_address)],
+            ['GST Number',     lbl(education.gst_number)],
+          ] as [l, v]}
+            <tr class="border-b border-gray-50 last:border-0">
+              <td class="py-1.5 pr-3 text-gray-400 whitespace-nowrap w-36">{l}</td>
+              <td class="py-1.5 text-gray-800 font-medium font-mono break-all">{v}</td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
     {:else}
-      <p class="text-sm text-gray-400 text-center py-6">No bank data available</p>
+      <p class="text-sm text-gray-400 text-center py-8">No bank data</p>
     {/if}
   </div>
 </div>

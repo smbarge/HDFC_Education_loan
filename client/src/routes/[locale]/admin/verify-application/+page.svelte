@@ -31,15 +31,14 @@
   let docVerification = {};
 
   const tabs = [
-    { key: 'personal',   label: '1. Personal & Identity',        icon: '👤' },
-    { key: 'academic',   label: '2. Academic & Educational',     icon: '🎓' },
-    { key: 'family',     label: '3. Family & Income',            icon: '👨‍👩‍👧' },
-    { key: 'bank',       label: '4. Bank Documents',             icon: '🏦' },
-    { key: 'guarantor',  label: '5. Co-Applicant & Guarantor',   icon: '🤝' },
-    { key: 'collateral', label: '6. Collateral / Study Abroad',  icon: '🏠' },
+    { key: 'personal',   label: 'Personal'   },
+    { key: 'academic',   label: 'Academic'   },
+    { key: 'family',     label: 'Family'     },
+    { key: 'bank',       label: 'Bank'       },
+    { key: 'guarantor',  label: 'Guarantor'  },
+    { key: 'collateral', label: 'Collateral' },
   ];
 
-  // Map tabs to section_id from your m_upload_docs.upload_for
   const tabSectionIds = {
     personal:   [1, 2, 3, 4, 5],
     academic:   [11],
@@ -56,7 +55,6 @@
     return appData.allDocs.filter(d => ids.includes(d.section_id));
   }
 
-  // Get all docs if tab-specific returns empty
   $: currentDocs = (() => {
     const specific = getDocsForTab(activeTab);
     return specific.length > 0 ? specific : (appData?.allDocs || []);
@@ -77,7 +75,6 @@
   function verifySection(tab) {
     sectionStatus[tab] = 'verified';
     sectionStatus = { ...sectionStatus };
-    // also verify all docs in this section
     currentDocs.forEach(d => { docVerification[d.document_id] = 'verified'; });
     docVerification = { ...docVerification };
   }
@@ -86,10 +83,10 @@
     sectionStatus = { ...sectionStatus };
   }
 
-  $: totalDocs = appData?.allDocs?.length || 0;
-  $: verifiedDocs = Object.values(docVerification).filter(v => v === 'verified').length;
-  $: rejectedDocs = Object.values(docVerification).filter(v => v === 'rejected').length;
-  $: progressPct = totalDocs > 0 ? Math.round((verifiedDocs / totalDocs) * 100) : 0;
+  $: totalDocs     = appData?.allDocs?.length || 0;
+  $: verifiedDocs  = Object.values(docVerification).filter(v => v === 'verified').length;
+  $: rejectedDocs  = Object.values(docVerification).filter(v => v === 'rejected').length;
+  $: progressPct   = totalDocs > 0 ? Math.round((verifiedDocs / totalDocs) * 100) : 0;
 
   onMount(async () => {
     const adminToken = localStorage.getItem('adminToken');
@@ -136,130 +133,100 @@
 
 <svelte:head><title>Verify Application — Admin</title></svelte:head>
 
-<div class="min-h-screen bg-gray-100">
+<div class="min-h-screen bg-gray-50">
 
-  <!-- Header -->
-  <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-3 flex items-center justify-between">
+  <!-- Compact Header -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-30">
+    <div class="w-full px-4 py-2.5 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <img src="/MaulanaAzad.jpg" alt="MAMFDC Logo" class="h-10 w-auto object-contain"/>
+        <img src="/MaulanaAzad.jpg" alt="Logo" class="h-8 w-auto object-contain"/>
         <div>
-          <h1 class="text-sm font-semibold text-gray-900">Document Verification</h1>
-          <p class="text-xs text-gray-500">
-            {#if applicantName}<span class="font-medium text-purple-700">{applicantName}</span> · {/if}
-            Form: <span class="font-medium">{formNo || appId}</span>
+          <p class="text-base font-semibold text-gray-900">Document Verification</p>
+          <p class="text-sm text-gray-400">
+            {#if applicantName}<span class="text-gray-600">{applicantName}</span> · {/if}
+            {formNo || appId}
           </p>
         </div>
       </div>
-      <div class="flex items-center gap-2">
-        <!-- Progress -->
-        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-purple-50 border border-purple-200 rounded-lg">
-          <div class="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div class="h-full bg-purple-600 rounded-full transition-all duration-300" style="width: {progressPct}%"></div>
+
+      <div class="flex items-center gap-3">
+        <!-- Progress pill -->
+        {#if totalDocs > 0}
+          <div class="hidden sm:flex items-center gap-2 text-sm text-gray-500">
+            <div class="w-20 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+              <div class="h-full bg-green-500 rounded-full transition-all" style="width: {progressPct}%"></div>
+            </div>
+            <span class="font-medium text-gray-700">{verifiedDocs}/{totalDocs}</span>
           </div>
-          <span class="text-xs font-semibold text-purple-700">{verifiedDocs}/{totalDocs} docs</span>
+        {/if}
+
+        <div class="flex items-center gap-2 text-sm">
+          <span class="text-green-600 font-semibold">{verifiedDocs} ✓</span>
+          <span class="text-red-500 font-semibold">{rejectedDocs} ✕</span>
         </div>
-        <button on:click={() => window.close()}
-          class="flex items-center gap-2 px-3 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium transition-colors">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
-          Close
+
+        <button on:click={() => goto(`/${locale}/admin/dashboard`)}
+          class="text-sm text-gray-500 hover:text-gray-800 border border-gray-200 px-2.5 py-1.5 rounded hover:bg-gray-50 transition-colors">
+          ← Back to Dashboard
         </button>
       </div>
     </div>
   </header>
 
   {#if isLoading}
-    <div class="flex items-center justify-center py-32">
-      <div class="flex flex-col items-center gap-3">
-        <svg class="animate-spin h-10 w-10 text-purple-600" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-        </svg>
-        <p class="text-gray-500 text-sm">Loading application data...</p>
-      </div>
+    <div class="flex items-center justify-center py-32 text-gray-400 text-base">
+      Loading application…
     </div>
 
   {:else if error}
-    <div class="max-w-xl mx-auto mt-10 bg-red-50 border border-red-200 rounded-xl p-8 text-center text-red-700">{error}</div>
+    <div class="max-w-xl mx-auto mt-10 bg-red-50 border border-red-200 rounded p-6 text-center text-red-600 text-base">{error}</div>
 
   {:else if appData}
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-6 space-y-5">
+    <div class="w-full px-4 py-4 space-y-4">
 
-      <!-- Applicant Summary -->
-      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div class="bg-gradient-to-r from-purple-700 to-purple-900 px-6 py-4">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div class="flex items-center gap-4">
-              {#if appData.documents?.photo}
-                <img src={appData.documents.photo} alt="Photo"
-                  class="w-14 h-16 object-cover border-2 border-purple-300 rounded-lg flex-shrink-0"/>
-              {:else}
-                <div class="w-14 h-16 border-2 border-dashed border-purple-300 rounded-lg bg-purple-800 flex items-center justify-center flex-shrink-0">
-                  <svg class="w-6 h-6 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                  </svg>
-                </div>
-              {/if}
-              <div>
-                <h2 class="text-white text-lg font-bold">{appData.personal?.name || '—'}</h2>
-                <div class="flex flex-wrap gap-3 mt-1">
-                  <span class="text-purple-200 text-xs">📱 {appData.personal?.mobile || '—'}</span>
-                  <span class="text-purple-200 text-xs">🏛️ <span class="text-white font-semibold">{formNo || appId}</span></span>
-                </div>
-              </div>
+      <!-- Applicant bar -->
+      <div class="bg-white rounded-lg border border-gray-200 px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
+        <div class="flex items-center gap-3">
+          {#if appData.documents?.photo}
+            <img src={appData.documents.photo} alt="Photo" class="w-10 h-12 object-cover rounded border border-gray-200 flex-shrink-0"/>
+          {:else}
+            <div class="w-10 h-12 bg-gray-100 rounded border border-gray-200 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
             </div>
-            <div class="flex gap-2">
-              <div class="bg-purple-800 rounded-lg px-3 py-2 text-center min-w-[60px]">
-                <p class="text-purple-300 text-[10px]">Total</p>
-                <p class="text-white font-bold text-lg">{totalDocs}</p>
-              </div>
-              <div class="bg-green-700 rounded-lg px-3 py-2 text-center min-w-[60px]">
-                <p class="text-green-200 text-[10px]">Verified</p>
-                <p class="text-white font-bold text-lg">{verifiedDocs}</p>
-              </div>
-              <div class="bg-red-700 rounded-lg px-3 py-2 text-center min-w-[60px]">
-                <p class="text-red-200 text-[10px]">Rejected</p>
-                <p class="text-white font-bold text-lg">{rejectedDocs}</p>
-              </div>
-            </div>
+          {/if}
+          <div>
+            <p class="text-base font-bold text-gray-900">{appData.personal?.name || '—'}</p>
+            <p class="text-sm text-gray-400">{appData.personal?.mobile || ''} · Form: <span class="text-gray-600 font-medium">{formNo || appId}</span></p>
           </div>
         </div>
 
-        <!-- Section Tabs -->
-        <div class="px-4 py-3 bg-gray-50 border-t border-gray-100 overflow-x-auto">
-          <div class="flex items-center gap-1.5 min-w-max">
-            {#each tabs as tab, idx}
-              <button
-                on:click={() => activeTab = tab.key}
-                class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all
-                  {activeTab === tab.key ? 'bg-purple-600 text-white shadow-sm' : 'bg-white border border-gray-200 text-gray-600 hover:bg-purple-50 hover:border-purple-300'}"
-              >
-                <span>{tab.icon}</span>
-                <span>{tab.label}</span>
-                {#if sectionStatus[tab.key] === 'verified'}
-                  <span class="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center text-white text-[9px] font-bold">✓</span>
-                {:else if sectionStatus[tab.key] === 'rejected'}
-                  <span class="w-4 h-4 rounded-full bg-red-500 flex items-center justify-center text-white text-[9px] font-bold">✕</span>
-                {:else}
-                  <span class="w-3 h-3 rounded-full border-2 border-gray-300"></span>
-                {/if}
-              </button>
-              {#if idx < tabs.length - 1}
-                <svg class="w-3 h-3 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                </svg>
+        <!-- Tab navigation -->
+        <div class="flex items-center gap-1 overflow-x-auto pb-0.5">
+          {#each tabs as tab}
+            <button
+              on:click={() => activeTab = tab.key}
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded text-sm font-medium whitespace-nowrap transition-all
+                {activeTab === tab.key
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-600 hover:bg-gray-100 border border-gray-200'}"
+            >
+              <span>{tab.label}</span>
+              {#if sectionStatus[tab.key] === 'verified'}
+                <span class="text-green-300 font-bold">✓</span>
+              {:else if sectionStatus[tab.key] === 'rejected'}
+                <span class="text-red-300 font-bold">✕</span>
               {/if}
-            {/each}
-          </div>
+            </button>
+          {/each}
         </div>
       </div>
 
-      <!-- Two Column: Info + Documents -->
-      <div class="grid grid-cols-1 lg:grid-cols-5 gap-5">
+      <!-- Two column layout: info left, docs right -->
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
 
-        <!-- Left: Section Info Component -->
+        <!-- Left: Section Info -->
         <div class="lg:col-span-2">
           {#if activeTab === 'personal'}
             <PersonalSection personal={appData.personal} />
@@ -276,7 +243,7 @@
           {/if}
         </div>
 
-        <!-- Right: Document List Component -->
+        <!-- Right: Document List with inline viewer -->
         <div class="lg:col-span-3">
           <DocumentList
             docs={currentDocs}
@@ -292,42 +259,34 @@
         </div>
       </div>
 
-      <!-- Final Decision Bar -->
-      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            <h3 class="text-sm font-bold text-gray-800">Final Verification Decision</h3>
-            <p class="text-xs text-gray-500 mt-0.5">
-              {verifiedDocs}/{totalDocs} documents verified ·
-              {Object.values(sectionStatus).filter(s => s === 'verified').length}/{tabs.length} sections cleared
-            </p>
-            <!-- Overall progress bar -->
-            <div class="flex items-center gap-2 mt-2">
-              <div class="w-48 h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div class="h-full bg-purple-600 rounded-full transition-all duration-300" style="width: {progressPct}%"></div>
-              </div>
-              <span class="text-xs font-semibold text-purple-700">{progressPct}%</span>
+      <!-- Final decision bar -->
+      <div class="bg-white rounded-lg border border-gray-200 px-5 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <p class="text-base font-semibold text-gray-800">Final Decision</p>
+          <p class="text-sm text-gray-400 mt-0.5">
+            {verifiedDocs}/{totalDocs} docs verified ·
+            {Object.values(sectionStatus).filter(s => s === 'verified').length}/{tabs.length} sections cleared
+          </p>
+          <div class="flex items-center gap-2 mt-2">
+            <div class="w-40 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+              <div class="h-full bg-green-500 rounded-full transition-all" style="width: {progressPct}%"></div>
             </div>
+            <span class="text-sm font-semibold text-gray-600">{progressPct}%</span>
           </div>
-          <div class="flex gap-3">
-            <button
-              class="flex items-center gap-2 px-5 py-2.5 bg-red-100 hover:bg-red-200 text-red-700 border border-red-200 font-semibold rounded-lg text-sm transition-colors"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
-              Reject Application
-            </button>
-            <button
-              on:click={handleFinalApprove}
-              class="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg text-sm shadow transition-colors"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-              </svg>
-              Approve Application
-            </button>
-          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <button
+            class="px-5 py-2 text-base font-semibold text-red-600 border border-red-300 rounded hover:bg-red-50 transition-colors"
+          >
+            ✕ Reject Application
+          </button>
+          <button
+            on:click={handleFinalApprove}
+            class="px-6 py-2 text-base font-bold text-white bg-green-600 hover:bg-green-700 rounded transition-colors"
+          >
+            ✓ Approve Application
+          </button>
         </div>
       </div>
 
