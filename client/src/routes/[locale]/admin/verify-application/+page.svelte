@@ -23,12 +23,14 @@
   let formNo = '';
   let activeTab = 'personal';
 
-  let sectionStatus = {
+ let sectionStatus = {
     personal: 'pending', academic: 'pending', family: 'pending',
     bank: 'pending', guarantor: 'pending', collateral: 'pending',
   };
 
   let docVerification = {};
+    let checkpointsByDoc = {};
+
 
   const tabs = [
     { key: 'personal',   label: 'Personal'   },
@@ -98,7 +100,20 @@
 
     if (!appId) { error = 'No application ID provided.'; isLoading = false; return; }
 
-    localStorage.setItem('accessToken', adminToken);
+     localStorage.setItem('accessToken', adminToken);
+
+    // Fetch checkpoints from backend
+    try {
+      const cpRes = await fetch('/api/admin/checkpoints', {
+        headers: { 'Authorization': `Bearer ${adminToken}` }
+      });
+     const cpData = await cpRes.json();
+      if (cpData.error === 0) {
+        checkpointsByDoc = cpData.byDocument || {};
+      }
+    } catch (e) {
+      console.error('Could not load checkpoints:', e);
+    }
 
     try {
       const result = await getViewApplicationData(0, appId);
@@ -245,9 +260,10 @@
 
         <!-- Right: Document List with inline viewer -->
         <div class="lg:col-span-3">
-          <DocumentList
+<DocumentList
             docs={currentDocs}
             {docVerification}
+            {checkpointsByDoc}
             sectionStatus={sectionStatus[activeTab]}
             sectionLabel={tabs.find(t => t.key === activeTab)?.label || ''}
             on:verify={(e) => verifyDoc(e.detail)}
