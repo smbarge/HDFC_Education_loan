@@ -1,27 +1,11 @@
 <script>
-export let docs = [];
+  export let docs = [];
   export let docVerification = {};
   export let sectionStatus = 'pending';
   export let sectionLabel = '';
-    export let checkpointsByDoc = {};  // keyed by document_id from backend
-
-  
-    $: console.log('Checkpoint que resived:',checkpointsByDoc);
-
-  $: console.log('Docs received:', docs);
 
   import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher();
-
-  // checkpoint answers: { questionId: 'yes'|'no'|'' }
-  let checkpointAnswers = {};
-
-  // Get questions for a specific document_id
-function getQuestionsForDoc(documentId) {
-    const docId = String(documentId);
-    const entry = checkpointsByDoc[docId];
-    return entry ? entry.questions : [];
-  }
 
   let expandedDocId = null;
   let expandedDocUrl = null;
@@ -169,40 +153,6 @@ function getQuestionsForDoc(documentId) {
                   </div>
                 {/if}
               </div>
-
-             <!-- Checkpoint Questions for this document -->
-              {#if getQuestionsForDoc(doc.document_id).length > 0}
-                <div class="mb-3 bg-yellow-50 border border-yellow-200 rounded p-3">
-                  <p class="text-sm font-bold text-yellow-800 mb-2">Verification Checklist</p>
-                  <div class="space-y-2">
-                  {#each getQuestionsForDoc(doc.document_id) as q}         
-                       <div class="flex items-start gap-3 p-2 bg-white rounded border border-yellow-100">
-                        <div class="flex-1 min-w-0">
-                          <p class="text-sm font-medium text-gray-800">{q.question}</p>
-                          {#if q.instruction_eng}
-                            <p class="text-xs text-gray-500 mt-0.5">{q.instruction_eng}</p>
-                          {/if}
-                          {#if q.mandatory_field === 'yes'}
-                            <span class="text-xs text-red-500 font-semibold">* Mandatory</span>
-                          {/if}
-                        </div>
-                        <div class="flex gap-1.5 flex-shrink-0">
-                          <button
-                            on:click={() => { checkpointAnswers[q.id] = 'yes'; checkpointAnswers = {...checkpointAnswers}; }}
-                            class="px-2.5 py-1 text-xs font-semibold rounded border transition-colors
-                              {checkpointAnswers[q.id] === 'yes' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:bg-green-50'}"
-                          >Yes</button>
-                          <button
-                            on:click={() => { checkpointAnswers[q.id] = 'no'; checkpointAnswers = {...checkpointAnswers}; }}
-                            class="px-2.5 py-1 text-xs font-semibold rounded border transition-colors
-                              {checkpointAnswers[q.id] === 'no' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-600 border-red-300 hover:bg-red-50'}"
-                          >No</button>
-                        </div>
-                      </div>
-                    {/each}
-                  </div>
-                </div>
-              {/if}
 
               <!-- Accept / Reject below doc -->
               <div class="flex items-center gap-2">
