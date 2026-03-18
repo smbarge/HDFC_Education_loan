@@ -46,14 +46,15 @@ const client = await pool.connect();
 
   try {
     // 1. Personal Details (Step 1 + Step 2)
-    const personalResult = await client.query(
+  const personalResult = await client.query(
       `SELECT 
         name, aadhar, dob, gender, religion, resident,
         mobile, email, pan,
         current_address, current_district, current_taluka, current_place, current_area, current_pincode,
         permanent_address, permanent_district, permanent_taluka, permanent_place, permanent_area, permanent_pincode,
         marital_status, education_qualification, guardian_name, occupation, income,
-        past_surety_commitment, relation
+        past_surety_commitment, relation,
+        application_status, form_no
       FROM personal_details WHERE id = $1`,
       [applicationId]
     );

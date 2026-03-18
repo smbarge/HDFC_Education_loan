@@ -49,8 +49,7 @@ export async function GET({ url, request }) {
       if (r.application_status === 'approved')  approved = parseInt(r.cnt);
       if (['submitted','pending'].includes(r.application_status)) pending += parseInt(r.cnt);
       if (r.application_status === 'rejected')  rejected = parseInt(r.cnt);
-    });
-
+    }); 
     // Step 4: paginated data with joins
     const result = await pool.query(
       `SELECT
@@ -72,7 +71,7 @@ export async function GET({ url, request }) {
          ON pd.religion = mr.id
        JOIN education_details ed
          ON pd.id = ed.id
-       WHERE pd.district_id = $1
+       WHERE pd.district_id = $1 and application_status != 1
        ORDER BY pd.updated_at DESC
        LIMIT $2 OFFSET $3`,
       [distId, perPage, offset]

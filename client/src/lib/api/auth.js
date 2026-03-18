@@ -57,7 +57,8 @@ const fetchMasters = async () => {
                 m_units : [],
                 m_required_documents : [],
                 m_upload_docs : [],
-                m_policy_type : []
+                m_policy_type : [],
+                 m_application_status: []
 
             }
         };

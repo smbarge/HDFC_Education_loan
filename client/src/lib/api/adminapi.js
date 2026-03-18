@@ -31,34 +31,67 @@
 //   };
 // }
 
-async function adminLogin(username, password) {
-  const response = await fetch('/api/admin/auth', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
-  });
+// async function adminLogin(username, password) {
+//   const response = await fetch('/api/admin/auth', {
+//     method: 'POST',
+//     headers: { 'Content-Type': 'application/json' },
+//     body: JSON.stringify({ username, password })
+//   });
 
-  const data = await response.json();
+//   const data = await response.json();
 
-  if (data.error !== 0) {                        
-    throw new Error(data.errorMsg || "Login failed"); 
-  }
+//   if (data.error !== 0) {                        
+//     throw new Error(data.errorMsg || "Login failed"); 
+//   }
 
-//   return {
+// //   return {
+// //     access_token: data.access_token,
+// //     refresh_token: data.refresh_token
+// //   };
+
+//     return {
+//     error: 0,
 //     access_token: data.access_token,
-//     refresh_token: data.refresh_token
-//   };
+//     refresh_token: data.refresh_token,
+//     district: data.district,
+//     username: data.username
+//     };
+// }
+
+async function adminLogin(username, password) {
+  try {
+    const response = await fetch('/api/admin/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ username, password })
+    });
+
+    const data = await response.json();
+
+    if (data.error !== 0) {                        
+      throw new Error(data.errorMsg || "Login failed"); 
+    }
 
     return {
-    error: 0,
-    access_token: data.access_token,
-    refresh_token: data.refresh_token,
-    district: data.district,
-    username: data.username
+      error: 0,
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      district: data.district,
+      username: data.username
     };
+
+  } catch (error) {
+
+    console.error("Admin login error:", error);
+
+    throw new Error(error.message || "Something went wrong during login");
+
+  }
 }
 
-// ── Fetch district-wise applications ──
+
+//Feach the distrct wise 
 async function getDistrictApplications(district) {
   try {
     const token = localStorage.getItem('adminToken');
@@ -95,7 +128,7 @@ async function getDistrictApplications(district) {
 // ── Fetch district-wise applications with pagination ──
 async function getDistrictApplicationsPaginated(district, page = 1, limit = 10) {
   try {
-    const token = localStorage.getItem('adminToken');
+    const token = localStorage.getItem('adminToken') || '';
 
     const response = await fetch(
       `/api/admin/applications?district=${encodeURIComponent(district)}&page=${page}&limit=${limit}`,
@@ -131,7 +164,6 @@ async function getDistrictApplicationsPaginated(district, page = 1, limit = 10) 
     return { error: 1, errorMsg: 'Server error' };
   }
 }
-
 
 export {
     adminLogin,

@@ -448,7 +448,8 @@ const getUserApplication = async (userId) => {
   return {
     error: result.error,
     applicationId: result.applicationId,
-    status: result.status 
+    status: result.status,
+    statusLabel: result.statusLabel || ''
   };
 };
 

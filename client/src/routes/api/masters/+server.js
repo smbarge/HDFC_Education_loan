@@ -30,7 +30,8 @@ export async function GET({request}) {
             unitsRes,
             requireddocumentsRes,
             uploaddocsRes,
-            policytypeRes
+            policytypeRes,
+            applicationstatusRes
             ] = await Promise.all([
       
       //for the district Master
@@ -201,7 +202,16 @@ export async function GET({request}) {
         dev_name
         FROM public.m_policy_type
         ORDER BY id
-        `)   
+        `),
+
+      pool.query(`
+        SELECT
+        id,
+        eng_name,
+        dev_name
+        FROM public.m_application_status
+        ORDER BY id
+        `)
     ]);
 
     return json({
@@ -224,7 +234,8 @@ export async function GET({request}) {
         m_units : unitsRes.rows,
         m_required_documents : requireddocumentsRes.rows,
         m_upload_docs : uploaddocsRes.rows,
-        m_policy_type : policytypeRes.rows
+        m_policy_type : policytypeRes.rows,
+        m_application_status : applicationstatusRes.rows
       },
       counts: {
         district: districtRes.rowCount,
@@ -243,7 +254,8 @@ export async function GET({request}) {
         units : unitsRes.rowCount,
         requireddocuments : requireddocumentsRes.rowCount,
         uploaddocs : uploaddocsRes.rowCount,
-        policytyoe : policytypeRes.rowCount
+        policytyoe : policytypeRes.rowCount,
+        applicationstatus : applicationstatusRes.rowCount
       }
     });
 
@@ -270,7 +282,8 @@ export async function GET({request}) {
         m_units : [],
         m_required_documents : [],
         m_upload_docs : [],
-        m_policy_type : []
+        m_policy_type : [],
+        m_application_status : []
       }
     }, { status: 500 });
 

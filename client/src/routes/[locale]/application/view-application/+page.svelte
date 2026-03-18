@@ -910,7 +910,7 @@
             {#if appData.collateral.fds?.length > 0}
               {#each appData.collateral.fds as fd, i}
                 <div>
-                  <p class="text-xs font-bold text-blue-700 uppercase mb-1">{t.CollateralDocuments.fdCollateral} {i + 1}</p>
+                  <p class="text-xs font-bold text-blue-700 uppercase mb-1">{t.CollateralDocuments?.fdCollateral || 'Fixed Deposit'} {i + 1}</p>
                   <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-0">
                     {#each [
                       { lbl: 'Bank Name',     val: label(fd.bank_name) },
@@ -931,7 +931,7 @@
             {#if appData.collateral.lics?.length > 0}
               {#each appData.collateral.lics as lic, i}
                 <div>
-                  <p class="text-xs font-bold text-green-700 uppercase mb-1">{t.CollateralDocuments.licCollateral} {i + 1}</p>
+                  <p class="text-xs font-bold text-green-700 uppercase mb-1">{t.CollateralDocuments?.licCollateral || 'LIC Policy'} {i + 1}</p>
                   <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-0">
                     {#each [
                       { lbl: t.collateralDetails.policyName,          val: label(lic.policy_name) },

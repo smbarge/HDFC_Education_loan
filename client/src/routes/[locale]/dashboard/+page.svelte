@@ -101,51 +101,42 @@ let submittedDate = null;
   // }
 
 
-  const saved = sessionStorage.getItem('submissionSuccess');
-  if (saved) {
-    submissionInfo = JSON.parse(saved);
-    submittedDate = submissionInfo.submittedDate || null;
-    sessionStorage.removeItem('submissionSuccess');
-  }
-
-  const result = await getUserApplication($user.id);
+const result = await getUserApplication($user.id);
   if (result.error === 0) {
     applicationId.set(result.applicationId);
     hasExistingApplication = true;
     applicationStatus = result.status;
 
-    // If submitted but no fresh submissionInfo, fetch education data for display
-    if (applicationStatus === 'submitted' && !submissionInfo) {
+    // For submitted/under-review/approved etc — fetch data from backend directly
+    if (['submitted','under-review','approved','rejected','sanctioned','disbursed'].includes(applicationStatus)) {
       try {
         const { getEducationDetailsData } = await import('$lib/api/authApi');
-       const eduData = await getEducationDetailsData(result.applicationId);
-        console.log('Education data fields:', eduData.data); // temp debug - remove after fix
+        const eduData = await getEducationDetailsData(result.applicationId);
         if (eduData.error === 0 && eduData.data) {
           submissionInfo = {
             applicantName: $user.name || '',
             applicationId: result.applicationId,
-            purposeOfLoan: eduData.data.purposeOfLoan || 
-                           eduData.data.purpose_of_loan || '',
-            loanAmount: eduData.data.loanRequired || 
-                        eduData.data.loan_required || ''
+            status: result.status || '',
+            statusLabel: result.statusLabel || '',
+            purposeOfLoan: eduData.data.purposeOfLoan || eduData.data.purpose_of_loan || '',
+            loanAmount: eduData.data.loanRequired || eduData.data.loan_required_amount || ''
           };
+
         }
 
         const viewData = await getViewApplicationData($user.id, result.applicationId);
-        //console.log("Datat view>>>>>>>>>>>>>>>>>>>",viewData);
-          if (viewData.error === 0 && viewData.data?.documents?.photo) {
-            applicantPhoto = viewData.data.documents.photo;
-            userData = {
-                ...$user,
-                name: $user.name || '',
-                phone: $user.mobile || '',
-                username: $user.username || '',
-                photo: applicantPhoto
-              };
-          }
-      // console.log("View data >>>>>>>>",applicantPhoto);
+        if (viewData.error === 0 && viewData.data?.documents?.photo) {
+          applicantPhoto = viewData.data.documents.photo;
+          userData = {
+            ...$user,
+            name: $user.name || '',
+            phone: $user.mobile || '',
+            username: $user.username || '',
+            photo: applicantPhoto
+          };
+        }
       } catch(e) {
-        console.error('Could not fetch education data:', e);
+        console.error('Could not fetch application data:', e);
       }
     }
   }
@@ -329,7 +320,7 @@ let submittedDate = null;
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
             </svg>
           </div>
-        {:else if applicationStatus === 'submitted'}
+        {:else if ['submitted','under-review','approved','rejected','sanctioned','disbursed'].includes(applicationStatus)}
 
         <SubmittedApplicationCard
           {locale}

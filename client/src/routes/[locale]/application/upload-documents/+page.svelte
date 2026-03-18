@@ -164,12 +164,18 @@ onMount(async () => {
 
   // Check if guarantor exists
  const { getUserApplication } = await import('$lib/api/authApi');
+  // const appCheck = await getUserApplication($user.id);
+  // if (appCheck.error === 0 && appCheck.status === 'submitted') {
+  //   goto(`/${locale}/dashboard`);
+  //   return;
+  // }
+
   const appCheck = await getUserApplication($user.id);
-  if (appCheck.error === 0 && appCheck.status === 'submitted') {
-    goto(`/${locale}/dashboard`);
+  if (appCheck.error === 0 && ['submitted','under-review','approved','rejected','sanctioned','disbursed'].includes(appCheck.status)) {
+    goto(`/${locale}/application/view-application`);
     return;
   }
-
+  
   // Build reverse map: masterId -> all docId keys
    const guarantorResult = await getGuarantorDetailsData($applicationId);
   if (guarantorResult.error === 0 && guarantorResult.data && guarantorResult.data.guarantorFullName) {

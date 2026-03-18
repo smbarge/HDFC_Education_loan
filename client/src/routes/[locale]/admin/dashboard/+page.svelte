@@ -84,11 +84,14 @@
 
 
   onMount(async () => {
-    const adminToken = localStorage.getItem('adminToken');
+    const adminToken = localStorage.getItem('adminToken') 
+      || document.cookie.includes('adminToken=');
     if (!adminToken) { goto(`/${locale}/admin/login`); return; }
 
-    district = localStorage.getItem('adminDistrict') || '';
-    userName = localStorage.getItem('adminUsername') || 'Admin';
+    district = localStorage.getItem('adminDistrict') 
+      || document.cookie.match(/adminDistrict=([^;]+)/)?.[1] || '';
+    userName = localStorage.getItem('adminUsername') 
+      || document.cookie.match(/adminUsername=([^;]+)/)?.[1] || 'Admin';
 
     try {
       const raw = localStorage.getItem('adminUser');
@@ -152,9 +155,15 @@
     goto(`/${locale}/admin/verify-application?appId=${candidate.id}&name=${encodeURIComponent(candidate.name || '')}&formNo=${encodeURIComponent(candidate.applicationId || '')}`, '_blank');
   }
 
-  function handleLogout() {
-    localStorage.removeItem("adminToken");
-    localStorage.removeItem("refreshToken");
+function handleLogout() {
+    // Clear cookies
+    document.cookie = 'adminToken=; Path=/; Max-Age=0';
+    document.cookie = 'adminDistrict=; Path=/; Max-Age=0';
+    document.cookie = 'adminUsername=; Path=/; Max-Age=0';
+    // Clear localStorage
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminDistrict');
+    localStorage.removeItem('adminUsername');
     goto(`/${locale}/admin`);
   }
 

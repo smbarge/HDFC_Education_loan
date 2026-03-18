@@ -34,12 +34,23 @@ export async function POST({ params,request }) {
       );
     }
     
-    // Update application status to "submitted" (status = 2)
+  //   // Update application status to "submitted" (status = 2)
+  //  // Update user_applications status = 2 (Submitted)
+  //   await client.query(
+  //     `UPDATE user_applications
+  //      SET status = 2
+  //      WHERE user_id = $1 AND application_id = $2`,
+  //     [user, applicationId]
+  //   );
+
+    // Update personal_details.application_status = 'submitted'
+    // This stores the status text from m_application_status id=2 (Submitted)
     await client.query(
-      `UPDATE user_applications
-       SET status = 2
-       WHERE user_id = $1 AND application_id = $2`,
-      [user, applicationId]
+      `UPDATE personal_details
+       SET application_status = 2,
+      updated_at = now()
+       WHERE id = $1`,
+      [applicationId]
     );
     
     await client.query('COMMIT');

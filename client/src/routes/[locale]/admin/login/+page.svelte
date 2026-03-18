@@ -15,7 +15,8 @@
   let showPassword = false;
 
   onMount(() => {
-    const adminToken = localStorage.getItem('adminToken');
+    const adminToken = localStorage.getItem('adminToken') 
+      || document.cookie.includes('adminToken=');
     if (adminToken) goto(`/${locale}/admin/dashboard`);
   });
 
@@ -59,8 +60,8 @@ async function handleLogin() {
         }
 
         // store token + district
+        // cookies set by server — keep these only as client-side fallback
         localStorage.setItem('adminToken', result.access_token);
-        localStorage.setItem('refreshToken', result.refresh_token);
         localStorage.setItem('adminDistrict', result.district || '');
         localStorage.setItem('adminUsername', result.username || '');
 
@@ -136,7 +137,7 @@ async function handleLogin() {
         <img
           src="/admin/login.png"
           alt="District Login"
-          class="w-full max-w-sm lg:max-w-xl object-contain rounded-2xl"
+          class="w-full max-w-sm lg:max-w-xl object-contain mix-blend-multiply"
         />
       </div>
 

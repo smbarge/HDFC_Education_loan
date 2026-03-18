@@ -52,13 +52,21 @@ export async function POST({ request }) {
     console.log("preferd username :",payload.preferred_username);
 
 
+       const headers = new Headers();
+        headers.append('Set-Cookie', `adminToken=${data.access_token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=86400`);
+        headers.append('Set-Cookie', `adminDistrict=${district}; Path=/; SameSite=Strict; Max-Age=86400`);
+        headers.append('Set-Cookie', `adminUsername=${payload.preferred_username}; Path=/; SameSite=Strict; Max-Age=86400`);
+
+        console.log('Setting cookies for:--', payload.preferred_username, '| District:', district);
+
+
         return json({
-        error: 0,
-        access_token: data.access_token,
-        refresh_token: data.refresh_token,
-        district: district,
-        username: payload.preferred_username
-        });
+          error: 0,
+          access_token: data.access_token,
+          refresh_token: data.refresh_token,
+          district: district,
+          username: payload.preferred_username
+        }, { headers });
 
       
 

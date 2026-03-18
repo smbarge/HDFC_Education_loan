@@ -158,8 +158,9 @@ async function insertPersonalDetailsStep1Query(client, applicationId, stepData) 
             dob,
             gender,
             resident,
-            concent_for_aadhar_verification
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+            concent_for_aadhar_verification,
+            application_status
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9,$10)`,
         [
             applicationId,
             religion || null,
@@ -169,7 +170,8 @@ async function insertPersonalDetailsStep1Query(client, applicationId, stepData) 
             dob,
             gender,
             resident,
-            concent_for_aadhar_verification
+            concent_for_aadhar_verification,
+            1
         ]
     );
 }
@@ -537,24 +539,44 @@ export async function GET({ params, url,request }) {
 
 
         // Get user application if Exixst
-        if (action === 'getUserApplication') {
+       if (action === 'getUserApplication') {
             const rows = await getUserApplicationQuery(client, user);
-            
+
             if (rows.length === 0) {
                 return json({ error: -1, errorMsg: "No application found" });
             }
+            
+            // Fetch application_status from personal_details joined with m_application_status master table
+            const pdResult = await client.query(
+                `SELECT pd.application_status, mas.eng_name as status_label
+                 FROM personal_details pd
+                 LEFT JOIN m_application_status mas
+                   ON mas.id = pd.application_status::integer
+                 WHERE pd.id = $1`,
+                [rows[0].application_id]
+            );
 
-             const statusMap = {
-                    1: 'in-progress',
-                    2: 'submitted',
-                    3: 'approved',
-                    4: 'rejected'
-                };
+            const statusInt   = parseInt(pdResult.rows[0]?.application_status) || 1;
+            const statusLabel = pdResult.rows[0]?.status_label || 'Draft';
+
+            // Frontend key map (used in dashboard/upload-documents for routing logic)
+            const statusKeyMap = {
+                1: 'in-progress',
+                2: 'submitted',
+                3: 'under-review',
+                4: 'approved',
+                5: 'rejected',
+                6: 'cancelled',
+                7: 'expired',
+                8: 'sanctioned',
+                9: 'disbursed'
+            };
 
             return json({
                 error: 0,
                 applicationId: rows[0].application_id,
-                status: statusMap[rows[0].status] || 'in-progress'
+                status: statusKeyMap[statusInt] || 'in-progress',
+                statusLabel: statusLabel
             });
 
             // console.log(JSON.stringify(response));

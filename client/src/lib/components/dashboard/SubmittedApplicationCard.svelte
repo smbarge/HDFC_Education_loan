@@ -47,9 +47,11 @@
     </div>
 
     <!-- Status Badge -->
-    <div class="px-6 py-3 bg-green-50 border-b border-green-100 flex items-center justify-center gap-2">
+     <div class="px-6 py-3 bg-green-50 border-b border-green-100 flex items-center justify-center gap-2">
       <div class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></div>
-      <span class="text-green-700 text-sm font-semibold">{t.dashboard.statusUnderReview}</span>
+      <span class="text-green-700 text-sm font-semibold">
+       Status : {submissionInfo?.statusLabel || t.dashboard.statusUnderReview}
+      </span>
     </div>
 
     <!-- Info Cards -->
@@ -128,7 +130,7 @@
 
         <!-- Step 2 — Under Review -->
         <div class="relative flex items-start gap-4 mb-5">
-          <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 z-10 animate-pulse">
+          <div class="w-8 h-8 {['under-review','approved','rejected','sanctioned','disbursed'].includes(submissionInfo?.status) ? 'bg-blue-500 animate-pulse' : 'bg-gray-200'} rounded-full flex items-center justify-center flex-shrink-0 z-10">
             <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
             </svg>
@@ -140,7 +142,8 @@
         </div>
 
         <!-- Step 3 — Approved/Rejected -->
-        <div class="relative flex items-start gap-4">
+  
+         <div class="relative flex items-start gap-4">
           <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0 z-10">
             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -151,6 +154,20 @@
             <p class="text-xs text-gray-400">{t.dashboard.decisionPending}</p>
           </div>
         </div>
+      <!-- or -->
+        <!-- <div class="relative flex items-start gap-4">
+          <div class="w-8 h-8 {['approved','sanctioned','disbursed'].includes(submissionInfo?.status) ? 'bg-green-500' : submissionInfo?.status === 'rejected' ? 'bg-red-500' : 'bg-gray-200'} rounded-full flex items-center justify-center flex-shrink-0 z-10">
+            <svg class="w-4 h-4 {['approved','sanctioned','disbursed','rejected'].includes(submissionInfo?.status) ? 'text-white' : 'text-gray-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold {['approved','sanctioned','disbursed'].includes(submissionInfo?.status) ? 'text-green-700' : submissionInfo?.status === 'rejected' ? 'text-red-700' : 'text-gray-400'}">
+              {submissionInfo?.statusLabel || t.dashboard.approvedRejected}
+            </p>
+            <p class="text-xs text-gray-400">{t.dashboard.decisionPending}</p>
+          </div>
+        </div> -->
       </div>
     </div>
 
