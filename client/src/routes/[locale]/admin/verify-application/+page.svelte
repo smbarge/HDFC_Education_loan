@@ -12,9 +12,13 @@
   import GuarantorSection  from '$lib/components/admin/verify/GuarantorSection.svelte';
   import CollateralSection from '$lib/components/admin/verify/CollateralSection.svelte';
   import DocumentList      from '$lib/components/admin/verify/DocumentList.svelte';
-    import Header from '$lib/components/landingpage/Header.svelte';
 
   $: locale = $page.params.locale || 'en';
+
+  let adminUser = null;
+let district = '';
+let t = {};
+
 
   let isLoading = true;
   let appData = null;
@@ -84,6 +88,11 @@
     sectionStatus = { ...sectionStatus };
   }
 
+  function handleLogout() {
+  localStorage.removeItem('adminToken');
+  goto(`/${locale}/admin/login`);
+}
+
   $: totalDocs     = appData?.allDocs?.length || 0;
   $: verifiedDocs  = Object.values(docVerification).filter(v => v === 'verified').length;
   $: rejectedDocs  = Object.values(docVerification).filter(v => v === 'rejected').length;
@@ -118,6 +127,17 @@
     }
   });
 
+  onMount(async () => {
+  const adminToken = localStorage.getItem('adminToken');
+  if (!adminToken) { goto(`/${locale}/admin/login`); return; }
+
+  // Add this:
+  adminUser = { username: localStorage.getItem('adminUsername') || 'Admin' };
+  district = localStorage.getItem('adminDistrict') || '';
+
+  // ... rest of your existing onMount code
+});
+
   async function handleFinalApprove() {
     const adminToken = localStorage.getItem('adminToken');
     try {
@@ -136,7 +156,65 @@
 
 <div class="min-h-screen bg-gray-50">
 
-  <Header/>
+   <!-- Header -->
+  <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
+    <div class="w-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4 flex items-center justify-between gap-2">
+      <!-- Logo + Title -->
+      <div class="flex items-center gap-2 sm:gap-3 md:gap-4 flex-1 min-w-0">
+        <div class="flex-shrink-0">
+          <img src="/MaulanaAzad.jpg" alt="MAMFDC Logo" class="h-8 sm:h-10 md:h-12 lg:h-[70px] w-auto object-contain"/>
+        </div>
+        <div class="leading-tight min-w-0 flex-1">
+          <h1 class="text-xs sm:text-sm md:text-base lg:text-xl font-semibold text-gray-900 truncate">
+            {t?.header?.title || 'MAMFDC'}
+          </h1>
+          <p class="text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-gray-600 truncate">
+            {t?.header?.subtitle || 'A Govt. of Maharashtra Undertaking'}
+          </p>
+        </div>
+      </div>
+
+      <!-- Right: language + user + logout -->
+      <div class="flex items-center gap-1.5 sm:gap-2 md:gap-3 flex-shrink-0">
+        <!-- Language switcher -->
+        <div class="hidden sm:flex items-center gap-0.5 sm:gap-1">
+          {#each [['en','English'],['hi','हिंदी'],['mr','मराठी']] as [code, label]}
+            <button
+              on:click={() => goto(`/${code}/admin/dashboard`)}
+              class="px-2 sm:px-2.5 lg:px-4 py-1 sm:py-1.5 lg:py-2 rounded-md text-xs font-medium transition-colors
+                {locale === code ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100'}"
+            >{label}</button>
+          {/each}
+        </div>
+
+        <!-- Admin badge + district -->
+        {#if adminUser}
+          <div class="hidden md:flex items-center gap-2 px-2 lg:px-3 py-1.5 bg-purple-50 border border-purple-200 rounded-lg">
+            <div class="w-6 h-6 lg:w-7 lg:h-7 rounded-full bg-purple-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+              {adminUser.username?.[0]?.toUpperCase() || 'A'}
+            </div>
+            <div class="flex flex-col min-w-0">
+              <span class="text-xs lg:text-sm font-medium text-purple-700 truncate">{adminUser.username}</span>
+              {#if district}
+                <span class="text-[10px] lg:text-xs text-purple-500 font-medium truncate">📍 {district} District</span>
+              {/if}
+            </div>
+          </div>
+        {/if}
+
+        <!-- Logout -->
+        <button
+          on:click={handleLogout}
+          class="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg text-xs sm:text-sm font-medium text-red-600 hover:bg-red-50 border border-red-200 transition-colors"
+        >
+          <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+          </svg>
+          <span class="hidden sm:inline">Logout</span>
+        </button>
+      </div>
+    </div>
+  </header>  
 
   {#if isLoading}
     <div class="flex items-center justify-center py-32 text-gray-400 text-base">
@@ -174,7 +252,7 @@
   <div class="hidden sm:block w-px self-stretch bg-gray-200 flex-shrink-0 ml-[5%]" ></div>
 
   <!-- Right: Step flow navigation -->
-  <div class="flex items-center flex-1 overflow-x-auto py-2 ml-[25%]">
+  <div class="flex items-center flex-1 overflow-x-auto py-2 ml-[20%]">
     {#each tabs as tab, i}
       <button
         on:click={() => activeTab = tab.key}
@@ -228,7 +306,16 @@
       </button>
     {/each}
   </div>
-
+    <!-- Back to Dashboard -->
+  <button
+    on:click={() => goto(`/${locale}/admin/dashboard`)}
+    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-purple-600 border border-purple-200 bg-purple-50 hover:bg-purple-100 transition-colors flex-shrink-0 whitespace-nowrap"
+  >
+    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+    </svg>
+    Back to Dashboard
+  </button>
 </div>
 
       <!-- Two column layout: info left, docs right -->
