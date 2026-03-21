@@ -77,8 +77,63 @@
 let submittedDate = null;
 
 
- onMount(async () => {
+//  onMount(async () => {
 
+//   const currentToken = get(token);
+//   console.log('Token on dashboard mount:----------------------------', get(token));
+
+//   if (!$user || !currentToken) {
+//     goto(`/${locale}/login`);
+//     return;
+//   }
+
+// const result = await getUserApplication($user.id);
+//   if (result.error === 0) {
+//     applicationId.set(result.applicationId);
+//     hasExistingApplication = true;
+//     applicationStatus = result.status;
+
+//     // For submitted/under-review/approved etc — fetch data from backend directly
+//     if (['submitted','under-review','approved','rejected','sanctioned','disbursed'].includes(applicationStatus)) {
+//       try {
+//         const { getEducationDetailsData } = await import('$lib/api/authApi');
+//         const eduData = await getEducationDetailsData(result.applicationId);
+//         if (eduData.error === 0 && eduData.data) {
+//           submissionInfo = {
+//             applicantName: $user.name || '',
+//             applicationId: result.applicationId,
+//             status: result.status || '',
+//             statusLabel: result.statusLabel || '',
+//             purposeOfLoan: eduData.data.purposeOfLoan || eduData.data.purpose_of_loan || '',
+//             loanAmount: eduData.data.loanRequired || eduData.data.loan_required_amount || ''
+//           };
+
+//         }
+
+//         const viewData = await getViewApplicationData($user.id, result.applicationId);
+//         if (viewData.error === 0 && viewData.data?.documents?.photo) {
+//           applicantPhoto = viewData.data.documents.photo;
+//           userData = {
+//             ...$user,
+//             name: $user.name || '',
+//             phone: $user.mobile || '',
+//             username: $user.username || '',
+//             photo: applicantPhoto
+//           };
+//         }
+//       } catch(e) {
+//         console.error('Could not fetch application data:', e);
+//       }
+//     }
+//   }
+//   isLoading = false;
+// });
+
+
+  // Modal state
+ 
+ 
+ onMount(async () => {
   const currentToken = get(token);
   console.log('Token on dashboard mount:----------------------------', get(token));
 
@@ -87,64 +142,58 @@ let submittedDate = null;
     return;
   }
 
-  // // Check sessionStorage for fresh submission data
-  // const saved = sessionStorage.getItem('submissionSuccess');
-  // if (saved) {
-  //   submissionInfo = JSON.parse(saved);
-  //   sessionStorage.removeItem('submissionSuccess');
-  // }
+  try {
+    const result = await getUserApplication($user.id);
 
-  // const savedDate = sessionStorage.getItem('submissionDate');
-  // if (savedDate) {
-  //   submittedDate = savedDate;
-  //   sessionStorage.removeItem('submissionDate');
-  // }
+    if (result.error === 0 && result.applicationId) {
+      applicationId.set(result.applicationId);
+      hasExistingApplication = true;
+      applicationStatus = result.status;
 
+      if (['submitted','under-review','approved','rejected','sanctioned','disbursed'].includes(applicationStatus)) {
+        try {
+          const { getEducationDetailsData } = await import('$lib/api/authApi');
+          const eduData = await getEducationDetailsData(result.applicationId);
+          if (eduData.error === 0 && eduData.data) {
+            submissionInfo = {
+              applicantName: $user.name || '',
+              applicationId: result.applicationId,
+              status: result.status || '',
+              statusLabel: result.statusLabel || '',
+              purposeOfLoan: eduData.data.purposeOfLoan || eduData.data.purpose_of_loan || '',
+              loanAmount: eduData.data.loanRequired || eduData.data.loan_required_amount || ''
+            };
+          }
 
-const result = await getUserApplication($user.id);
-  if (result.error === 0) {
-    applicationId.set(result.applicationId);
-    hasExistingApplication = true;
-    applicationStatus = result.status;
-
-    // For submitted/under-review/approved etc — fetch data from backend directly
-    if (['submitted','under-review','approved','rejected','sanctioned','disbursed'].includes(applicationStatus)) {
-      try {
-        const { getEducationDetailsData } = await import('$lib/api/authApi');
-        const eduData = await getEducationDetailsData(result.applicationId);
-        if (eduData.error === 0 && eduData.data) {
-          submissionInfo = {
-            applicantName: $user.name || '',
-            applicationId: result.applicationId,
-            status: result.status || '',
-            statusLabel: result.statusLabel || '',
-            purposeOfLoan: eduData.data.purposeOfLoan || eduData.data.purpose_of_loan || '',
-            loanAmount: eduData.data.loanRequired || eduData.data.loan_required_amount || ''
-          };
-
+          const viewData = await getViewApplicationData($user.id, result.applicationId);
+          if (viewData.error === 0 && viewData.data?.documents?.photo) {
+            applicantPhoto = viewData.data.documents.photo;
+            userData = {
+              ...$user,
+              name: $user.name || '',
+              phone: $user.mobile || '',
+              username: $user.username || '',
+              photo: applicantPhoto
+            };
+          }
+        } catch(e) {
+          console.error('Could not fetch application data:', e);
         }
-
-        const viewData = await getViewApplicationData($user.id, result.applicationId);
-        if (viewData.error === 0 && viewData.data?.documents?.photo) {
-          applicantPhoto = viewData.data.documents.photo;
-          userData = {
-            ...$user,
-            name: $user.name || '',
-            phone: $user.mobile || '',
-            username: $user.username || '',
-            photo: applicantPhoto
-          };
-        }
-      } catch(e) {
-        console.error('Could not fetch application data:', e);
       }
+    } else {
+      // New user or 401 — show fresh dashboard
+      hasExistingApplication = false;
+      applicationStatus = null;
     }
+  } catch(e) {
+    console.error('Dashboard init error:', e);
+    hasExistingApplication = false;
+    applicationStatus = null;
   }
+
   isLoading = false;
 });
-
-
-  // Modal state
+ 
   let showProfileModal = false;
   let documentsSection;
 

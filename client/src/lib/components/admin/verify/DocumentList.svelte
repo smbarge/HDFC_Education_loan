@@ -3,10 +3,10 @@ export let docs = [];
   export let docVerification = {};
   export let sectionStatus = 'pending';
   export let sectionLabel = '';
-    export let checkpointsByDoc = {};  // keyed by document_id from backend
+  export let checkpointsByDoc = {};  // keyed by document_id from backend
 
   
-    $: console.log('Checkpoint que resived:',checkpointsByDoc);
+  $: console.log('Checkpoint que resived:',checkpointsByDoc);
 
   $: console.log('Docs received:', docs);
 

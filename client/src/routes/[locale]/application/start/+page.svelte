@@ -38,71 +38,88 @@
   let genders = [];
   let religions =[];
 
-//  let applicationId = null;
 
-//   onMount(async () => {
-//   if (typeof window !== 'undefined') {
-//     const authUser = sessionStorage.getItem('authUser');
+// onMount(async () => {
 
-//     if (!authUser) {
-//       goto(`/${locale}/login`);
+//   const currentToken = get(token);
+//   console.log('Token on dashboard mount:----------------------------', get(token));
+
+//   if (!$user || !currentToken) {
+//     goto(`/${locale}/login`);
+//     return;
+//   }
+
+//    // Already submitted → back to dashboard
+//   const { getUserApplication } = await import('$lib/api/authApi');
+//   const result = await getUserApplication($user.id);
+  
+//   if (result.error === 0) {
+//     applicationId.set(result.applicationId);
+    
+//     if (result.status === 'submitted') {
+     
+//       goto(`/${locale}/dashboard`);
 //       return;
 //     }
-
-//     else {
-//        const user = JSON.parse(authUser);
-//         userData = {
-//           name: user.name || "Guest User",
-//           phone: user.mobile || "",
-//           username: user.username || "",
-//           id: user.id || null 
-//         };
-//         console.log('Loaded user data:', userData);
-//     }
-
-//     await loadMasters();
 //   }
+
+//   console.log('Loaded user data:', userData);
+  
+//   //Load existing application data if applicationId exists
+//   if ($applicationId) {
+//     const appData = await getApplicationData($applicationId);
+    
+//     if (appData.error === 0 && appData.data) {
+//       // Pre-fill form with existing data
+//       formData = {
+//         ...formData,
+//         ...appData.data
+//       };
+//       console.log('Pre-filled form data:', formData);
+//       formData = formData;
+//     }
+//   }
+
+//   await loadMasters();
 // });
 
-onMount(async () => {
 
+
+onMount(async () => {
   const currentToken = get(token);
-  console.log('Token on dashboard mount:----------------------------', get(token));
 
   if (!$user || !currentToken) {
     goto(`/${locale}/login`);
     return;
   }
 
-   // Already submitted → back to dashboard
-  const { getUserApplication } = await import('$lib/api/authApi');
-  const result = await getUserApplication($user.id);
-  
-  if (result.error === 0) {
-    applicationId.set(result.applicationId);
-    
-    if (result.status === 'submitted') {
-     
-      goto(`/${locale}/dashboard`);
-      return;
-    }
-  }
+  try {
+    const { getUserApplication } = await import('$lib/api/authApi');
+    const result = await getUserApplication($user.id);
 
-  console.log('Loaded user data:', userData);
-  
-  //Load existing application data if applicationId exists
-  if ($applicationId) {
-    const appData = await getApplicationData($applicationId);
-    
-    if (appData.error === 0 && appData.data) {
-      // Pre-fill form with existing data
-      formData = {
-        ...formData,
-        ...appData.data
-      };
-      console.log('Pre-filled form data:', formData);
-      formData = formData;
+    if (result.error === 0 && result.applicationId) {
+      applicationId.set(result.applicationId);
+
+      if (result.status === 'submitted') {
+        goto(`/${locale}/dashboard`);
+        return;
+      }
+
+      // Only pre-fill if existing application found
+      const appData = await getApplicationData($applicationId);
+      if (appData.error === 0 && appData.data) {
+        formData = { ...formData, ...appData.data };
+        formData = formData;
+      }
+
+    } else {
+      // New user — clear store, show empty form
+      applicationId.set(null);
     }
+
+  } catch(e) {
+    console.error('Start page init error:', e);
+    applicationId.set(null);
   }
 
   await loadMasters();

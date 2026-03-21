@@ -512,7 +512,7 @@ Content-Type: application/json
 
 # APPLICATIONS
 
-@token = eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI1UGNLYXRXdWlPWUFnV0c4NFZsdUF5aXoxYldrZTBWVHZEWXpzZjFWWkZrIn0.eyJleHAiOjE3NzM3MzA2ODAsImlhdCI6MTc3MzczMDM4MCwianRpIjoiNmRjYjY5NDctYjQwOS00MzlhLWI0OWMtNDg3MTc4ZmRiYzllIiwiaXNzIjoiaHR0cHM6Ly9rZXljbG9hay5jaGFuYWt5YXNvZnQuY29tL3JlYWxtcy9lZHVjYXRpb24tbG9hbiIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiIwMjM2NjRjOS0xODk2LTRmNjItOWYzYi1jODcxZGY0MTk2NGUiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJlZHVjYXRpb24tYWRtaW4iLCJzaWQiOiJlMjE4MjM0OS1jMDU1LTQ2ZDQtODhhNi00YWYzMmFmY2MyZDQiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImRpc3RyaWN0X2FkbWluIiwiZGVmYXVsdC1yb2xlcy1lZHVjYXRpb24tbG9hbiIsIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6InByb2ZpbGUgZW1haWwiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsIm5hbWUiOiJrb2xoYXB1ciBBZG1pbiIsInByZWZlcnJlZF91c2VybmFtZSI6ImtvbGhhcHVyX2FkbWluIiwiZ2l2ZW5fbmFtZSI6ImtvbGhhcHVyIiwiZmFtaWx5X25hbWUiOiJBZG1pbiIsImVtYWlsIjoia29saGFwdXJAZ21haWwuY29tIn0.G3LfrzioYc90Tucwre0jRT126m2ABxOXGqoUOAeEgPbDMKE4hLbit3wIyMJZw7Uo2xHD7gJybZFSRg-ibQ8sxmZBSbq4qdO9XULxx07094pB4GVAFyXWLOeA4fAK6PyhQYfwULExEAeVbqpA2Is-I68jdH1eJEpsHY4rS0Bzo4iqNyyCMKYzhwE19bBCaa9UkxlEQK2OVhWrqaBtRS_3NoLREcCNWpuJVmEAKAHLosMD41TpayNxOE7lKnk6d_MdfOUkBFcIV_Blp7tabsHyCSJ4kw9uPx0Y39FQA3Z837Vq8OVYtf-nVCPsaQe0_tVi7amWMkzBcA9Ig_pDWohD4Q
+@tokan = eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI1UGNLYXRXdWlPWUFnV0c4NFZsdUF5aXoxYldrZTBWVHZEWXpzZjFWWkZrIn0.eyJleHAiOjE3NzQwMDEzNzUsImlhdCI6MTc3NDAwMTA3NSwianRpIjoiZjA1NDhhYTMtZjkwZi00YzIxLWIzNDctNmMzMTkyMDI1NTEyIiwiaXNzIjoiaHR0cHM6Ly9rZXljbG9hay5jaGFuYWt5YXNvZnQuY29tL3JlYWxtcy9lZHVjYXRpb24tbG9hbiIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiIwMjM2NjRjOS0xODk2LTRmNjItOWYzYi1jODcxZGY0MTk2NGUiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJlZHVjYXRpb24tYWRtaW4iLCJzaWQiOiJjZjZkZDQyZS02YjFiLTQyZjctYTA3YS0zYWU4NzEzOTcxYTAiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImRpc3RyaWN0X2FkbWluIiwiZGVmYXVsdC1yb2xlcy1lZHVjYXRpb24tbG9hbiIsIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6InByb2ZpbGUgZW1haWwiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsIm5hbWUiOiJrb2xoYXB1ciBBZG1pbiIsInByZWZlcnJlZF91c2VybmFtZSI6ImtvbGhhcHVyX2FkbWluIiwiZ2l2ZW5fbmFtZSI6ImtvbGhhcHVyIiwiZmFtaWx5X25hbWUiOiJBZG1pbiIsImVtYWlsIjoia29saGFwdXJAZ21haWwuY29tIn0.CthE0i3IfGdWsnwfrY9JY1yWtvq0Me5BxjkR1AKjvUsG_kxB4D9oZlaTtUD1nsx96GAp4vw9SoKoXOasPJJH4bvbXZ1IUjmAyT8NHCootZE7i70I61sThiQZrj2U5KbfGSaSlCIlh0rJ4VB28OuE9_HRH8S7MihQ4g4C19R77SX8941UsVvJKvQksrpeRuGSsXx7R6a3e8YwYgMcvTQ9wu76ynpNCps4niv1smIDmC_1I0aYIms77nrHOdeSkgQQoBhDDVAFevQvDQEcBplBmBg0q8YB5MwZS5L7UPkzsN3qR9LSd72kODnCKZ6mkhk-joyukkz4l_Yu15G5Quw3XQ
 
 ### Get Pune applications (paste token from above)
 GET http://localhost:5173/api/admin/applications?district=kolhapur
@@ -562,3 +562,46 @@ Content-Type: application/json
 ### Test view API directly with admin token (paste token from above)
 GET http://localhost:5173/api/createApplication/0/YOUR_APP_ID/view
 Authorization: Bearer paste_admin_token_here
+
+
+### Fetch Checkpoints API
+GET http://localhost:5173/api/admin/checkpoints
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+
+
+# verification Documents____________________ 
+
+### Save answer (with all required fields)
+POST http://localhost:5173/api/admin/verify
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "action": "saveAnswer",
+  "application_id": 10,
+  "checkpoint_id": 1,
+  "question_id": 3,
+  "answer": "yes",
+  "verification_id": 0,
+  "property_id": 1,
+  "level": 1
+}
+
+###
+
+### Final decision — Forward
+POST http://localhost:5173/api/admin/verify
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "action": "finalDecision",
+  "application_id": 10,
+  "decision": "forward",
+  "remark": "All documents verified",
+  "level": 1,
+  "verification_type": 1,
+  "iteration": 1
+}

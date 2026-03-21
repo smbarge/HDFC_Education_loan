@@ -438,19 +438,51 @@ async function getVerifiedContacts(applicationId) {
 // }
 
 
-const getUserApplication = async (userId) => {
-  const response = await fetch(`/api/createApplication/${userId}?action=getUserApplication`, {
-    method: 'GET',
-    headers: authHeaders()  
-  });
-  const result = await response.json();
+// const getUserApplication = async (userId) => {
+//   const response = await fetch(`/api/createApplication/${userId}?action=getUserApplication`, {
+//     method: 'GET',
+//     headers: authHeaders()  
+//   });
+//   const result = await response.json();
   
-  return {
-    error: result.error,
-    applicationId: result.applicationId,
-    status: result.status,
-    statusLabel: result.statusLabel || ''
-  };
+//   return {
+//     error: result.error,
+//     applicationId: result.applicationId,
+//     status: result.status,
+//     statusLabel: result.statusLabel || ''
+//   };
+// };
+
+
+const getUserApplication = async (userId) => {
+  const currentToken = get(token);
+
+  if (!currentToken) {
+    return { error: -1, errorMsg: 'No token', applicationId: null, status: null };
+  }
+
+  try {
+    const response = await fetch(`/api/createApplication/${userId}?action=getUserApplication`, {
+      method: 'GET',
+      headers: authHeaders()
+    });
+
+    // 401 = new user or token mismatch — not a crash
+    if (response.status === 401 || response.status === 403) {
+      return { error: -1, errorMsg: 'Unauthorized', applicationId: null, status: null };
+    }
+
+    const result = await response.json();
+
+    return {
+      error: result.error ?? 0,
+      applicationId: result.applicationId ?? null,
+      status: result.status ?? null,
+      statusLabel: result.statusLabel || ''
+    };
+  } catch (e) {
+    return { error: -1, errorMsg: e.message, applicationId: null, status: null };
+  }
 };
 
 //Start Page__

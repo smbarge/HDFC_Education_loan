@@ -89,7 +89,6 @@ export function getRequiredApplicantDocs() {
     'admissionLetter',
     'bonafide',
     'feeStructure',
-    'markSheets',
     'domicile',
     'minorityCert',
     'incomeCert',

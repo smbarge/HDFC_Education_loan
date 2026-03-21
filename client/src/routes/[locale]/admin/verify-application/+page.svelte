@@ -12,7 +12,7 @@
   import GuarantorSection  from '$lib/components/admin/verify/GuarantorSection.svelte';
   import CollateralSection from '$lib/components/admin/verify/CollateralSection.svelte';
   import DocumentList      from '$lib/components/admin/verify/DocumentList.svelte';
-    import Header from '$lib/components/landingpage/Header.svelte';
+  import Header from '$lib/components/landingpage/Header.svelte';
 
   $: locale = $page.params.locale || 'en';
 
@@ -30,7 +30,7 @@
   };
 
   let docVerification = {};
-    let checkpointsByDoc = {};
+  let checkpointsByDoc = {};
 
 
   const tabs = [
@@ -67,20 +67,24 @@
     docVerification[docId] = 'verified';
     docVerification = { ...docVerification };
   }
+
   function rejectDoc(docId) {
     docVerification[docId] = 'rejected';
     docVerification = { ...docVerification };
   }
+
   function resetDoc(docId) {
     docVerification[docId] = 'pending';
     docVerification = { ...docVerification };
   }
+
   function verifySection(tab) {
     sectionStatus[tab] = 'verified';
     sectionStatus = { ...sectionStatus };
     currentDocs.forEach(d => { docVerification[d.document_id] = 'verified'; });
     docVerification = { ...docVerification };
   }
+
   function rejectSection(tab) {
     sectionStatus[tab] = 'rejected';
     sectionStatus = { ...sectionStatus };
@@ -145,6 +149,8 @@
       if (result.error === 0) { alert('Application approved!'); window.close(); }
     } catch {}
   }
+
+  
 </script>
 
 <svelte:head><title>Verify Application — Admin</title></svelte:head>
@@ -165,7 +171,7 @@
     <div class="w-full px-4 py-4 space-y-4">
 
      <!-- Applicant bar -->
-<div class="bg-white rounded-lg border border-gray-200 px-4 py-4 flex flex-col sm:flex-row sm:items-center gap-6">
+  <div class="bg-white rounded-lg border border-gray-200 px-4 py-4 flex flex-col sm:flex-row sm:items-center gap-6">
 
   <!-- Left: Applicant info -->
   <div class="flex items-center gap-3 flex-shrink-0">
@@ -268,7 +274,7 @@
 
         <!-- Right: Document List with inline viewer -->
         <div class="lg:col-span-3">
-<DocumentList
+          <DocumentList
             docs={currentDocs}
             {docVerification}
             {checkpointsByDoc}
@@ -300,6 +306,8 @@
         </div>
 
         <div class="flex gap-3">
+
+
   <button
     on:click={() => {
       const currentIndex = tabs.findIndex(t => t.key === activeTab);
