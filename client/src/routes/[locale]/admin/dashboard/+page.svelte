@@ -152,7 +152,7 @@
   }
 
   function openVerifyApplication(candidate) {
-    goto(`/${locale}/admin/verify-application?appId=${candidate.id}&name=${encodeURIComponent(candidate.name || '')}&formNo=${encodeURIComponent(candidate.applicationId || '')}`, '_blank');
+    goto(`/${locale}/admin/verify-application1?appId=${candidate.id}&name=${encodeURIComponent(candidate.name || '')}&formNo=${encodeURIComponent(candidate.applicationId || '')}`, '_blank');
   }
 
 function handleLogout() {

@@ -38,12 +38,12 @@ let t = {};
 
 
   const tabs = [
-    { key: 'personal',   label: 'Personal'   },
-    { key: 'academic',   label: 'Academic'   },
-    { key: 'family',     label: 'Family'     },
-    { key: 'bank',       label: 'Bank'       },
-    { key: 'guarantor',  label: 'Guarantor'  },
-    { key: 'collateral', label: 'Collateral' },
+    { key: 'personal',   label: 'Personal Documents'   },
+    { key: 'academic',   label: 'Academic Documents'   },
+    { key: 'family',     label: 'Family Documents'     },
+    { key: 'bank',       label: 'Bank Documents'       },
+    { key: 'guarantor',  label: 'Guarantor Documents'  },
+    { key: 'collateral', label: 'Collateral Documents' },
   ];
 
   const tabSectionIds = {
@@ -267,60 +267,52 @@ let t = {};
   <div class="hidden sm:block w-px self-stretch bg-gray-200 flex-shrink-0 ml-[5%]" ></div>
 
   <!-- Right: Step flow navigation -->
-  <div class="flex items-center flex-1 overflow-x-auto py-2 ml-[20%]">
-    {#each tabs as tab, i}
-      <button
-        on:click={() => activeTab = tab.key}
-        class="flex flex-col items-center flex-shrink-0 group focus:outline-none px-2"
-        style="min-width: 110px;"
+<div class="flex items-start flex-1 overflow-x-auto py-2 ml-[10%]">
+  {#each tabs as tab, i}
+    <!-- Connector line BETWEEN steps, rendered before each step except the first -->
+    {#if i > 0}
+      <div class="flex-1 h-1 min-w-[16px] rounded-full self-center mb-5
+        {sectionStatus[tabs[i-1].key] === 'verified' ? 'bg-blue-500' : 'bg-gray-200'}">
+      </div>
+    {/if}
+
+    <!-- Step button (no px padding, no internal connectors) -->
+    <button
+      on:click={() => activeTab = tab.key}
+      class="flex flex-col items-center flex-shrink-0 group focus:outline-none"
+      style="min-width: 56px;"
+    >
+      <!-- Circle -->
+      <div class="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all shadow-sm
+        {activeTab === tab.key
+          ? 'bg-blue-600 border-blue-600 text-white shadow-blue-200'
+          : sectionStatus[tab.key] === 'verified'
+            ? 'bg-blue-500 border-blue-500 text-white'
+            : sectionStatus[tab.key] === 'rejected'
+              ? 'bg-red-500 border-red-500 text-white'
+              : 'bg-white border-gray-300 text-gray-400 group-hover:border-blue-400'}"
       >
-        <div class="flex items-center w-full">
-          <!-- Left connector -->
-          {#if i > 0}
-            <div class="flex-1 h-1 min-w-[16px] rounded-full {sectionStatus[tabs[i-1].key] === 'verified' ? 'bg-blue-500' : 'bg-gray-200'}"></div>
-          {:else}
-            <div class="flex-1"></div>
-          {/if}
+        {#if sectionStatus[tab.key] === 'verified'}
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+          </svg>
+        {:else if sectionStatus[tab.key] === 'rejected'}
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        {:else}
+          <span class="text-sm font-bold">{i + 1}</span>
+        {/if}
+      </div>
 
-          <!-- Circle -->
-          <div class="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all shadow-sm
-            {activeTab === tab.key
-              ? 'bg-blue-600 border-blue-600 text-white shadow-blue-200'
-              : sectionStatus[tab.key] === 'verified'
-                ? 'bg-blue-500 border-blue-500 text-white'
-                : sectionStatus[tab.key] === 'rejected'
-                  ? 'bg-red-500 border-red-500 text-white'
-                  : 'bg-white border-gray-300 text-gray-400 group-hover:border-blue-400'}"
-          >
-            {#if sectionStatus[tab.key] === 'verified'}
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-              </svg>
-            {:else if sectionStatus[tab.key] === 'rejected'}
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
-            {:else}
-              <span class="text-sm font-bold">{i + 1}</span>
-            {/if}
-          </div>
-
-          <!-- Right connector -->
-          {#if i < tabs.length - 1}
-            <div class="flex-1 h-1 min-w-[16px] rounded-full {sectionStatus[tab.key] === 'verified' ? 'bg-blue-500' : 'bg-gray-200'}"></div>
-          {:else}
-            <div class="flex-1"></div>
-          {/if}
-        </div>
-
-        <!-- Label -->
-        <span class="mt-2 text-xs sm:text-sm font-medium text-center leading-tight
-          {activeTab === tab.key ? 'text-blue-600' : 'text-gray-500 group-hover:text-gray-700'}">
-          {tab.label}
-        </span>
-      </button>
-    {/each}
-  </div>
+      <!-- Label -->
+      <span class="mt-2 text-xs sm:text-sm font-medium text-center leading-tight whitespace-nowrap
+        {activeTab === tab.key ? 'text-blue-600' : 'text-gray-500 group-hover:text-gray-700'}">
+        {tab.label}
+      </span>
+    </button>
+  {/each}
+</div>
     <!-- Back to Dashboard -->
   <button
     on:click={() => goto(`/${locale}/admin/dashboard`)}
@@ -337,7 +329,7 @@ let t = {};
       <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
 
         <!-- Left: Section Info -->
-        <div class="lg:col-span-2">
+<div class="lg:col-span-2 lg:sticky lg:top-[72px] lg:self-start lg:max-h-[calc(100vh-88px)] lg:overflow-y-auto">
           {#if activeTab === 'personal'}
             <PersonalSection personal={appData.personal} />
           {:else if activeTab === 'academic'}
