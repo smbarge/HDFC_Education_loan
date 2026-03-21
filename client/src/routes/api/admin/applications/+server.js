@@ -22,6 +22,7 @@ export async function GET({ url, request }) {
       `SELECT dist_id FROM m_district WHERE UPPER(eng_name) = UPPER($1) LIMIT 1`,
       [district]
     );
+    
     if (districtResult.rows.length === 0) {
       return json({ error: -1, errorMsg: `District not found: ${district}` }, { status: 404 });
     }
@@ -30,7 +31,7 @@ export async function GET({ url, request }) {
     // total count 
     const countResult = await pool.query(
       `SELECT COUNT(*) AS total FROM personal_details
-       WHERE district_id = $1`,
+       WHERE district_id = $1 and application_status = 2`,
       [distId]
     );
     const totalCount = parseInt(countResult.rows[0].total);

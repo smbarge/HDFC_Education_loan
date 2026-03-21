@@ -10,6 +10,11 @@
   export let expandedDocUrl = null;
   export let expandedDocName = '';
 
+  
+  $: console.log('Checkpoint que resived:',checkpointsByDoc);
+
+  $: console.log('Docs received:', docs);
+
   import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher();
 

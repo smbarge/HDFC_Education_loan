@@ -125,7 +125,7 @@ async function getDistrictApplications(district) {
   }
 }
 
-// ── Fetch district-wise applications with pagination ──
+//distrct with oagination 
 async function getDistrictApplicationsPaginated(district, page = 1, limit = 10) {
   try {
     const token = localStorage.getItem('adminToken') || '';
@@ -165,8 +165,38 @@ async function getDistrictApplicationsPaginated(district, page = 1, limit = 10) 
   }
 }
 
+
+async function getCheckpoints(adminToken) {
+  try {
+    const response = await fetch('/api/admin/checkpoints', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${adminToken}`
+      }
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || result.error !== 0) {
+      return { error: 1, errorMsg: result.errorMsg || 'Failed to fetch checkpoints', byDocument: {} };
+    }
+
+    return {
+      error: 0,
+      byDocument: result.byDocument || {}
+    };
+
+  } catch (err) {
+    console.error('getCheckpoints error:', err);
+    return { error: 1, errorMsg: 'Server error', byDocument: {} };
+  }
+}
+
+
 export {
     adminLogin,
     getDistrictApplications,
-    getDistrictApplicationsPaginated
+    getDistrictApplicationsPaginated,
+    getCheckpoints
 };

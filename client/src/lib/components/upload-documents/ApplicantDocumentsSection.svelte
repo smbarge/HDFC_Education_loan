@@ -26,7 +26,7 @@
       { id: 'bonafide', key: 'bonafide', required: true },
       { id: 'feeStructure', key: 'feeStructure', required: true },
       { id: 'markSheets', key: 'markSheets', required: true },
-      { id: 'entranceExam', key: 'entranceExam', required: false }
+     // { id: 'entranceExam', key: 'entranceExam', required: false }
     ],
     residence: [
       { id: 'domicile', key: 'domicile', required: true },

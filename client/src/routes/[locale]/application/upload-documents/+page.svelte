@@ -90,7 +90,7 @@ import {
   'bonafide': 6,
   'feeStructure': 7,
   'markSheets': 8,
-  'entranceExam': 9,
+  //'entranceExam': 9,
   // upload_for: 3 - Residence
   'domicile': 10,
   'minorityCert': 11,
