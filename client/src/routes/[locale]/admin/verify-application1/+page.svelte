@@ -329,11 +329,11 @@
         </button>
       </div>
 
-      <!-- Two column layout: list left, viewer right -->
-      <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
+      <!-- Two column layout: equal 50/50 split -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
         <!-- Left: Document list -->
-        <div class="lg:col-span-2">
+        <div class="lg:col-span-1">
           <DocumentList
             docs={currentDocs}
             {docVerification}
@@ -346,11 +346,12 @@
             bind:expandedDocName
             on:verifySection={() => verifySection(activeTab)}
             on:rejectSection={() => rejectSection(activeTab)}
+            on:saveDoc={(e) => verifyDoc(e.detail.docId)}
           />
         </div>
 
         <!-- Right: Document viewer -->
-        <div class="lg:col-span-3 lg:sticky lg:top-[80px] lg:self-start lg:max-h-[calc(100vh-96px)] lg:overflow-y-auto">
+        <div class="lg:col-span-1 lg:sticky lg:top-[80px] lg:self-start lg:max-h-[calc(100vh-96px)] lg:overflow-y-auto">
           {#if expandedDocId && expandedDocUrl}
             <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
 
@@ -358,10 +359,6 @@
               <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between gap-3">
                 <div class="min-w-0">
                   <p class="text-base font-semibold text-gray-800 truncate">{expandedDocName}</p>
-                  <!-- <p class="text-sm text-gray-400">
-                    {docVerification[expandedDocId] === 'verified' ? '✓ Verified' :
-                     docVerification[expandedDocId] === 'rejected' ? '✕ Rejected' : '○ Pending'}
-                  </p> -->
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
                   <a
@@ -411,118 +408,6 @@
                 {/if}
               </div>
 
-              <!-- Checkpoint questions -->
-              {#if getQuestionsForDoc(expandedDocId).length > 0}
-                <div class="m-4 bg-yellow-50 border border-yellow-200 rounded p-3">
-                  <p class="text-sm font-bold text-yellow-800 mb-2">Verification Checklist</p>
-                  <div class="space-y-2">
-                    {#each getQuestionsForDoc(expandedDocId) as q}
-                      <div class="flex items-start gap-3 p-2 bg-white rounded border border-yellow-100">
-                        <div class="flex-1 min-w-0">
-                          <p class="text-sm font-medium text-gray-800">{q.question}</p>
-                          {#if q.instruction_eng}
-                            <p class="text-xs text-gray-500 mt-0.5">{q.instruction_eng}</p>
-                          {/if}
-                          {#if q.mandatory_field === 'yes'}
-                            <span class="text-xs text-red-500 font-semibold">* Mandatory</span>
-                          {/if}
-                        </div>
-                        <div class="flex gap-1.5 flex-shrink-0">
-                          <button
-                            on:click={() => { checkpointAnswers[q.id] = 'yes'; checkpointAnswers = {...checkpointAnswers}; }}
-                            class="px-2.5 py-1 text-xs font-semibold rounded border transition-colors
-                              {checkpointAnswers[q.id] === 'yes'
-                                ? 'bg-green-600 text-white border-green-600'
-                                : 'bg-white text-green-700 border-green-300 hover:bg-green-50'}"
-                          >Yes</button>
-                          <button
-                            on:click={() => { checkpointAnswers[q.id] = 'no'; checkpointAnswers = {...checkpointAnswers}; }}
-                            class="px-2.5 py-1 text-xs font-semibold rounded border transition-colors
-                              {checkpointAnswers[q.id] === 'no'
-                                ? 'bg-red-600 text-white border-red-600'
-                                : 'bg-white text-red-600 border-red-300 hover:bg-red-50'}"
-                          >No</button>
-                        </div>
-                      </div>
-                    {/each}
-                  </div>
-                </div>
-              {/if}
-
-              <!-- Accept / Reject / Reset actions -->
-                <div class="px-4 py-4 border-t border-gray-100">
-
-                  <!-- Current decision banner -->
-                  {#if docVerification[expandedDocId] === 'verified'}
-                    <div class="flex items-center gap-2 mb-3 px-3 py-2 bg-green-50 border border-green-200 rounded text-green-700 text-sm font-medium">
-                      <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                      </svg>
-                      Document accepted 
-                    </div>
-                  {:else if docVerification[expandedDocId] === 'rejected'}
-                    <div class="flex items-center gap-2 mb-3 px-3 py-2 bg-red-50 border border-red-200 rounded text-red-700 text-sm font-medium">
-                      <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
-                      </svg>
-                      Document rejected 
-                    </div>
-                  {/if}
-
-                  <div class="flex items-center gap-2 flex-wrap">
-
-                    <!-- Accept: always available -->
-                    <button
-                      on:click={() => {
-                        verifyDoc(expandedDocId);
-                        expandedDocId = null;
-                        expandedDocUrl = null;
-                        expandedDocName = '';
-                      }}
-                      disabled={docVerification[expandedDocId] === 'verified'}
-                      class="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded transition-colors
-                        {docVerification[expandedDocId] === 'verified'
-                          ? 'bg-green-100 text-green-400 border border-green-200 cursor-not-allowed'
-                          : 'bg-green-600 hover:bg-green-700 text-white'}"
-                    >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                      </svg>
-                      {docVerification[expandedDocId] === 'verified' ? 'Accepted' : 'Accept Document'}
-                    </button>
-
-                    <!-- Reject: always available -->
-                    <button
-                      on:click={() => {
-                        rejectDoc(expandedDocId);
-                        expandedDocId = null;
-                        expandedDocUrl = null;
-                        expandedDocName = '';
-                      }}
-                      disabled={docVerification[expandedDocId] === 'rejected'}
-                      class="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded transition-colors
-                        {docVerification[expandedDocId] === 'rejected'
-                          ? 'bg-red-100 text-red-400 border border-red-200 cursor-not-allowed'
-                          : 'bg-red-600 hover:bg-red-700 text-white'}"
-                    >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
-                      </svg>
-                      {docVerification[expandedDocId] === 'rejected' ? 'Rejected' : 'Reject Document'}
-                    </button>
-
-                    <!-- Reset: only show when a decision has been made -->
-                    {#if docVerification[expandedDocId] === 'verified' || docVerification[expandedDocId] === 'rejected'}
-                      <button
-                        on:click={() => resetDoc(expandedDocId)}
-                        class="flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-semibold rounded transition-colors border border-gray-300"
-                      >
-                        ↺ Clear Decision
-                      </button>
-                    {/if}
-
-                  </div>
-                </div>
             </div>
 
           {:else}
