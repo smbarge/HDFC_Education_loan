@@ -12,35 +12,38 @@ function checkAuth(request) {
   } catch { return false; }
 }
 
-// Extract user_id and get office_id (district_id) from token/username
+//get office id 
 async function getOfficeId(client, username) {
-  // username = "pune_admin" → district name = "pune"
-  // Look up dist_id from m_district using username prefix
+  
   const districtName = username.replace('_admin', '').replace(/_/g, ' ');
   const result = await client.query(
-    `SELECT dist_id FROM m_district WHERE LOWER(eng_name) = LOWER($1) LIMIT 1`,
+    `SELECT dist_id FROM m_district WHERE UPPER(eng_name) = UPPER($1) LIMIT 1`,
     [districtName]
   );
   return result.rows[0]?.dist_id || 1;
 }
-
 function getUserFromToken(request) {
-  try {
-    const authHeader = request.headers.get('authorization');
-    const tokenStr = authHeader.split(' ')[1];
-    const payload = JSON.parse(Buffer.from(tokenStr.split('.')[1], 'base64').toString('utf-8'));
-    return {
-      user_id: payload.sub || payload.preferred_username || 'unknown',
-      username: payload.preferred_username || ''
-    };
-  } catch { return { user_id: 'unknown', username: '' }; }
+  // Read adminUsername from cookie — set at login time from Keycloak
+  const cookieHeader = request.headers.get('cookie') || '';
+  const username = cookieHeader.match(/adminUsername=([^;]+)/)?.[1] || '';
+  console.log('Username from cookie:', username);
+  return { user_id: username || 'unknown', username: username || '' };
+}
+
+// Convert yes/no string to integer answer
+function answerToInt(answer) {
+  if (answer === 'yes' || answer === 1 || answer === '1') return 1;
+  if (answer === 'no'  || answer === 2 || answer === '2') return 2;
+  return null;
 }
 
 // GET — load existing answers for an application
 export async function GET({ request, url }) {
+
   if (!checkAuth(request)) return json({ error: -1, errorMsg: 'Unauthorized' }, { status: 401 });
 
   const application_id = url.searchParams.get('application_id');
+
   if (!application_id) return json({ error: -1, errorMsg: 'application_id required' });
 
   const client = await pool.connect();
@@ -84,6 +87,8 @@ export async function POST({ request }) {
   const body = await request.json();
   const { action } = body;
   const { user_id, username } = getUserFromToken(request);
+  
+  console.log("USERNAME :",username);
 
   const client = await pool.connect();
   try {
@@ -91,16 +96,31 @@ export async function POST({ request }) {
     const office_id = await getOfficeId(client, username);
 
     // ── Save individual Yes/No answer ──
+   // ── Save individual Yes/No answer ──
     if (action === 'saveAnswer') {
-      const { application_id, checkpoint_id, question_id, answer, verification_id = 0, property_id = 1, level = 1 } = body;
+      const { application_id, checkpoint_id, question_id, answer } = body;
+
+      // Convert yes→1, no→2
+      const answerInt = answerToInt(answer);
+      if (answerInt === null) {
+        await client.query('ROLLBACK');
+        return json({ error: -1, errorMsg: 'Answer must be yes or no' });
+      }
+
+      // Fixed values as per business logic
+      const verification_id = 1;  // district_initiation from m_verification
+      const property_id     = 1;  // hardcoded
+      const level           = 1;  // district level
 
       await client.query(`
         INSERT INTO verification_answers
-          (application_id, office_id, checkpoint_id, question_id, user_id, answer, level, verification_id, property_id, updated_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
+          (application_id, office_id, checkpoint_id, question_id, user_id,
+           answer, level, verification_id, property_id, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())
         ON CONFLICT (application_id, office_id, question_id, verification_id, property_id)
         DO UPDATE SET answer = $6, updated_at = NOW()
-      `, [application_id, office_id, checkpoint_id, question_id, user_id, answer, level, verification_id, property_id]);
+      `, [ application_id,office_id, checkpoint_id, question_id, user_id,answerInt,level, verification_id,property_id 
+      ]);
 
       await client.query('COMMIT');
       return json({ error: 0 });

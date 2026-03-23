@@ -90,7 +90,6 @@ async function adminLogin(username, password) {
   }
 }
 
-
 //Feach the distrct wise 
 async function getDistrictApplications(district) {
   try {
@@ -194,9 +193,104 @@ async function getCheckpoints(adminToken) {
 }
 
 
+async function getVerificationAnswers(adminToken, application_id) {
+  try {
+    const response = await fetch(`/api/admin/verify?application_id=${application_id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${adminToken}`
+      }
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || result.error !== 0) {
+      return { error: 1, errorMsg: result.errorMsg || 'Failed to fetch answers', answers: {}, office_id: 0, verification_id: 0 };
+    }
+
+    return {
+      error: 0,
+      answers: result.answers || {},
+      office_id: result.office_id || 0,
+      verification_id: result.verification_id || 0
+    };
+
+  } catch (err) {
+    console.error('getVerificationAnswers error:', err);
+    return { error: 1, errorMsg: 'Server error', answers: {}, office_id: 0, verification_id: 0 };
+  }
+}
+
+async function saveVerificationAnswer(adminToken, { application_id, checkpoint_id, question_id, answer, verification_id = 0, property_id = 1, level = 1 }) {
+  try {
+    const response = await fetch('/api/admin/verify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${adminToken}`
+      },
+      body: JSON.stringify({
+        action: 'saveAnswer',
+        application_id,
+        checkpoint_id,
+        question_id,
+        answer,
+        verification_id,
+        property_id,
+        level
+      })
+    });
+
+    const result = await response.json();
+    return result.error === 0 ? { error: 0 } : { error: 1, errorMsg: result.errorMsg || 'Failed to save answer' };
+
+  } catch (err) {
+    console.error('saveVerificationAnswer error:', err);
+    return { error: 1, errorMsg: 'Server error' };
+  }
+}
+
+async function submitFinalDecision(adminToken, { application_id, decision, remark, level = 1, verification_type = 1, iteration = 1 }) {
+  try {
+    const response = await fetch('/api/admin/verify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${adminToken}`
+      },
+      body: JSON.stringify({
+        action: 'finalDecision',
+        application_id,
+        decision,
+        remark,
+        level,
+        verification_type,
+        iteration
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || result.error !== 0) {
+      return { error: 1, errorMsg: result.errorMsg || 'Failed to submit decision' };
+    }
+
+    return { error: 0, newStatus: result.newStatus, verification_id: result.verification_id };
+
+  } catch (err) {
+    console.error('submitFinalDecision error:', err);
+    return { error: 1, errorMsg: 'Server error' };
+  }
+}
+
+
 export {
     adminLogin,
     getDistrictApplications,
     getDistrictApplicationsPaginated,
-    getCheckpoints
+    getCheckpoints,
+    getVerificationAnswers,
+    saveVerificationAnswer,
+    submitFinalDecision
 };
