@@ -25,19 +25,25 @@ export async function GET({ request }) {
     // Fetch all checkpoints (id = document_id mapping)
     const checkpointRes = await pool.query(`
       SELECT id, checkpoint_name, description
-      FROM m_checkpoint
+      FROM m_checkpoint1
       WHERE status = 1
       ORDER BY id
     `);
+
+    console.log("Checkpoint Data:", checkpointRes.rows);
+
 
     // Fetch all questions grouped by checkpoint_id
     const questionRes = await pool.query(`
       SELECT id, checkpoint_id, question, dev_question,
              instruction_eng, instruction_dev, mandatory_field, document_id
-      FROM m_checkpoint_questions
+      FROM m_checkpoint_questions1
       WHERE status = 1
       ORDER BY checkpoint_id, id
     `);
+
+    console.log("Question Data:", questionRes.rows);
+
 
     // Group questions by checkpoint_id
     const questionsByCheckpoint = {};
@@ -56,7 +62,39 @@ export async function GET({ request }) {
       });
     });
 
-    // Build byDocument map: checkpoint.id = document_id key
+    console.log("Questions By Checkpoint:", questionsByCheckpoint);
+
+    const uploadDocIdToCheckpointId = {
+      1:1, 2:2, 3:3, 4:4,         // Applicant: Aadhar, PAN, Photo, Signature
+      10:5,                         // Domicile Certificate
+      11:6,                         // Minority Community Certificate
+      12:7,                         // Caste Certificate
+      13:9,                         // Income Certificate (co-applicant) → checkpoint 9
+      14:8,                         // Parent/Guardian Aadhar → checkpoint 8 (Co-applicant Aadhar)
+      15:10,                        // Ration Card
+      17:8,                         // co applicant Aadhar Card → checkpoint 8
+      18:9,                         // Income Certificate → checkpoint 9
+      19:10,                        // Ration Card → checkpoint 10
+      5:11,                         // Admission Offer Letter → checkpoint 11
+      6:12,                         // Bonafide Certificate → checkpoint 12
+      7:13,                         // Fee Structure → checkpoint 13
+      8:14,                         // Previous Year Mark Sheet → checkpoint 14
+      9:15,                         // Entrance Exam Score Card → checkpoint 15
+      16:16,                        // Applicant Bank Passbook → checkpoint 16
+      41:17,                        // Guarantor Aadhaar Card → checkpoint 17
+      42:18,                        // Guarantor Affidavit → checkpoint 18
+      43:19,                        // Guarantor Income Certificate → checkpoint 19
+      44:20,                        // Address Proof → checkpoint 20
+      35:31,                        // Passport Size Photo with Cross Signature (LIC) → checkpoint 31
+      36:36,                        // Original Fixed Deposit Receipt → checkpoint 36
+      37:37,                        // Bank Confirmation Letter → checkpoint 37
+      38:38,                        // FD Account Statement → checkpoint 38
+      46:1,                         // FD collateral Aadhar card → checkpoint 1 (Aadhaar Card questions)
+      39:39,                        // Complete Passport → checkpoint 39
+      40:40,                        // Valid Visa → checkpoint 40
+    };
+
+    // Build byDocument keyed by m_checkpoint.id (original — keep for reference)
     const byDocument = {};
     checkpointRes.rows.forEach(cp => {
       const docId = String(cp.id);
@@ -68,7 +106,24 @@ export async function GET({ request }) {
       };
     });
 
-    return json({ error: 0, byDocument });
+    // Build byUploadDocId keyed by upload_docs.document_id
+    // This is what the frontend actually uses to look up questions per doc
+    const byUploadDocId = {};
+    Object.entries(uploadDocIdToCheckpointId).forEach(([uploadDocId, checkpointId]) => {
+      const cp = byDocument[String(checkpointId)];
+      if (cp) {
+        byUploadDocId[String(uploadDocId)] = {
+          checkpoint_id: cp.checkpoint_id,
+          checkpoint_name: cp.checkpoint_name,
+          description: cp.description,
+          questions: cp.questions
+        };
+      }
+    });
+
+    console.log("byUploadDocId keys:", Object.keys(byUploadDocId));
+
+    return json({ error: 0, byDocument: byUploadDocId });
 
   } catch (err) {
     console.error('Checkpoints error:', err.message);

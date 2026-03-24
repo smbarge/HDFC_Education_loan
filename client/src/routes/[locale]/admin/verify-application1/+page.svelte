@@ -36,34 +36,220 @@
   let expandedDocName = '';
 
   const tabs = [
-    { key: 'personal',   label: 'Personal Documents'   },
-    { key: 'academic',   label: 'Academic Documents'   },
-    { key: 'family',     label: 'Family Documents'     },
-    { key: 'bank',       label: 'Bank Documents'       },
-    { key: 'guarantor',  label: 'Guarantor Documents'  },
-    { key: 'collateral', label: 'Collateral Documents' },
+    { key: 'personal',   label: 'Personal & Identity Documents'   },
+    { key: 'academic',   label: 'Educational & Banking Documents' },
+    { key: 'guarantor',  label: 'Guarantor Documents'             },
+    { key: 'collateral', label: 'Collateral Documents'            },
+    { key: 'abroad',     label: 'Study Abroad Documents'          },
   ];
 
-  const tabSectionIds = {
-    personal:   [1, 2, 3, 4, 5],
-    academic:   [11],
-    family:     [6],
-    bank:       [1, 2, 3, 4, 5],
-    guarantor:  [12],
-    collateral: [7, 8, 9, 10],
+  
+  // EXACT document_id values from upload_docs table (confirmed from console log)
+  const docIdToTab = {
+    // A. Personal & Identity
+    1:'personal',   // Applicant Aadhar Card
+    2:'personal',   // PAN Card
+    3:'personal',   // Passport Size Photograph
+    4:'personal',   // Applicant Signature
+    10:'personal',  // Domicile Certificate
+    11:'personal',  // Minority Community Certificate
+    12:'personal',  // Caste Certificate
+
+    // A. Co-Applicant (under personal tab)
+    13:'personal',  // Income Certificate (co-applicant)
+    14:'personal',  // Parent/Guardian Aadhar Card
+    15:'personal',  // Ration Card
+
+    // B. Educational
+    5:'academic',   // Admission Offer Letter
+    6:'academic',   // Bonafide Certificate
+    7:'academic',   // Fee Structure
+    8:'academic',   // Previous Year Mark Sheet
+    9:'academic',   // Entrance Exam Score Card
+    16:'academic',  // Applicant Bank Passbook
+
+    // C. Guarantor
+    41:'guarantor', // Guarantor Aadhaar Card
+    42:'guarantor', // Guarantor Affidavit
+    43:'guarantor', // Income Certificate (guarantor)
+    44:'guarantor', // Address Proof
+
+    17:'guarantor', 
+    18:'guarantor', 
+    19:'guarantor',
+
+    21:'collateral', // Property Ownership Proof
+    22:'collateral', // 7/12, 6D, 8A Extract
+    23:'collateral', // Property Registration Document
+    24:'collateral', // Property Valuation Certificate
+    25:'collateral', // Form-24 (A)
+
+    // D. Collateral — Govt Employee
+    26:'collateral', // Government Employee ID Card
+    27:'collateral', // Salary Certificate
+    28:'collateral', // Office Certificate
+    29:'collateral', // Retirement Proof
+    30:'collateral', // Form-24 (B)
+
+    // D. Collateral — LIC photo
+    35:'collateral', // Passport Size Colour Photograph (LIC/FD)
+
+    36:'collateral', // Original Fixed Deposit Receipt
+    37:'collateral', // Bank Confirmation Letter
+    38:'collateral', // FD Account Statement
+    46:'collateral', // FD collateral Aadhar card (separate from LIC photo)
+
+    // E. Study Abroad
+    39:'abroad',    // Complete Passport (All Pages)
+    40:'abroad',    // Valid Visa
   };
 
+  // document_id → sub-section purple header
+  const docIdToSubSection = {
+    // A. Personal & Identity
+    1:'Personal & Identity Documents',
+    2:'Personal & Identity Documents',
+    3:'Personal & Identity Documents',
+    4:'Personal & Identity Documents',
+    10:'Personal & Identity Documents',
+    11:'Personal & Identity Documents',
+    12:'Personal & Identity Documents',
+
+    // A. Co-Applicant
+    13:'Co-Applicant (Parent / Guardian)',
+    14:'Co-Applicant (Parent / Guardian)',
+    15:'Co-Applicant (Parent / Guardian)',
+    17:'Co-Applicant (Parent / Guardian)',
+    18:'Co-Applicant (Parent / Guardian)',
+    19:'Co-Applicant (Parent / Guardian)',
+
+    // B. Educational
+    5:'Educational Documents',
+    6:'Educational Documents',
+    7:'Educational Documents',
+    8:'Educational Documents',
+    9:'Educational Documents',
+
+    // B. Bank
+    16:'Bank Documents',
+
+    // C. Guarantor
+    41:'Guarantor Documents',
+    42:'Guarantor Documents',
+    43:'Guarantor Documents',
+    44:'Guarantor Documents',
+
+    // D. Property Collateral
+    21:'Property Collateral',
+    22:'Property Collateral',
+    23:'Property Collateral',
+    24:'Property Collateral',
+    25:'Property Collateral',
+
+    // D. Govt Employee Collateral
+    26:'Govt Employee Collateral',
+    27:'Govt Employee Collateral',
+    28:'Govt Employee Collateral',
+    29:'Govt Employee Collateral',
+    30:'Govt Employee Collateral',
+
+    // D. LIC Collateral — only doc_id 35
+    35:'LIC Policy Collateral',
+
+    // D. FD Collateral — doc_ids 36, 37, 38, 46
+    36:'Fixed Deposit Collateral',
+    37:'Fixed Deposit Collateral',
+    38:'Fixed Deposit Collateral',
+    46:'Fixed Deposit Collateral',
+
+    // E. Study Abroad
+    39:'Study Abroad Documents',
+    40:'Study Abroad Documents',
+  };
+
+  const subSectionOrder = {
+    personal:   ['Personal & Identity Documents', 'Co-Applicant (Parent / Guardian)'],
+    academic:   ['Educational Documents', 'Bank Documents'],
+    guarantor:  ['Guarantor Documents'],
+    collateral: [ 'Property Collateral','Govt Employee Collateral','LIC Policy Collateral', 'Fixed Deposit Collateral'],
+    abroad:     ['Study Abroad Documents'],
+  };
+
+  //documnet id match with the tab and tab  wise showing documents ..
   function getDocsForTab(tab) {
     if (!appData?.allDocs) return [];
-    const ids = tabSectionIds[tab] || [];
-    if (ids.length === 0) return appData.allDocs;
-    return appData.allDocs.filter(d => ids.includes(d.section_id));
+    return appData.allDocs.filter(d => docIdToTab[d.document_id] === tab);
   }
 
-  $: currentDocs = (() => {
-    const specific = getDocsForTab(activeTab);
-    return specific.length > 0 ? specific : (appData?.allDocs || []);
-  })();
+  //Here form the goroup in the tab
+
+  function getGroupedDocsForTab(tab) {
+    const docs = getDocsForTab(tab);
+
+    const groups = {};
+    docs.forEach(doc => {
+      const sub = docIdToSubSection[doc.document_id] || 'Documents';
+      if (!groups[sub]) groups[sub] = [];
+      groups[sub].push(doc);
+    });
+
+  if (tab === 'collateral') {
+      const photoDoc = docs.find(d => d.document_id === 35);
+      if (photoDoc) {
+        const hasProperty = docs.some(d => [21, 22, 23, 24, 25].includes(d.document_id));
+        const hasGovt     = docs.some(d => [26, 27, 28, 29, 30].includes(d.document_id));
+        const hasLIC = docs.some(d => [32, 33, 34].includes(d.document_id));
+        const hasFD  = docs.some(d => [36, 37, 38, 46].includes(d.document_id));
+
+        // Add photo to Property section if present and no LIC
+        if (hasProperty && !hasLIC) {
+          if (!groups['Property Collateral']) groups['Property Collateral'] = [];
+          const already = groups['Property Collateral'].some(d => d.document_id === 35);
+          if (!already) groups['Property Collateral'].unshift({ ...photoDoc });
+          // Remove from LIC group since no LIC
+          delete groups['LIC Policy Collateral'];
+        }
+
+        // Add photo to Govt Employee section if present and no LIC
+        if (hasGovt && !hasLIC) {
+          if (!groups['Govt Employee Collateral']) groups['Govt Employee Collateral'] = [];
+          const already = groups['Govt Employee Collateral'].some(d => d.document_id === 35);
+          if (!already) groups['Govt Employee Collateral'].unshift({ ...photoDoc });
+          delete groups['LIC Policy Collateral'];
+        }
+        
+        // Remove photo from LIC group if no actual LIC docs present
+        if (!hasLIC && groups['LIC Policy Collateral']) {
+          groups['LIC Policy Collateral'] = groups['LIC Policy Collateral']
+            .filter(d => d.document_id !== 35);
+          if (groups['LIC Policy Collateral'].length === 0)
+            delete groups['LIC Policy Collateral'];
+        }
+
+        // Add photo to FD group if FD docs present but no LIC docs
+        if (hasFD && !hasLIC) {
+          if (!groups['Fixed Deposit Collateral']) groups['Fixed Deposit Collateral'] = [];
+          const alreadyInFD = groups['Fixed Deposit Collateral'].some(d => d.document_id === 35);
+          if (!alreadyInFD) groups['Fixed Deposit Collateral'].unshift({ ...photoDoc });
+        }
+
+        // If BOTH LIC and FD present, duplicate photo into FD too
+        if (hasFD && hasLIC) {
+          if (!groups['Fixed Deposit Collateral']) groups['Fixed Deposit Collateral'] = [];
+          const alreadyInFD = groups['Fixed Deposit Collateral'].some(d => d.document_id === 35);
+          if (!alreadyInFD) groups['Fixed Deposit Collateral'].unshift({ ...photoDoc });
+        }
+      }
+    }
+
+    const order = subSectionOrder[tab] || Object.keys(groups);
+    return order
+      .filter(name => groups[name] && groups[name].length > 0)
+      .map(name => ({ name, docs: groups[name] }));
+  }
+
+  $: currentDocs = getDocsForTab(activeTab);
+  $: activeTabs = appData ? tabs.filter(tab => getDocsForTab(tab.key).length > 0) : tabs;
 
   // Reset viewer when tab changes
   $: if (activeTab) {
@@ -82,38 +268,40 @@
     return /\.pdf(\?.*)?$/i.test(url);
   }
 
-  function getQuestionsForDoc(documentId) {
-    if (!documentId) return [];
-    const docId = String(documentId);
-    const entry = checkpointsByDoc[docId];
-    return entry ? entry.questions : [];
-  }
-
   function verifyDoc(docId) {
     docVerification[docId] = 'verified';
     docVerification = { ...docVerification };
   }
+
   function rejectDoc(docId) {
     docVerification[docId] = 'rejected';
     docVerification = { ...docVerification };
   }
+
   function resetDoc(docId) {
     docVerification[docId] = 'pending';
     docVerification = { ...docVerification };
   }
+
   function verifySection(tab) {
     sectionStatus[tab] = 'verified';
     sectionStatus = { ...sectionStatus };
     currentDocs.forEach(d => { docVerification[d.document_id] = 'verified'; });
     docVerification = { ...docVerification };
   }
+
   function rejectSection(tab) {
     sectionStatus[tab] = 'rejected';
     sectionStatus = { ...sectionStatus };
   }
 
-  function handleLogout() {
+ function handleLogout() {
+    document.cookie = 'adminToken=; Path=/; Max-Age=0';
+    document.cookie = 'adminDistrict=; Path=/; Max-Age=0';
+    document.cookie = 'adminUsername=; Path=/; Max-Age=0';
     localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminDistrict');
+    localStorage.removeItem('adminUsername');
     goto(`/${locale}/admin/login`);
   }
 
@@ -122,12 +310,18 @@
   $: rejectedDocs = Object.values(docVerification).filter(v => v === 'rejected').length;
   $: progressPct  = totalDocs > 0 ? Math.round((verifiedDocs / totalDocs) * 100) : 0;
 
+  function getCookie(name) {
+    return document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`))?.[1] || '';
+  }
+
   onMount(async () => {
-    const adminToken = localStorage.getItem('adminToken');
+   const adminToken = getCookie('adminToken') || localStorage.getItem('adminToken');
     if (!adminToken) { goto(`/${locale}/admin/login`); return; }
 
-    adminUser = { username: localStorage.getItem('adminUsername') || 'Admin' };
-    district  = localStorage.getItem('adminDistrict') || '';
+
+   const adminUsername = getCookie('adminUsername') || localStorage.getItem('adminUsername') || 'Admin';
+    district = getCookie('adminDistrict') || localStorage.getItem('adminDistrict') || '';
+    adminUser = { username: adminUsername };
 
     appId         = $page.url.searchParams.get('appId');
     applicantName = $page.url.searchParams.get('name') || '';
@@ -135,13 +329,16 @@
 
     if (!appId) { error = 'No application ID provided.'; isLoading = false; return; }
 
-    localStorage.setItem('accessToken', adminToken);
+   // localStorage.setItem('accessToken', adminToken);
 
     try {
       const cpRes = await fetch('/api/admin/checkpoints', {
         headers: { 'Authorization': `Bearer ${adminToken}` }
       });
       const cpData = await cpRes.json();
+
+      console.table("Documents :",cpData);
+
       if (cpData.error === 0) {
         checkpointsByDoc = cpData.byDocument || {};
       }
@@ -155,9 +352,13 @@
         error = result.errorMsg || 'Failed to load application';
       } else {
         appData = result.data;
+        console.log("app adta...",appData);
+        
         (appData.allDocs || []).forEach(doc => {
           docVerification[doc.document_id] = 'pending';
         });
+
+        //console.log("app adta1...",appData);
       }
     } catch (e) {
       error = 'Failed to load application data';
@@ -248,8 +449,8 @@
     <div class="max-w-xl mx-auto mt-10 bg-red-50 border border-red-200 rounded p-6 text-center text-red-600 text-base">{error}</div>
 
   {:else if appData}
-    <div class="w-full px-4 py-4 space-y-4">
 
+    <div class="w-full px-4 py-4 space-y-4">
       <!-- Applicant bar -->
       <div class="bg-white rounded-lg border border-gray-200 px-4 py-4 flex flex-col sm:flex-row sm:items-center gap-6">
 
@@ -276,10 +477,10 @@
 
         <!-- Step flow navigation -->
         <div class="flex items-start flex-1 overflow-x-auto py-2 ml-[10%]">
-          {#each tabs as tab, i}
+          {#each activeTabs as tab, i}
             {#if i > 0}
               <div class="flex-1 h-1 min-w-[16px] rounded-full self-center mb-5
-                {sectionStatus[tabs[i-1].key] === 'verified' ? 'bg-blue-500' : 'bg-gray-200'}">
+                {sectionStatus[activeTabs[i-1].key] === 'verified' ? 'bg-blue-500' : 'bg-gray-200'}">
               </div>
             {/if}
 
@@ -332,22 +533,37 @@
       <!-- Two column layout: equal 50/50 split -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
-        <!-- Left: Document list -->
-        <div class="lg:col-span-1">
-          <DocumentList
-            docs={currentDocs}
-            {docVerification}
-            {checkpointsByDoc}
-            bind:checkpointAnswers
-            sectionStatus={sectionStatus[activeTab]}
-            sectionLabel={tabs.find(t => t.key === activeTab)?.label || ''}
-            bind:expandedDocId
-            bind:expandedDocUrl
-            bind:expandedDocName
-            on:verifySection={() => verifySection(activeTab)}
-            on:rejectSection={() => rejectSection(activeTab)}
-            on:saveDoc={(e) => verifyDoc(e.detail.docId)}
-          />
+        <!-- Left: Document list grouped by sub-section -->
+        <div class="lg:col-span-1 space-y-3">
+          {#each getGroupedDocsForTab(activeTab) as group}
+            <div class="overflow-hidden rounded-lg border border-gray-200">
+              <div class="bg-purple-800 px-4 py-2.5 flex items-center justify-between">
+                <p class="text-white text-xs font-bold uppercase tracking-wider">{group.name}</p>
+                <span class="text-purple-300 text-xs">{group.docs.length} doc{group.docs.length !== 1 ? 's' : ''}</span>
+              </div>
+              <DocumentList
+                docs={group.docs}
+                {docVerification}
+                {checkpointsByDoc}
+                bind:checkpointAnswers
+                applicationId={appId}
+                adminToken={getCookie('adminToken') || localStorage.getItem('adminToken') || ''}
+                sectionStatus={sectionStatus[activeTab]}
+                sectionLabel={group.name}
+                bind:expandedDocId
+                bind:expandedDocUrl
+                bind:expandedDocName
+                on:verifySection={() => verifySection(activeTab)}
+                on:rejectSection={() => rejectSection(activeTab)}
+                on:saveDoc={(e) => verifyDoc(e.detail.docId)}
+              />
+            </div>
+          {/each}
+          {#if getDocsForTab(activeTab).length === 0}
+            <div class="bg-white rounded-lg border border-dashed border-gray-200 p-12 text-center text-gray-400">
+              <p class="text-sm font-medium">No documents uploaded in this section</p>
+            </div>
+          {/if}
         </div>
 
         <!-- Right: Document viewer -->
@@ -443,20 +659,20 @@
         <div class="flex gap-3">
           <button
             on:click={() => {
-              const currentIndex = tabs.findIndex(t => t.key === activeTab);
-              if (currentIndex > 0) activeTab = tabs[currentIndex - 1].key;
+              const currentIndex = activeTabs.findIndex(t => t.key === activeTab);
+              if (currentIndex > 0) activeTab = activeTabs[currentIndex - 1].key;
             }}
-            disabled={activeTab === tabs[0].key}
+            disabled={activeTab === activeTabs[0]?.key}
             class="px-5 py-2 text-base font-semibold text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             ← Previous
           </button>
           <button
             on:click={() => {
-              const currentIndex = tabs.findIndex(t => t.key === activeTab);
-              if (currentIndex < tabs.length - 1) activeTab = tabs[currentIndex + 1].key;
+             const currentIndex = activeTabs.findIndex(t => t.key === activeTab);
+              if (currentIndex < activeTabs.length - 1) activeTab = activeTabs[currentIndex + 1].key;
             }}
-            disabled={activeTab === tabs[tabs.length - 1].key}
+            disabled={activeTab === activeTabs[activeTabs.length - 1]?.key}
             class="px-6 py-2 text-base font-bold text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Next →

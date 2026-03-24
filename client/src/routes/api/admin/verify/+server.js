@@ -96,7 +96,6 @@ export async function POST({ request }) {
     const office_id = await getOfficeId(client, username);
 
     // ── Save individual Yes/No answer ──
-   // ── Save individual Yes/No answer ──
     if (action === 'saveAnswer') {
       const { application_id, checkpoint_id, question_id, answer } = body;
 

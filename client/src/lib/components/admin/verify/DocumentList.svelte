@@ -61,13 +61,13 @@
 
 <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
 
-  <!-- Header -->
+  <!-- Header
   <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
     <div>
       <p class="text-base font-semibold text-gray-800">{sectionLabel}</p>
       <p class="text-sm text-gray-400 mt-0.5">{docs.length} document{docs.length !== 1 ? 's' : ''}</p>
     </div>
-  </div>
+  </div> -->
 
   <!-- Document Rows -->
   {#if docs.length === 0}
