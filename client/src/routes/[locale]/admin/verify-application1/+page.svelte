@@ -15,6 +15,7 @@
 
   let isLoading = true;
   let appData = null;
+  let masters = {};
   let error = null;
   let appId = null;
   let applicantName = '';
@@ -65,7 +66,7 @@
     6:'academic',   // Bonafide Certificate
     7:'academic',   // Fee Structure
     8:'academic',   // Previous Year Mark Sheet
-    9:'academic',   // Entrance Exam Score Card
+    // 9:'academic',   // Entrance Exam Score Card
     16:'academic',  // Applicant Bank Passbook
 
     // C. Guarantor
@@ -128,7 +129,7 @@
     6:'Educational Documents',
     7:'Educational Documents',
     8:'Educational Documents',
-    9:'Educational Documents',
+    // 9:'Educational Documents',
 
     // B. Bank
     16:'Bank Documents',
@@ -217,7 +218,7 @@
           if (!already) groups['Govt Employee Collateral'].unshift({ ...photoDoc });
           delete groups['LIC Policy Collateral'];
         }
-        
+
         // Remove photo from LIC group if no actual LIC docs present
         if (!hasLIC && groups['LIC Policy Collateral']) {
           groups['LIC Policy Collateral'] = groups['LIC Policy Collateral']
@@ -352,6 +353,13 @@
         error = result.errorMsg || 'Failed to load application';
       } else {
         appData = result.data;
+        try {
+          const mastersRes = await fetch('/api/admin/masters', {
+            headers: { 'Authorization': `Bearer ${adminToken}` }
+          });
+          const mastersData = await mastersRes.json();
+          if (mastersData.error === 0) masters = mastersData.masters;
+        } catch(e) { console.error('Masters load error:', e); }
         console.log("app adta...",appData);
         
         (appData.allDocs || []).forEach(doc => {
@@ -543,6 +551,8 @@
               </div>
               <DocumentList
                 docs={group.docs}
+                {appData}
+                {masters}   
                 {docVerification}
                 {checkpointsByDoc}
                 bind:checkpointAnswers

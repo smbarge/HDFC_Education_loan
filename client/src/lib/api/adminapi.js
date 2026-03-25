@@ -124,10 +124,15 @@ async function getDistrictApplications(district) {
   }
 }
 
+function getCookieValue(name) {
+  if (typeof document === 'undefined') return '';
+  return document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`))?.[1] || '';
+}
+
 //distrct with oagination 
 async function getDistrictApplicationsPaginated(district, page = 1, limit = 10) {
   try {
-    const token = localStorage.getItem('adminToken') || '';
+    const token = getCookieValue('adminToken') || localStorage.getItem('adminToken') || '';
 
     const response = await fetch(
       `/api/admin/applications?district=${encodeURIComponent(district)}&page=${page}&limit=${limit}`,

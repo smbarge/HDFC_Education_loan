@@ -84,8 +84,8 @@
 
 
   onMount(async () => {
-    const adminToken = localStorage.getItem('adminToken') 
-      || document.cookie.includes('adminToken=');
+   const adminToken = localStorage.getItem('adminToken') 
+      || document.cookie.match(/adminToken=([^;]+)/)?.[1] || '';
     if (!adminToken) { goto(`/${locale}/admin/login`); return; }
 
     district = localStorage.getItem('adminDistrict') 
