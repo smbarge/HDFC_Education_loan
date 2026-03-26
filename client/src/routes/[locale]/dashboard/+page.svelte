@@ -144,6 +144,7 @@ let submittedDate = null;
 
   try {
     const result = await getUserApplication($user.id);
+     console.log("Application result ____",result)
 
     if (result.error === 0 && result.applicationId) {
       applicationId.set(result.applicationId);

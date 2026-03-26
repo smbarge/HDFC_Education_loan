@@ -3,7 +3,45 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
-  import { getViewApplicationData } from '$lib/api/authApi.js';
+
+ import { getViewApplicationData } from '$lib/api/authApi.js';
+  import { submitDecision, getCheckpoints } from '$lib/api/adminapi.js';
+  import { token } from '$lib/stores/userStore';
+
+  let showRemarkModal = false;
+  let pendingDecision = '';
+  let decisionRemark = '';
+  let isSubmitting = false;
+
+  function handleFinalDecision(decision) {
+    pendingDecision = decision;
+    showRemarkModal = true;
+    decisionRemark = '';
+  }
+
+  async function confirmDecision() {
+    if (!pendingDecision) return;
+    isSubmitting = true;
+    const adminToken = getCookie('adminToken') || localStorage.getItem('adminToken') || '';
+    try {
+      const result = await submitDecision(adminToken, {
+        application_id: appId,
+        decision: pendingDecision,
+        remark: decisionRemark
+      });
+      if (result.error === 0) {
+        showRemarkModal = false;
+        alert(`Application ${pendingDecision}ed successfully!`);
+        goto(`/${locale}/admin/dashboard`);
+      } else {
+        alert('Error: ' + (result.errorMsg || 'Failed'));
+      }
+    } catch (e) {
+      alert('Error submitting decision');
+    } finally {
+      isSubmitting = false;
+    }
+  }
 
   import DocumentList from '$lib/components/admin/verify/DocumentList.svelte';
 
@@ -42,6 +80,7 @@
     { key: 'guarantor',  label: 'Guarantor Documents'             },
     { key: 'collateral', label: 'Collateral Documents'            },
     { key: 'abroad',     label: 'Study Abroad Documents'          },
+    { key: 'summary',    label: 'Final Summary'                  },
   ];
 
   
@@ -249,8 +288,33 @@
       .map(name => ({ name, docs: groups[name] }));
   }
 
+  // $: currentDocs = getDocsForTab(activeTab);
+  // $: activeTabs = appData ? tabs.filter(tab => getDocsForTab(tab.key).length > 0) : tabs;
+
+
   $: currentDocs = getDocsForTab(activeTab);
-  $: activeTabs = appData ? tabs.filter(tab => getDocsForTab(tab.key).length > 0) : tabs;
+
+  // activeTabs: always include summary as last tab
+  $: activeTabs = appData
+    ? [...tabs.filter(tab => tab.key !== 'summary' && getDocsForTab(tab.key).length > 0),
+       { key: 'summary', label: 'Final Summary' }]
+    : tabs;
+
+  // Check if all questions in current tab are answered
+  $: currentTabAllAnswered = (() => {
+    if (activeTab === 'summary') return true;
+    const docs = getDocsForTab(activeTab);
+    for (const doc of docs) {
+      const questions = (checkpointsByDoc[String(doc.document_id)]?.questions) || [];
+      for (const q of questions) {
+        if (checkpointAnswers[q.id] !== 'yes' && checkpointAnswers[q.id] !== 'no') return false;
+      }
+    }
+    return true;
+  })();
+
+
+
 
   // Reset viewer when tab changes
   $: if (activeTab) {
@@ -331,23 +395,13 @@
     if (!appId) { error = 'No application ID provided.'; isLoading = false; return; }
 
    // localStorage.setItem('accessToken', adminToken);
-
-    try {
-      const cpRes = await fetch('/api/admin/checkpoints', {
-        headers: { 'Authorization': `Bearer ${adminToken}` }
-      });
-      const cpData = await cpRes.json();
-
-      console.table("Documents :",cpData);
-
-      if (cpData.error === 0) {
-        checkpointsByDoc = cpData.byDocument || {};
-      }
-    } catch (e) {
-      console.error('Could not load checkpoints:', e);
+const cpData = await getCheckpoints(adminToken);
+    if (cpData.error === 0) {
+      checkpointsByDoc = cpData.byDocument || {};
     }
 
     try {
+      token.set(adminToken);
       const result = await getViewApplicationData(0, appId);
       if (result.error !== 0) {
         error = result.errorMsg || 'Failed to load application';
@@ -358,7 +412,9 @@
             headers: { 'Authorization': `Bearer ${adminToken}` }
           });
           const mastersData = await mastersRes.json();
-          if (mastersData.error === 0) masters = mastersData.masters;
+          if (mastersData.error === 0 || mastersData.districtMap) {
+            masters = mastersData.masters || mastersData;
+          }
         } catch(e) { console.error('Masters load error:', e); }
         console.log("app adta...",appData);
         
@@ -375,18 +431,7 @@
     }
   });
 
-  async function handleFinalApprove() {
-    const adminToken = localStorage.getItem('adminToken');
-    try {
-      const res = await fetch('/api/admin/candidates', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken}` },
-        body: JSON.stringify({ action: 'updateStatus', id: appId, status: 'Approved' })
-      });
-      const result = await res.json();
-      if (result.error === 0) { alert('Application approved!'); window.close(); }
-    } catch {}
-  }
+
 </script>
 
 <svelte:head><title>Verify Application — Admin</title></svelte:head>
@@ -485,7 +530,7 @@
 
         <!-- Step flow navigation -->
         <div class="flex items-start flex-1 overflow-x-auto py-2 ml-[10%]">
-          {#each activeTabs as tab, i}
+      {#each activeTabs as tab, i}
             {#if i > 0}
               <div class="flex-1 h-1 min-w-[16px] rounded-full self-center mb-5
                 {sectionStatus[activeTabs[i-1].key] === 'verified' ? 'bg-blue-500' : 'bg-gray-200'}">
@@ -500,12 +545,14 @@
               <div class="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all shadow-sm
                 {activeTab === tab.key
                   ? 'bg-blue-600 border-blue-600 text-white shadow-blue-200'
-                  : sectionStatus[tab.key] === 'verified'
-                    ? 'bg-blue-500 border-blue-500 text-white'
-                    : sectionStatus[tab.key] === 'rejected'
-                      ? 'bg-red-500 border-red-500 text-white'
-                      : 'bg-white border-gray-300 text-gray-400 group-hover:border-blue-400'}"
-              >
+                  : tab.key === 'summary'
+                    ? 'bg-purple-600 border-purple-600 text-white'
+                    : sectionStatus[tab.key] === 'verified'
+                      ? 'bg-blue-500 border-blue-500 text-white'
+                      : sectionStatus[tab.key] === 'rejected'
+                        ? 'bg-red-500 border-red-500 text-white'
+                        : 'bg-white border-gray-300 text-gray-400 group-hover:border-blue-400'}"
+            >
                 {#if sectionStatus[tab.key] === 'verified'}
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
@@ -513,6 +560,10 @@
                 {:else if sectionStatus[tab.key] === 'rejected'}
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+               {:else if tab.key === 'summary'}
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                   </svg>
                 {:else}
                   <span class="text-sm font-bold">{i + 1}</span>
@@ -538,6 +589,73 @@
         </button>
       </div>
 
+      <!-- Final Summary Tab -->
+      {#if activeTab === 'summary'}
+        <div class="bg-white rounded-lg border border-gray-200 p-6 space-y-6">
+          <h2 class="text-lg font-bold text-gray-800">Verification Summary</h2>
+
+          <!-- Section status list -->
+          <div class="space-y-3">
+            {#each activeTabs.filter(t => t.key !== 'summary') as tab}
+              {@const tabDocs = getDocsForTab(tab.key)}
+              {@const allAnswered = tabDocs.every(doc => {
+                const qs = checkpointsByDoc[String(doc.document_id)]?.questions || [];
+                return qs.every(q => checkpointAnswers[q.id] === 'yes' || checkpointAnswers[q.id] === 'no');
+              })}
+              {@const yesCount = tabDocs.reduce((acc, doc) => {
+                const qs = checkpointsByDoc[String(doc.document_id)]?.questions || [];
+                return acc + qs.filter(q => checkpointAnswers[q.id] === 'yes').length;
+              }, 0)}
+              {@const totalQ = tabDocs.reduce((acc, doc) => {
+                return acc + (checkpointsByDoc[String(doc.document_id)]?.questions?.length || 0);
+              }, 0)}
+              <div class="flex items-center gap-3 px-4 py-3 rounded-lg border
+                {allAnswered ? 'border-green-200 bg-green-50' : 'border-amber-200 bg-amber-50'}">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
+                  {allAnswered ? 'bg-green-500' : 'bg-amber-400'}">
+                  {#if allAnswered}
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  {:else}
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"/>
+                    </svg>
+                  {/if}
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm font-semibold text-gray-800">{tab.label}</p>
+                  <p class="text-xs text-gray-500">{tabDocs.length} docs · {yesCount}/{totalQ} questions answered</p>
+                </div>
+                <button
+                  on:click={() => activeTab = tab.key}
+                  class="text-xs text-blue-600 hover:underline font-medium"
+                >Review</button>
+              </div>
+            {/each}
+          </div>
+
+          <!-- Final Decision buttons -->
+          <div class="pt-4 border-t border-gray-200">
+            <p class="text-sm font-semibold text-gray-700 mb-3">Submit Final Decision</p>
+            <div class="flex gap-3 flex-wrap">
+              <button on:click={() => handleFinalDecision('return')}
+                class="px-5 py-2.5 text-sm font-semibold text-amber-600 border border-amber-300 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors">
+                ↩ Return to Applicant
+              </button>
+              <button on:click={() => handleFinalDecision('reject')}
+                class="px-5 py-2.5 text-sm font-semibold text-red-600 border border-red-300 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
+                ✕ Reject Application
+              </button>
+              <button on:click={() => handleFinalDecision('forward')}
+                class="px-5 py-2.5 text-sm font-bold text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors">
+                ✓ Forward Application
+              </button>
+            </div>
+          </div>
+        </div>
+
+      {:else}
       <!-- Two column layout: equal 50/50 split -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
@@ -648,7 +766,8 @@
             </div>
           {/if}
         </div>
-      </div>
+    </div>
+      {/if}
 
       <!-- Final decision bar -->
       <div class="bg-white rounded-lg border border-gray-200 px-5 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -666,7 +785,7 @@
           </div>
         </div>
 
-        <div class="flex gap-3">
+       <div class="flex gap-3 flex-wrap justify-end">
           <button
             on:click={() => {
               const currentIndex = activeTabs.findIndex(t => t.key === activeTab);
@@ -674,22 +793,55 @@
             }}
             disabled={activeTab === activeTabs[0]?.key}
             class="px-5 py-2 text-base font-semibold text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            ← Previous
-          </button>
-          <button
-            on:click={() => {
-             const currentIndex = activeTabs.findIndex(t => t.key === activeTab);
-              if (currentIndex < activeTabs.length - 1) activeTab = activeTabs[currentIndex + 1].key;
-            }}
-            disabled={activeTab === activeTabs[activeTabs.length - 1]?.key}
-            class="px-6 py-2 text-base font-bold text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            Next →
-          </button>
+          >← Previous</button>
+
+          {#if activeTab !== 'summary'}
+            <button
+              on:click={() => {
+                const currentIndex = activeTabs.findIndex(t => t.key === activeTab);
+                if (currentIndex < activeTabs.length - 1) activeTab = activeTabs[currentIndex + 1].key;
+              }}
+              disabled={!currentTabAllAnswered}
+              title={!currentTabAllAnswered ? 'Answer all questions to proceed' : ''}
+              class="px-6 py-2 text-base font-bold text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >Next →</button>
+          {/if}
         </div>
       </div>
-
     </div>
   {/if}
 </div>
+
+{#if showRemarkModal}
+  <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+      <h3 class="text-base font-bold text-gray-800 mb-1 capitalize">
+        {pendingDecision === 'forward' ? '✓ Forward' : pendingDecision === 'reject' ? '✕ Reject' : '↩ Return'} Application
+      </h3>
+      <p class="text-sm text-gray-500 mb-4">Form: <span class="font-semibold">{formNo || appId}</span></p>
+      <label class="block text-sm font-medium text-gray-700 mb-1">
+        Remark {pendingDecision === 'reject' ? '(required)' : '(optional)'}
+      </label>
+      <textarea
+        bind:value={decisionRemark}
+        rows="3"
+        placeholder="Enter your remark..."
+        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
+      ></textarea>
+      <div class="flex gap-3 mt-4 justify-end">
+        <button
+          on:click={() => { showRemarkModal = false; pendingDecision = ''; }}
+          class="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
+        >Cancel</button>
+        <button
+          on:click={confirmDecision}
+          disabled={isSubmitting || (pendingDecision === 'reject' && !decisionRemark.trim())}
+          class="px-5 py-2 text-sm font-bold text-white rounded transition-colors disabled:opacity-50
+            {pendingDecision === 'forward' ? 'bg-green-600 hover:bg-green-700' :
+             pendingDecision === 'reject'  ? 'bg-red-600 hover:bg-red-700' :
+                                            'bg-amber-500 hover:bg-amber-600'}"
+        >{isSubmitting ? 'Submitting...' : `Confirm ${pendingDecision}`}</button>
+      </div>
+    </div>
+  </div>
+{/if}

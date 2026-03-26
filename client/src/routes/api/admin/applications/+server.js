@@ -31,7 +31,8 @@ export async function GET({ url, request }) {
     // total count 
     const countResult = await pool.query(
       `SELECT COUNT(*) AS total FROM personal_details
-       WHERE district_id = $1 and application_status = 2`,
+       WHERE district_id = $1     
+       AND application_status IN (2,3,4)`,
       [distId]
     );
     const totalCount = parseInt(countResult.rows[0].total);
@@ -47,34 +48,35 @@ export async function GET({ url, request }) {
 
     let approved = 0, pending = 0, rejected = 0;
     statsResult.rows.forEach(r => {
-      if (r.application_status === 'approved')  approved = parseInt(r.cnt);
-      if (['submitted','pending'].includes(r.application_status)) pending += parseInt(r.cnt);
-      if (r.application_status === 'rejected')  rejected = parseInt(r.cnt);
-    }); 
+      const status = Number(r.application_status);
+
+      if ([4, 8, 9].includes(status)) approved += parseInt(r.cnt);
+      else if ([5, 6, 7].includes(status)) rejected += parseInt(r.cnt);
+      else if ([2, 3].includes(status)) pending += parseInt(r.cnt);
+    });
+    
     // Step 4: paginated data with joins
     const result = await pool.query(
       `SELECT
-         pd.id,
-         pd.name,
-         pd.mobile,
-         pd.email,
-         pd.application_status,
-         pd.updated_at,
-         pd.district_id,
-         md.eng_name  AS district_name,
-         mr.eng_name  AS community,
-         ed.loan_required_amount,
-         ed.course_name
-       FROM personal_details pd
-       JOIN m_district md
-         ON pd.district_id::numeric = md.dist_id
-       JOIN m_religion mr
-         ON pd.religion = mr.id
-       JOIN education_details ed
-         ON pd.id = ed.id
-       WHERE pd.district_id = $1 and application_status != 1
-       ORDER BY pd.updated_at DESC
-       LIMIT $2 OFFSET $3`,
+        pd.id,
+        pd.name,
+        pd.mobile,
+        pd.email,
+        pd.application_status,
+        mas.eng_name AS application_status_name,
+        pd.updated_at,
+        md.eng_name  AS district_name,
+        mr.eng_name  AS community,
+        ed.loan_required_amount,
+        ed.course_name
+      FROM personal_details pd
+      JOIN m_district md ON pd.district_id::numeric = md.dist_id
+      JOIN m_religion mr ON pd.religion = mr.id
+      JOIN education_details ed ON pd.id = ed.id
+      JOIN m_application_status mas ON pd.application_status = mas.id
+      WHERE pd.district_id = $1 AND pd.application_status != 1
+      ORDER BY pd.updated_at DESC
+      LIMIT $2 OFFSET $3`,
       [distId, perPage, offset]
     );
 

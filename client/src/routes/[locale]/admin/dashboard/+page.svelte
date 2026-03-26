@@ -37,8 +37,8 @@
 
   // Stats
   $: totalCandidates = serverTotal || candidates.length;
-  $: approved = candidates.filter(c => c.status === 'Approved').length;
-  $: pending = candidates.filter(c => c.status === 'Pending').length;
+  $: approved = candidates.filter(c => c.status === 'Forwarded').length;
+  $: pending = candidates.filter(c => c.status === 'Pending' || c.status === 'Under Review').length;
   $: rejected = candidates.filter(c => c.status === 'Rejected').length;
 
   // Unique districts for filter
@@ -105,6 +105,13 @@
     await fetchCandidates(1);
   });
 
+  function mapStatus(statusId, statusName) {
+  if (statusId == 4 || statusId == 8 || statusId == 9) return 'Forwarded';
+  if (statusId == 5 || statusId == 6 || statusId == 7) return 'Rejected';
+  if (statusId == 3) return 'Under Review';
+  return 'Pending';
+}
+
   async function fetchCandidates(page = 1) {
   isLoading = true;
   fetchError = '';
@@ -133,10 +140,7 @@
         course:        app.course_name || '',
         loanType:      'Education Loan',
         appliedOn:     app.updated_at,
-        status:        app.application_status === 'submitted' ? 'Pending'
-                     : app.application_status === 'approved'  ? 'Approved'
-                     : app.application_status === 'rejected'  ? 'Rejected'
-                     : 'Pending',
+        status: mapStatus(app.application_status, app.application_status_name),
         documents:     []
       }));
     }
@@ -167,19 +171,21 @@ function handleLogout() {
     goto(`/${locale}/admin`);
   }
 
-  function statusColor(status) {
-    if (status === 'Approved') return 'bg-green-100 text-green-700 border-green-200';
-    if (status === 'Rejected') return 'bg-red-100 text-red-700 border-red-200';
-    return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-  }
+function statusColor(status) {
+  if (status === 'Forwarded') return 'bg-green-100 text-green-700 border-green-200';
+  if (status === 'Rejected') return 'bg-red-100 text-red-700 border-red-200';
+  if (status === 'Under Review') return 'bg-red-50 text-red-400 border-red-200';
+  return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+}
 
-  function statusDot(status) {
-    if (status === 'Approved') return 'bg-green-500';
-    if (status === 'Rejected') return 'bg-red-500';
-    return 'bg-yellow-500';
-  }
+function statusDot(status) {
+  if (status === 'Forwarded') return 'bg-green-500';
+  if (status === 'Rejected') return 'bg-red-500';
+  if (status === 'Under Review') return 'bg-red-300';
+  return 'bg-yellow-500';
+}
 
-  function formatDate(dateStr) {
+function formatDate(dateStr) {
     if (!dateStr) return '—';
     try {
       return new Date(dateStr).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -350,7 +356,8 @@ function handleLogout() {
         >
           <option value="all">All Status</option>
           <option value="Pending">Pending</option>
-          <option value="Approved">Approved</option>
+          <option value="Under Review">Under Review</option>
+          <option value="Forwarded">Forwarded</option>
           <option value="Rejected">Rejected</option>
         </select>
 
@@ -489,13 +496,21 @@ function handleLogout() {
                     </button>
                   </td>
                    <td class="px-3 lg:px-4 py-3">
-                    {#if candidate.status === 'Approved'}
+                    {#if candidate.status === 'Forwarded'}
                       <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-green-50 text-green-600 border border-green-200">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                        </svg>
-                        Verified
+                        ✓ Forwarded
                       </span>
+                    {:else if candidate.status === 'Rejected'}
+                      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-red-50 text-red-600 border border-red-200">
+                        ✕ Rejected
+                      </span>
+                    {:else if candidate.status === 'Under Review'}
+                      <button
+                        on:click={() => openVerifyApplication(candidate)}
+                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white transition-colors whitespace-nowrap shadow-sm"
+                      >
+                        ↩ Continue
+                      </button>
                     {:else}
                       <button
                         on:click={() => openVerifyApplication(candidate)}

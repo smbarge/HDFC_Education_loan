@@ -16,6 +16,7 @@
   export let appData = null;
   export let masters = {};
   import { createEventDispatcher, onMount } from 'svelte';
+  import { getVerificationAnswers, saveAnswers } from '$lib/api/adminapi.js';
 
  // console.log("Masters...",masters)
 // function getFilledDataForQuestion(questionText) {
@@ -247,45 +248,93 @@ function getFilledDataForQuestion(questionText) {
 }
   const dispatch = createEventDispatcher();
 
-  // Load existing answers on mount
+  // Load existing answers on mount from new /api/admin/verification
+  // onMount(async () => {
+  //   if (!applicationId || !adminToken) return;
+  //   try {
+  //     const res = await fetch(
+  //       `/api/admin/verification?application_id=${applicationId}`,
+  //       { headers: { 'Authorization': `Bearer ${adminToken}` }, credentials: 'include' }
+  //     );
+  //     const data = await res.json();
+  //     if (data.error === 0 && data.answers) {
+  //       const converted = {};
+  //       Object.entries(data.answers).forEach(([k, v]) => {
+  //         converted[k] = (v === 1 || v === '1') ? 'yes' : (v === 2 || v === '2') ? 'no' : v;
+  //       });
+  //       checkpointAnswers = { ...checkpointAnswers, ...converted };
+  //     }
+  //   } catch (e) { console.error('Load answers error:', e); }
+  // });
+
+
+  // Load existing answers on mount via adminapi
   onMount(async () => {
     if (!applicationId || !adminToken) return;
-    try {
-      const res = await fetch(`/api/admin/verify?application_id=${applicationId}`, {
-        headers: { 'Authorization': `Bearer ${adminToken}` }
+    const data = await getVerificationAnswers(adminToken, applicationId);
+    if (data.error === 0 && data.answers) {
+      const converted = {};
+      Object.entries(data.answers).forEach(([k, v]) => {
+        converted[k] = (v === 1 || v === '1') ? 'yes' : (v === 2 || v === '2') ? 'no' : v;
       });
-      const data = await res.json();
-      if (data.error === 0 && data.answers) {
-        const converted = {};
-        Object.entries(data.answers).forEach(([k, v]) => {
-          converted[k] = (v === 1 || v === '1') ? 'yes' : (v === 2 || v === '2') ? 'no' : v;
-        });
-        checkpointAnswers = { ...checkpointAnswers, ...converted };
-      }
-    } catch (e) { console.error('Load answers error:', e); }
+      checkpointAnswers = { ...checkpointAnswers, ...converted };
+    }
   });
 
-  // Save answer to backend immediately on Yes/No click
-  async function saveAnswer(questionId, checkpointId, answer) {
-    if (!applicationId || !adminToken) return;
-    try {
-      await fetch('/api/admin/verify', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${adminToken}`
-        },
-        body: JSON.stringify({
-          action: 'saveAnswer',
-          application_id: applicationId,
-          checkpoint_id: checkpointId,
-          question_id: questionId,
-          answer
-        })
-      });
-    } catch (e) { console.error('Save answer error:', e); }
+  // pendingAnswers holds in-memory answers not yet saved
+  let pendingAnswers = {};
+
+  function recordAnswer(questionId, checkpointId, answer) {
+    checkpointAnswers[questionId] = answer;
+    checkpointAnswers = { ...checkpointAnswers };
+    pendingAnswers[questionId] = { checkpoint_id: checkpointId, question_id: questionId, answer };
   }
 
+  // Save & Continue — sends all pending answers to backend in one call
+  // async function handleSave() {
+  //   if (!allCheckpointsAnswered) return;
+  //   if (applicationId && adminToken && Object.keys(pendingAnswers).length > 0) {
+  //     try {
+  //       await fetch('/api/admin/verification', {
+  //         method: 'POST',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //           'Authorization': `Bearer ${adminToken}`
+  //         },
+  //         credentials: 'include',
+  //         body: JSON.stringify({
+  //           action: 'saveAnswers',
+  //           application_id: applicationId,
+  //           answers: Object.values(pendingAnswers)
+  //         })
+  //       });
+  //       pendingAnswers = {};
+  //     } catch (e) { console.error('Save answers error:', e); }
+  //   }
+  //   dispatch('saveDoc', { docId: expandedDocId });
+  //   expandedDocId = null;
+  //   expandedDocUrl = null;
+  //   expandedDocName = '';
+  // }
+
+
+  // Save & Continue — sends all pending answers via adminapi
+  async function handleSave() {
+    if (!allCheckpointsAnswered) return;
+    if (applicationId && adminToken && Object.keys(pendingAnswers).length > 0) {
+      await saveAnswers(adminToken, {
+        application_id: applicationId,
+        answers: Object.values(pendingAnswers)
+      });
+      pendingAnswers = {};
+    }
+    dispatch('saveDoc', { docId: expandedDocId });
+    expandedDocId = null;
+    expandedDocUrl = null;
+    expandedDocName = '';
+  }
+
+  
   function getQuestionsForDoc(documentId) {
     const docId = String(documentId);
     const entry = checkpointsByDoc[docId];
@@ -323,13 +372,7 @@ function getFilledDataForQuestion(questionText) {
     return questions.every(q => checkpointAnswers[q.id] === 'yes' || checkpointAnswers[q.id] === 'no');
   })();
 
-  function handleSave() {
-    if (!allCheckpointsAnswered) return;
-    dispatch('saveDoc', { docId: expandedDocId });
-    expandedDocId = null;
-    expandedDocUrl = null;
-    expandedDocName = '';
-  }
+ 
 </script>
 
 <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -436,14 +479,14 @@ function getFilledDataForQuestion(questionText) {
                     </div>
                     <div class="flex gap-1.5 flex-shrink-0 mt-0.5">
                       <button
-                        on:click|stopPropagation={() => { checkpointAnswers[q.id] = 'yes'; checkpointAnswers = { ...checkpointAnswers }; saveAnswer(q.id, q.checkpoint_id, 'yes'); }}
+                        on:click|stopPropagation={() => recordAnswer(q.id, q.checkpoint_id, 'yes')}
                         class="px-2.5 py-1 text-xs font-semibold rounded border transition-colors
                           {checkpointAnswers[q.id] === 'yes'
                             ? 'bg-green-600 text-white border-green-600'
                             : 'bg-white text-green-700 border-green-300 hover:bg-green-50'}"
                       >Yes</button>
                         <button
-                        on:click|stopPropagation={() => { checkpointAnswers[q.id] = 'no'; checkpointAnswers = { ...checkpointAnswers }; saveAnswer(q.id, q.checkpoint_id, 'no'); }}
+                        on:click|stopPropagation={() => recordAnswer(q.id, q.checkpoint_id, 'no')}
                         class="px-2.5 py-1 text-xs font-semibold rounded border transition-colors
                           {checkpointAnswers[q.id] === 'no'
                             ? 'bg-red-600 text-white border-red-600'
