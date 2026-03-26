@@ -476,7 +476,7 @@
         <div class="hidden sm:block w-px self-stretch bg-gray-200 flex-shrink-0 ml-[5%]"></div>
 
         <!-- Step flow navigation -->
-        <div class="flex items-start flex-1 overflow-x-auto py-2 ml-[10%]">
+        <div class="flex items-start flex-1 overflow-x-auto py-2 ml [5%]">
           {#each activeTabs as tab, i}
             {#if i > 0}
               <div class="flex-1 h-1 min-w-[16px] rounded-full self-center mb-5
