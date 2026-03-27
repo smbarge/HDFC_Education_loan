@@ -68,7 +68,10 @@ export async function GET({ url, request }) {
         md.eng_name  AS district_name,
         mr.eng_name  AS community,
         ed.loan_required_amount,
-        ed.course_name
+        ed.course_name,
+        pd.form_no,
+        (SELECT COUNT(*) FROM verification_answers va 
+        WHERE va.application_id = pd.id) AS answer_count
       FROM personal_details pd
       JOIN m_district md ON pd.district_id::numeric = md.dist_id
       JOIN m_religion mr ON pd.religion = mr.id

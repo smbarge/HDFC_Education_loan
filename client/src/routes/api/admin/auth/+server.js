@@ -56,6 +56,7 @@ export async function POST({ request }) {
         headers.append('Set-Cookie', `adminToken=${data.access_token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=86400`);
         headers.append('Set-Cookie', `adminDistrict=${district}; Path=/; SameSite=Strict; Max-Age=86400`);
         headers.append('Set-Cookie', `adminUsername=${payload.preferred_username}; Path=/; SameSite=Strict; Max-Age=86400`);
+        headers.append('Set-Cookie', `adminRefreshToken=${data.refresh_token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=2592000`);
 
         console.log('Setting cookies for:--', payload.preferred_username, '| District:', district);
 

@@ -16,6 +16,11 @@
     '7': 'Study Abroad',
     '8': 'Other'
   };
+
+  $: status = submissionInfo?.status || '';
+$: step2Done     = ['under-review','approved','rejected','sanctioned','disbursed'].includes(status);
+$: step3Approved = ['approved','sanctioned','disbursed'].includes(status);
+$: step3Rejected = status === 'rejected';
 </script>
 
 <div class="w-full">
@@ -47,12 +52,25 @@
     </div>
 
     <!-- Status Badge -->
-     <div class="px-6 py-3 bg-green-50 border-b border-green-100 flex items-center justify-center gap-2">
-      <div class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></div>
-      <span class="text-green-700 text-sm font-semibold">
-       Status : {submissionInfo?.statusLabel || t.dashboard.statusUnderReview}
-      </span>
-    </div>
+     <!-- Status Badge -->
+<div class="px-6 py-3 {
+  step3Approved ? 'bg-green-50' :
+  step3Rejected ? 'bg-red-50' :
+  step2Done     ? 'bg-blue-50' : 'bg-green-50'
+} border-b border-green-100 flex items-center justify-center gap-2">
+  <div class="w-2.5 h-2.5 rounded-full {
+    step3Approved ? 'bg-green-500' :
+    step3Rejected ? 'bg-red-500' :
+    step2Done     ? 'bg-blue-500 animate-pulse' : 'bg-green-500 animate-pulse'
+  }"></div>
+  <span class="text-sm font-semibold {
+    step3Approved ? 'text-green-700' :
+    step3Rejected ? 'text-red-700' :
+    step2Done     ? 'text-blue-700' : 'text-green-700'
+  }">
+    Status: {submissionInfo?.statusLabel || 'Submitted'}
+  </span>
+</div>
 
     <!-- Info Cards -->
     <div class="p-6 grid grid-cols-2 gap-4">
@@ -110,66 +128,76 @@
     </div>
 
     <!-- Application Timeline -->
-    <div class="px-6 pb-6">
-      <h4 class="text-sm font-bold text-gray-700 mb-4">{t.dashboard.applicationTrack}</h4>
-      <div class="relative">
-        <div class="absolute left-4 top-2 bottom-2 w-0.5 bg-gray-200"></div>
+   <!-- Application Timeline -->
+<div class="px-6 pb-6">
+  <h4 class="text-sm font-bold text-gray-700 mb-4">{t.dashboard.applicationTrack}</h4>
+  <div class="relative">
+    <div class="absolute left-4 top-2 bottom-2 w-0.5 bg-gray-200"></div>
 
-        <!-- Step 1 — Submitted -->
-        <div class="relative flex items-start gap-4 mb-5">
-          <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 z-10">
-            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-            </svg>
-          </div>
-          <div>
-            <p class="text-sm font-semibold text-green-700">{t.dashboard.applicationSubmitted}</p>
-            <p class="text-xs text-gray-500">{t.dashboard.successfullySubmitted || 'Successfully Submitted'}</p>
-          </div>
-        </div>
-
-        <!-- Step 2 — Under Review -->
-        <div class="relative flex items-start gap-4 mb-5">
-          <div class="w-8 h-8 {['under-review','approved','rejected','sanctioned','disbursed'].includes(submissionInfo?.status) ? 'bg-blue-500 animate-pulse' : 'bg-gray-200'} rounded-full flex items-center justify-center flex-shrink-0 z-10">
-            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-            </svg>
-          </div>
-          <div>
-            <p class="text-sm font-semibold text-blue-700">{t.dashboard.UnderReview}</p>
-            <p class="text-xs text-gray-500">{t.dashboard.reviewMessage}</p>
-          </div>
-        </div>
-
-        <!-- Step 3 — Approved/Rejected -->
-  
-         <div class="relative flex items-start gap-4">
-          <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0 z-10">
-            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-          </div>
-          <div>
-            <p class="text-sm font-semibold text-gray-400">{t.dashboard.approvedRejected}</p>
-            <p class="text-xs text-gray-400">{t.dashboard.decisionPending}</p>
-          </div>
-        </div>
-      <!-- or -->
-        <!-- <div class="relative flex items-start gap-4">
-          <div class="w-8 h-8 {['approved','sanctioned','disbursed'].includes(submissionInfo?.status) ? 'bg-green-500' : submissionInfo?.status === 'rejected' ? 'bg-red-500' : 'bg-gray-200'} rounded-full flex items-center justify-center flex-shrink-0 z-10">
-            <svg class="w-4 h-4 {['approved','sanctioned','disbursed','rejected'].includes(submissionInfo?.status) ? 'text-white' : 'text-gray-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-          </div>
-          <div>
-            <p class="text-sm font-semibold {['approved','sanctioned','disbursed'].includes(submissionInfo?.status) ? 'text-green-700' : submissionInfo?.status === 'rejected' ? 'text-red-700' : 'text-gray-400'}">
-              {submissionInfo?.statusLabel || t.dashboard.approvedRejected}
-            </p>
-            <p class="text-xs text-gray-400">{t.dashboard.decisionPending}</p>
-          </div>
-        </div> -->
+    <!-- Step 1 — Submitted (always green) -->
+    <div class="relative flex items-start gap-4 mb-5">
+      <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 z-10">
+        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+      <div class="pt-1">
+        <p class="text-sm font-semibold text-green-700">{t.dashboard.applicationSubmitted}</p>
+        <p class="text-xs text-gray-500">{t.dashboard.successfullySubmitted || 'Successfully Submitted'}</p>
       </div>
     </div>
+
+    <!-- Step 2 — Under Review -->
+    <div class="relative flex items-start gap-4 mb-5">
+      <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 z-10
+        {step2Done ? 'bg-blue-500' : 'bg-gray-200'}">
+        <svg class="w-4 h-4 {step2Done ? 'text-white' : 'text-gray-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+      </div>
+      <div class="pt-1">
+        <p class="text-sm font-semibold {step2Done ? 'text-blue-700' : 'text-gray-400'}">
+          {t.dashboard.UnderReview}
+        </p>
+        <p class="text-xs text-gray-500">{t.dashboard.reviewMessage}</p>
+      </div>
+    </div>
+
+    <!-- Step 3 — Approved / Rejected / Pending -->
+    <div class="relative flex items-start gap-4">
+      <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 z-10
+        {step3Approved ? 'bg-green-500' : step3Rejected ? 'bg-red-500' : 'bg-gray-200'}">
+        {#if step3Approved}
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+          </svg>
+        {:else if step3Rejected}
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        {:else}
+          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        {/if}
+      </div>
+      <div class="pt-1">
+        <p class="text-sm font-semibold
+          {step3Approved ? 'text-green-700' : step3Rejected ? 'text-red-700' : 'text-gray-400'}">
+          {step3Approved ? (submissionInfo?.statusLabel || 'Approved') :
+           step3Rejected ? 'Application Rejected' :
+           t.dashboard.approvedRejected}
+        </p>
+        <p class="text-xs text-gray-500">
+          {step3Approved ? 'Your application has been approved.' :
+           step3Rejected ? 'Contact support for more information.' :
+           t.dashboard.decisionPending}
+        </p>
+      </div>
+    </div>
+
+  </div>
+</div>
 
   </div>
 </div>

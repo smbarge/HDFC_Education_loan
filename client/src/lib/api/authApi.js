@@ -1,6 +1,93 @@
 import { token } from "$lib/stores/userStore";
 import { get } from "svelte/store";
 
+
+// ─── Refresh Token Logic ──────────────────────────────────────────
+async function refreshAccessToken() {
+    const refreshToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('refreshToken='))
+        ?.split('=')[1];
+
+    if (!refreshToken) return false;
+
+    try {
+        const response = await fetch('/api/auth', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'refreshToken', refresh_token: refreshToken })
+        });
+
+        const data = await response.json();
+
+        if (data.error === 0 && data.access_token) {
+            // Update store + localStorage + cookie
+            token.set(data.access_token);
+            document.cookie = `token=${data.access_token}; path=/; max-age=86400; SameSite=Strict`;
+            return true;
+        }
+
+        return false;
+    } catch {
+        return false;
+    }
+}
+
+// Smart fetch: auto-retries once after refreshing token on 401
+// async function apiFetch(url, options = {}) {
+//     const response = await fetch(url, options);
+
+//     if (response.status === 401) {
+//         const refreshed = await refreshAccessToken();
+
+//         if (refreshed) {
+//             // Retry with new token
+//             const retryOptions = {
+//                 ...options,
+//                 headers: {
+//                     ...options.headers,
+//                     'Authorization': `Bearer ${get(token)}`
+//                 }
+//             };
+//             return fetch(url, retryOptions);
+//         }
+
+//         // Refresh failed — force logout
+//         token.reset();
+//         window.location.href = '/en/login';
+//         return response;
+//     }
+
+//     return response;
+// }
+
+async function apiFetch(url, options = {}) {
+    const response = await fetch(url, options);
+
+    if (response.status === 401) {
+        const refreshed = await refreshAccessToken();
+
+        if (refreshed) {
+            const isFormData = options.body instanceof FormData;
+            const retryHeaders = isFormData ? authHeadersFormData() : authHeaders();
+            return fetch(url, { ...options, headers: retryHeaders });
+        }
+
+        // Refresh failed — logout
+        token.reset();
+        if (typeof window !== 'undefined') {
+            const locale = document.documentElement.lang || 'en';
+            window.location.href = `/${locale}/login`;
+        }
+        return response;
+    }
+
+    return response;
+}
+
+
+
+
 function authHeaders() {
     const t = get(token);
  //   console.log("TOKEN VALUE:", t);
@@ -363,7 +450,7 @@ const customCreateApplication = async ({ userId }) => {
     console.log("customCreateApplication called for userId:", userId);
     
     try {
-        const response = await fetch('/api/createApplication', {
+        const response = await apiFetch('/api/createApplication', {
             method: 'POST',
             headers: authHeaders(),
             body: JSON.stringify({ userId }),
@@ -390,7 +477,7 @@ const customCreateApplication = async ({ userId }) => {
 
 async function getVerifiedContacts(applicationId) {
   try {
-    const response = await fetch(
+    const response = await apiFetch(
       `/api/getVerifiedContacts?applicationId=${applicationId}`,
       {
         method: 'GET',
@@ -462,15 +549,15 @@ const getUserApplication = async (userId) => {
   }
 
   try {
-    const response = await fetch(`/api/createApplication/${userId}?action=getUserApplication`, {
+    const response = await apiFetch(`/api/createApplication/${userId}?action=getUserApplication`, {
       method: 'GET',
       headers: authHeaders()
     });
 
     // 401 = new user or token mismatch — not a crash
-    if (response.status === 401 || response.status === 403) {
-      return { error: -1, errorMsg: 'Unauthorized', applicationId: null, status: null };
-    }
+    // if (response.status === 401 || response.status === 403) {
+    //   return { error: -1, errorMsg: 'Unauthorized', applicationId: null, status: null };
+    // }
 
     const result = await response.json();
     console.log("Result ----",result);
@@ -494,7 +581,7 @@ const customSaveApplicationStart = async ({ userId, applicationId, stepData }) =
     console.log("customSaveApplicationStart - userId:", userId, "applicationId:", applicationId);
 
     try {
-        const response = await fetch(`/api/createApplication/${userId}`, {
+        const response = await apiFetch(`/api/createApplication/${userId}`, {
             method: 'POST',
             headers: authHeaders(),
             body: JSON.stringify({
@@ -527,7 +614,7 @@ const getApplicationData = async (applicationId) => {
     console.log("getApplicationData called for applicationId:", applicationId);
 
     try {
-        const response = await fetch(`/api/createApplication/${applicationId}?action=getApplicationData`, {
+        const response = await apiFetch(`/api/createApplication/${applicationId}?action=getApplicationData`, {
             method: 'GET',
             headers: authHeaders()  
         });
@@ -556,7 +643,7 @@ const getPersonalDetailsData = async (applicationId) => {
     console.log("getPersonalDetailsData called for applicationId:", applicationId);
 
     try {
-        const response = await fetch(`/api/createApplication/${applicationId}?action=getPersonalDetails`, {
+        const response = await apiFetch(`/api/createApplication/${applicationId}?action=getPersonalDetails`, {
             method: 'GET',
              headers: authHeaders()  
         });
@@ -583,7 +670,7 @@ const customSavePersonalDetails = async ({ applicationId, personalDetails }) => 
     console.log("customSavePersonalDetails called for applicationId:", applicationId);
 
     try {
-        const response = await fetch(`/api/createApplication/${applicationId}`, {
+        const response = await apiFetch(`/api/createApplication/${applicationId}`, {
             method: 'POST',
             headers: authHeaders() ,
             body: JSON.stringify({
@@ -617,7 +704,7 @@ const getEducationDetailsData = async (applicationId) => {
     console.log("getEducationDetailsData called for applicationId:", applicationId);
 
     try {
-        const response = await fetch(`/api/createApplication/${applicationId}?action=getEducationDetails`, {
+        const response = await apiFetch(`/api/createApplication/${applicationId}?action=getEducationDetails`, {
             method: 'GET',
             headers: authHeaders()
         });
@@ -644,7 +731,7 @@ const customSaveEducationDetails = async ({ applicationId, educationDetails }) =
     console.log("customSaveEducationDetails called for applicationId:", applicationId);
 
     try {
-        const response = await fetch(`/api/createApplication/${applicationId}`, {
+        const response = await apiFetch(`/api/createApplication/${applicationId}`, {
             method: 'POST',
             headers: authHeaders(),
             body: JSON.stringify({
@@ -678,7 +765,7 @@ const getGuarantorDetailsData = async (applicationId) => {
     console.log("getGuarantorDetailsData called for applicationId:", applicationId);
 
     try {
-        const response = await fetch(`/api/guarantorDetails/${applicationId}?action=getGuarantorDetails`, {
+        const response = await apiFetch(`/api/guarantorDetails/${applicationId}?action=getGuarantorDetails`, {
             method: 'GET',
             headers: authHeaders()
         });
@@ -705,7 +792,7 @@ const customSaveGuarantorDetails = async ({ applicationId, guarantorDetails }) =
     console.log("customSaveGuarantorDetails called for applicationId:", applicationId);
 
     try {
-        const response = await fetch(`/api/guarantorDetails/${applicationId}`, {
+        const response = await apiFetch(`/api/guarantorDetails/${applicationId}`, {
             method: 'POST',
             headers: authHeaders(),
             body: JSON.stringify({
@@ -741,7 +828,7 @@ const getCollateralProperties = async (userId, applicationId) => {
     console.log("getCollateralProperties called for:", { userId, applicationId });
 
     try {
-        const response = await fetch(
+        const response = await apiFetch(
             `/api/collateral/${userId}/${applicationId}?action=getCollateralProperties`,
             {
                 method: 'GET',
@@ -770,7 +857,7 @@ const customSaveCollateralProperties = async (userId, applicationId, properties)
     console.log("customSaveCollateralProperties called:", { userId, applicationId, count: properties.length });
 
     try {
-        const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
+        const response = await apiFetch(`/api/collateral/${userId}/${applicationId}`, {
             method: 'POST',
             headers: authHeaders(),
             body: JSON.stringify({
@@ -801,7 +888,7 @@ const customSaveCollateralProperties = async (userId, applicationId, properties)
 const getFDCollaterals = async (userId, applicationId) => {
     console.log("getFDCollaterals called for:", { userId, applicationId });
     try {
-        const response = await fetch(
+        const response = await apiFetch(
             `/api/collateral/${userId}/${applicationId}?action=getFDCollaterals`,
             {
                 method: 'GET',
@@ -822,7 +909,7 @@ const getFDCollaterals = async (userId, applicationId) => {
 const saveFDCollaterals = async (userId, applicationId, fdCollaterals) => {
     console.log("saveFDCollaterals called:", { userId, applicationId, count: fdCollaterals.length });
     try {
-        const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
+        const response = await apiFetch(`/api/collateral/${userId}/${applicationId}`, {
             method: 'POST',
             headers: authHeaders(),
             body: JSON.stringify({
@@ -845,7 +932,7 @@ const saveFDCollaterals = async (userId, applicationId, fdCollaterals) => {
 const getLICCollaterals = async (userId, applicationId) => {
     console.log("getLICCollaterals called for:", { userId, applicationId });
     try {
-        const response = await fetch(
+        const response = await apiFetch(
             `/api/collateral/${userId}/${applicationId}?action=getLICCollaterals`,
             {
                 method: 'GET',
@@ -866,7 +953,7 @@ const getLICCollaterals = async (userId, applicationId) => {
 const saveLICCollaterals = async (userId, applicationId, licCollaterals) => {
     console.log("saveLICCollaterals called:", { userId, applicationId, count: licCollaterals.length });
     try {
-        const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
+        const response = await apiFetch(`/api/collateral/${userId}/${applicationId}`, {
             method: 'POST',
             headers: authHeaders(),
             body: JSON.stringify({
@@ -889,7 +976,7 @@ const saveLICCollaterals = async (userId, applicationId, licCollaterals) => {
 const getGovtCollaterals = async (userId, applicationId) => {
     console.log("getGovtCollaterals called for:", { userId, applicationId });
     try {
-        const response = await fetch(
+        const response = await apiFetch(
             `/api/collateral/${userId}/${applicationId}?action=getGovtCollaterals`,
             {
                 method: 'GET',
@@ -910,7 +997,7 @@ const getGovtCollaterals = async (userId, applicationId) => {
 const saveGovtCollaterals = async (userId, applicationId, govtCollaterals) => {
     console.log("saveGovtCollaterals called:", { userId, applicationId, count: govtCollaterals.length });
     try {
-        const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
+        const response = await apiFetch(`/api/collateral/${userId}/${applicationId}`, {
             method: 'POST',
             headers: authHeaders(),
             body: JSON.stringify({
@@ -931,7 +1018,7 @@ const saveGovtCollaterals = async (userId, applicationId, govtCollaterals) => {
 //Edit all Collateral Documents
 
 const updateCollateralProperty = async (userId, applicationId, property) => {
-    const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
+    const response = await apiFetch(`/api/collateral/${userId}/${applicationId}`, {
         method: 'PUT',
         headers: authHeaders(),
         body: JSON.stringify({ action: 'updateCollateralProperty', property })
@@ -940,7 +1027,7 @@ const updateCollateralProperty = async (userId, applicationId, property) => {
 };
 
 const updateFDCollateral = async (userId, applicationId, fd) => {
-    const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
+    const response = await apiFetch(`/api/collateral/${userId}/${applicationId}`, {
         method: 'PUT',
         headers: authHeaders(),
         body: JSON.stringify({ action: 'updateFDCollateral', fd })
@@ -949,7 +1036,7 @@ const updateFDCollateral = async (userId, applicationId, fd) => {
 };
 
 const updateLICCollateral = async (userId, applicationId, lic) => {
-    const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
+    const response = await apiFetch(`/api/collateral/${userId}/${applicationId}`, {
         method: 'PUT',
         headers: authHeaders(),
         body: JSON.stringify({ action: 'updateLICCollateral', lic })
@@ -958,7 +1045,7 @@ const updateLICCollateral = async (userId, applicationId, lic) => {
 };
 
 const updateGovtCollateral = async (userId, applicationId, govt) => {
-    const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
+    const response = await apiFetch(`/api/collateral/${userId}/${applicationId}`, {
         method: 'PUT',
         headers: authHeaders(),
         body: JSON.stringify({ action: 'updateGovtCollateral', govt })
@@ -970,7 +1057,7 @@ const updateGovtCollateral = async (userId, applicationId, govt) => {
 
 //delete all collateral documents
  const deleteCollateralProperty = async (userId, applicationId, id) => {
-    const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
+    const response = await apiFetch(`/api/collateral/${userId}/${applicationId}`, {
         method: 'DELETE',
         headers: authHeaders(),
         body: JSON.stringify({ action: 'deleteCollateralProperty', id })
@@ -979,7 +1066,7 @@ const updateGovtCollateral = async (userId, applicationId, govt) => {
 };
 
  const deleteFDCollateral = async (userId, applicationId, id) => {
-    const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
+    const response = await apiFetch(`/api/collateral/${userId}/${applicationId}`, {
         method: 'DELETE',
         headers: authHeaders(),
         body: JSON.stringify({ action: 'deleteFDCollateral', id })
@@ -988,7 +1075,7 @@ const updateGovtCollateral = async (userId, applicationId, govt) => {
 };
 
  const deleteLICCollateral = async (userId, applicationId, id) => {
-    const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
+    const response = await apiFetch(`/api/collateral/${userId}/${applicationId}`, {
         method: 'DELETE',
         headers: authHeaders(),
         body: JSON.stringify({ action: 'deleteLICCollateral', id })
@@ -997,7 +1084,7 @@ const updateGovtCollateral = async (userId, applicationId, govt) => {
 };
 
  const deleteGovtCollateral = async (userId, applicationId, id) => {
-    const response = await fetch(`/api/collateral/${userId}/${applicationId}`, {
+    const response = await apiFetch(`/api/collateral/${userId}/${applicationId}`, {
         method: 'DELETE',
         headers: authHeaders(),
         body: JSON.stringify({ action: 'deleteGovtCollateral', id })
@@ -1013,7 +1100,7 @@ const uploadDocument = async (userId, applicationId, docKey, documentId, file) =
   formData.append('file', file);
   formData.append('document_id', documentId);
 
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/uploaddoc/${userId}/${applicationId}/${docKey}`,
     {
       method: 'POST',
@@ -1026,7 +1113,7 @@ const uploadDocument = async (userId, applicationId, docKey, documentId, file) =
 
 // Get all uploaded documents
 const getUploadedDocuments = async (userId, applicationId) => {
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/uploaddoc/${userId}/${applicationId}/all`,
     {
       method: 'GET',
@@ -1038,7 +1125,7 @@ const getUploadedDocuments = async (userId, applicationId) => {
 
 // Delete document
 const deleteDocument = async (userId, applicationId, docKey) => {
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/uploaddoc/${userId}/${applicationId}/${docKey}`,
     {
       method: 'DELETE',
@@ -1054,7 +1141,7 @@ const deleteDocument = async (userId, applicationId, docKey) => {
 async function getViewApplicationData(userId, applicationId) {
   try {
      const authToken = get(token) || localStorage.getItem('accessToken');
-    const response = await fetch(
+    const response = await apiFetch(
       `/api/createApplication/${userId}/${applicationId}/view`,
       {
         headers: {
@@ -1074,7 +1161,7 @@ async function getViewApplicationData(userId, applicationId) {
 //submit application
 async function submitApplication(userId, applicationId) {
   try {
-    const response = await fetch(
+    const response = await apiFetch(
       `/api/createApplication/${userId}/${applicationId}/submit`,
       { 
         method: 'POST',  
@@ -1093,7 +1180,7 @@ async function submitApplication(userId, applicationId) {
 // /after submit notifications send mail and mobile number
 export async function notifyApplicationSubmission(userId, applicationId) {
   try {
-    const response = await fetch(
+    const response = await apiFetch(
       `/api/notify`,
       { 
         method: 'POST',  

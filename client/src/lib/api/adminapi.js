@@ -124,8 +124,6 @@ async function getDistrictApplications(district) {
   }
 }
 
-
-
 function getCookieValue(name) {
   if (typeof document === 'undefined') return '';
   return document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`))?.[1] || '';

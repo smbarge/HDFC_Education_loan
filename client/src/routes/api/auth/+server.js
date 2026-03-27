@@ -5,6 +5,9 @@ import jwt from 'jsonwebtoken';
 import { env } from '$env/dynamic/private';
 
 const JWT_SECRET = env.JWT_SECRET;
+const JWT_REFRESH_SECRET = env.JWT_REFRESH_SECRET;
+
+
 
 async function generateId() {
     const result = await pool.query(
@@ -160,14 +163,20 @@ export async function POST({ request }) {
                     sub: user.username
                 },
                 JWT_SECRET,
-                { expiresIn: '24h' }
+                { expiresIn: '1m' }
+            );
+
+            const refresh_token = jwt.sign(
+            { id: user.id },
+            JWT_REFRESH_SECRET,   // different secret
+            { expiresIn: '30d' }  // expires in 30 days
             );
 
             return json({
                 error: 0,
                 errorMsg: 'User login successfully',
                 access_token: token,
-                refresh_token: token,
+                refresh_token,
                 user: {
                     id: user.id,
                     username: user.username,
@@ -178,6 +187,8 @@ export async function POST({ request }) {
                 }
             });
         }
+
+
 
         // GET USER BY MOBILE
         if (action === 'getUserByMobile') {
@@ -221,6 +232,52 @@ export async function POST({ request }) {
             }
 
             return json({ error: 0, errorMsg: 'Password changed successfully' });
+        }
+
+        //refresh Tokan 
+     
+        if (action === 'refreshToken') {
+            const { refresh_token } = body;
+
+            if (!refresh_token) {
+                return json({ error: -1, errorMsg: 'Refresh token missing' });
+            }
+
+            try {
+                const decoded = jwt.verify(refresh_token, JWT_REFRESH_SECRET);
+
+                // Fetch user from DB
+                const result = await pool.query(
+                    'SELECT * FROM user1 WHERE id = $1',
+                    [decoded.id]
+                );
+
+                if (result.rows.length === 0) {
+                    return json({ error: -1, errorMsg: 'User not found' });
+                }
+
+                const user = result.rows[0];
+
+                // Issue new access token
+                const new_access_token = jwt.sign(
+                    {
+                        id: user.id,
+                        username: user.username,
+                        mobile: user.mobile_no,
+                        sub: user.username
+                    },
+                    JWT_SECRET,
+                    { expiresIn: '1h' }
+                );
+
+                return json({
+                    error: 0,
+                    access_token: new_access_token
+                });
+
+            } catch (err) {
+                return json({ error: -1, errorMsg: 'Invalid or expired refresh token' });
+            }
         }
 
         return json({ 
