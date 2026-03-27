@@ -625,17 +625,32 @@ Cookie: adminUsername=kolhapur_admin
   "answers": [
     {
       "checkpoint_id": 1,
-      "question_id": ,
+      "question_id": 1,
       "answer": "yes"
     },
     {
       "checkpoint_id": 1,
-      "question_id": 102,
+      "question_id": 2,
       "answer": "no"
     },
     {
-      "checkpoint_id": 5,
-      "question_id": 201,
+      "checkpoint_id": 1,
+      "question_id":3 ,
+      "answer": "yes"
+    },
+    {
+      "checkpoint_id": 1,
+      "question_id": 4,
+      "answer": "yes"
+    },
+    {
+      "checkpoint_id": 1,
+      "question_id": 5,
+      "answer": "yes"
+    },
+    {
+      "checkpoint_id": 1,
+      "question_id": 6,
       "answer": "yes"
     }
   ]
@@ -650,7 +665,7 @@ Cookie: adminUsername=kolhapur_admin
 
 {
   "action": "finalDecision",
-  "application_id": 123,
+  "application_id": 10,
   "decision": "forward",
   "remark": "All documents verified"
 }
@@ -664,7 +679,7 @@ Cookie: adminUsername=kolhapur_admin
 
 {
   "action": "finalDecision",
-  "application_id": 123,
+  "application_id": 10,
   "decision": "reject",
   "remark": "Invalid Aadhaar document"
 }

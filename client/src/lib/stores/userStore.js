@@ -17,8 +17,6 @@ function setToLocalStorage(key, value) {
   }
 }
 
-
-
 function getTokenFromStorage() {
     if (!browser) return null;
     return localStorage.getItem('accessToken') || null; // ← NO JSON.parse
@@ -95,6 +93,7 @@ export const logout = () => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('currentApplicationId');
     document.cookie = 'token=; path=/; max-age=0'; // clear cookie
+    document.cookie = 'refreshToken=; path=/; max-age=0'; 
   }
   userStore.set(null);
   tokenStore.set(null);

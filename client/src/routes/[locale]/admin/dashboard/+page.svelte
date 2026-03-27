@@ -109,7 +109,18 @@
   if (statusId == 4 || statusId == 8 || statusId == 9) return 'Forwarded';
   if (statusId == 5 || statusId == 6 || statusId == 7) return 'Rejected';
   if (statusId == 3) return 'Under Review';
+  if (statusId == 2) return 'Pending';
   return 'Pending';
+}
+
+function mapVerifyStatus(app) {
+  const answerCount = parseInt(app.answer_count) || 0;
+  const status = mapStatus(app.application_status, app.application_status_name);
+
+  if (status === 'Forwarded') return 'Forwarded';
+  if (status === 'Rejected')  return 'Rejected';
+  if (answerCount > 0)        return 'continue'; 
+  return 'verify';                               
 }
 
   async function fetchCandidates(page = 1) {
@@ -140,7 +151,8 @@
         course:        app.course_name || '',
         loanType:      'Education Loan',
         appliedOn:     app.updated_at,
-        status: mapStatus(app.application_status, app.application_status_name),
+        status:        mapStatus(app.application_status, app.application_status_name),
+        verifyStatus:  mapVerifyStatus(app),   
         documents:     []
       }));
     }
@@ -163,6 +175,7 @@ function handleLogout() {
     // Clear cookies
     document.cookie = 'adminToken=; Path=/; Max-Age=0';
     document.cookie = 'adminDistrict=; Path=/; Max-Age=0';
+    document.cookie = 'adminRefreshToken=; Path=/; Max-Age=0'; 
     document.cookie = 'adminUsername=; Path=/; Max-Age=0';
     // Clear localStorage
     localStorage.removeItem('adminToken');
@@ -175,6 +188,7 @@ function statusColor(status) {
   if (status === 'Forwarded') return 'bg-green-100 text-green-700 border-green-200';
   if (status === 'Rejected') return 'bg-red-100 text-red-700 border-red-200';
   if (status === 'Under Review') return 'bg-red-50 text-red-400 border-red-200';
+  if (status === 'Pending')      return 'bg-yellow-100 text-yellow-700 border-yellow-200';
   return 'bg-yellow-100 text-yellow-700 border-yellow-200';
 }
 
@@ -182,6 +196,7 @@ function statusDot(status) {
   if (status === 'Forwarded') return 'bg-green-500';
   if (status === 'Rejected') return 'bg-red-500';
   if (status === 'Under Review') return 'bg-red-300';
+  if (status === 'Pending')      return 'bg-yellow-500';
   return 'bg-yellow-500';
 }
 
@@ -496,15 +511,15 @@ function formatDate(dateStr) {
                     </button>
                   </td>
                    <td class="px-3 lg:px-4 py-3">
-                    {#if candidate.status === 'Forwarded'}
+                    {#if candidate.verifyStatus === 'Forwarded'}
                       <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-green-50 text-green-600 border border-green-200">
                         ✓ Forwarded
                       </span>
-                    {:else if candidate.status === 'Rejected'}
+                    {:else if candidate.verifyStatus === 'Rejected'}
                       <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-red-50 text-red-600 border border-red-200">
                         ✕ Rejected
                       </span>
-                    {:else if candidate.status === 'Under Review'}
+                    {:else if candidate.verifyStatus === 'continue'}
                       <button
                         on:click={() => openVerifyApplication(candidate)}
                         class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white transition-colors whitespace-nowrap shadow-sm"

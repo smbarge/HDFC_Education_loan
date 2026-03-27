@@ -109,6 +109,8 @@
 
     //document.cookie = `token=${response.token}; path=/; max-age=86400; SameSite=Strict`;
     document.cookie = `token=${response.token}; path=/; max-age=86400; SameSite=Strict`;
+    document.cookie = `refreshToken=${response.refreshToken}; path=/; max-age=2592000; SameSite=Strict`;
+
 
 
     goto(`/${locale}/dashboard`);
