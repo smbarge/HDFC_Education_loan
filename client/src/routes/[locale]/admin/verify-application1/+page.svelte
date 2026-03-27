@@ -223,70 +223,135 @@
 
   //Here form the goroup in the tab
 
-  function getGroupedDocsForTab(tab) {
+  //old
+  
+  // function getGroupedDocsForTab(tab) {
+  //   const docs = getDocsForTab(tab);
+
+  //   const groups = {};
+  //   docs.forEach(doc => {
+  //     const sub = docIdToSubSection[doc.document_id] || 'Documents';
+  //     if (!groups[sub]) groups[sub] = [];
+  //     groups[sub].push(doc);
+  //   });
+
+  // if (tab === 'collateral') {
+  //     const photoDoc = docs.find(d => d.document_id === 35);
+  //     if (photoDoc) {
+  //       const hasProperty = docs.some(d => [21, 22, 23, 24, 25].includes(d.document_id));
+  //       const hasGovt     = docs.some(d => [26, 27, 28, 29, 30].includes(d.document_id));
+  //       const hasLIC = docs.some(d => [32, 33, 34].includes(d.document_id));
+  //       const hasFD  = docs.some(d => [36, 37, 38, 46].includes(d.document_id));
+
+  //       // Add photo to Property section if present and no LIC
+  //       if (hasProperty && !hasLIC) {
+  //         if (!groups['Property Collateral']) groups['Property Collateral'] = [];
+  //         const already = groups['Property Collateral'].some(d => d.document_id === 35);
+  //         if (!already) groups['Property Collateral'].unshift({ ...photoDoc });
+  //         // Remove from LIC group since no LIC
+  //         delete groups['LIC Policy Collateral'];
+  //       }
+
+  //       // Add photo to Govt Employee section if present and no LIC
+  //       if (hasGovt && !hasLIC) {
+  //         if (!groups['Govt Employee Collateral']) groups['Govt Employee Collateral'] = [];
+  //         const already = groups['Govt Employee Collateral'].some(d => d.document_id === 35);
+  //         if (!already) groups['Govt Employee Collateral'].unshift({ ...photoDoc });
+  //         delete groups['LIC Policy Collateral'];
+  //       }
+
+  //       // Remove photo from LIC group if no actual LIC docs present
+  //       if (!hasLIC && groups['LIC Policy Collateral']) {
+  //         groups['LIC Policy Collateral'] = groups['LIC Policy Collateral']
+  //           .filter(d => d.document_id !== 35);
+  //         if (groups['LIC Policy Collateral'].length === 0)
+  //           delete groups['LIC Policy Collateral'];
+  //       }
+
+  //       // Add photo to FD group if FD docs present but no LIC docs
+  //       if (hasFD && !hasLIC) {
+  //         if (!groups['Fixed Deposit Collateral']) groups['Fixed Deposit Collateral'] = [];
+  //         const alreadyInFD = groups['Fixed Deposit Collateral'].some(d => d.document_id === 35);
+  //         if (!alreadyInFD) groups['Fixed Deposit Collateral'].unshift({ ...photoDoc });
+  //       }
+
+  //       // If BOTH LIC and FD present, duplicate photo into FD too
+  //       if (hasFD && hasLIC) {
+  //         if (!groups['Fixed Deposit Collateral']) groups['Fixed Deposit Collateral'] = [];
+  //         const alreadyInFD = groups['Fixed Deposit Collateral'].some(d => d.document_id === 35);
+  //         if (!alreadyInFD) groups['Fixed Deposit Collateral'].unshift({ ...photoDoc });
+  //       }
+  //     }
+  //   }
+
+  //   const order = subSectionOrder[tab] || Object.keys(groups);
+  //   return order
+  //     .filter(name => groups[name] && groups[name].length > 0)
+  //     .map(name => ({ name, docs: groups[name] }));
+  // }
+
+  function getGroupedDocsForTab(tab, data = appData) {
     const docs = getDocsForTab(tab);
+
+    // For collateral tab, determine which sections have backend data FIRST
+    const backendHasProperty = (data?.collateral?.properties?.length || 0) > 0;
+    const backendHasGovt     = (data?.collateral?.govtEmployees?.length || 0) > 0;
+    const backendHasFD       = (data?.collateral?.fds?.length || 0) > 0;
+    const backendHasLIC      = (data?.collateral?.lics?.length || 0) > 0;
 
     const groups = {};
     docs.forEach(doc => {
-      const sub = docIdToSubSection[doc.document_id] || 'Documents';
-      if (!groups[sub]) groups[sub] = [];
-      groups[sub].push(doc);
+        // For collateral tab — skip docs that belong to sections with no backend data
+        if (tab === 'collateral') {
+            const isPropertyDoc = [21,22,23,24,25].includes(doc.document_id);
+            const isGovtDoc     = [26,27,28,29,30].includes(doc.document_id);
+            const isPhotoDoc    = doc.document_id === 35;
+            const isFDDoc       = [36,37,38,46].includes(doc.document_id);
+            const isLICDoc      = [32,33,34].includes(doc.document_id);
+
+            // Skip entirely if backend has no data for that section
+            if (isPropertyDoc && !backendHasProperty) return;
+            if (isGovtDoc     && !backendHasGovt)     return;
+            if (isPhotoDoc)                            return; // handle photo separately below
+            if (isFDDoc       && !backendHasFD)        return;
+            if (isLICDoc      && !backendHasLIC)       return;
+        }
+
+        const sub = docIdToSubSection[doc.document_id] || 'Documents';
+        if (!groups[sub]) groups[sub] = [];
+        groups[sub].push(doc);
     });
 
-  if (tab === 'collateral') {
-      const photoDoc = docs.find(d => d.document_id === 35);
-      if (photoDoc) {
-        const hasProperty = docs.some(d => [21, 22, 23, 24, 25].includes(d.document_id));
-        const hasGovt     = docs.some(d => [26, 27, 28, 29, 30].includes(d.document_id));
-        const hasLIC = docs.some(d => [32, 33, 34].includes(d.document_id));
-        const hasFD  = docs.some(d => [36, 37, 38, 46].includes(d.document_id));
-
-        // Add photo to Property section if present and no LIC
-        if (hasProperty && !hasLIC) {
-          if (!groups['Property Collateral']) groups['Property Collateral'] = [];
-          const already = groups['Property Collateral'].some(d => d.document_id === 35);
-          if (!already) groups['Property Collateral'].unshift({ ...photoDoc });
-          // Remove from LIC group since no LIC
-          delete groups['LIC Policy Collateral'];
+    // Handle photo doc (35) — add only to sections with backend data
+    if (tab === 'collateral') {
+        const photoDoc = docs.find(d => d.document_id === 35);
+        if (photoDoc) {
+            if (backendHasProperty) {
+                if (!groups['Property Collateral']) groups['Property Collateral'] = [];
+                groups['Property Collateral'].unshift({ ...photoDoc });
+            }
+            if (backendHasGovt) {
+                if (!groups['Govt Employee Collateral']) groups['Govt Employee Collateral'] = [];
+                groups['Govt Employee Collateral'].unshift({ ...photoDoc });
+            }
+            if (backendHasLIC) {
+                if (!groups['LIC Policy Collateral']) groups['LIC Policy Collateral'] = [];
+                groups['LIC Policy Collateral'].unshift({ ...photoDoc });
+            }
+            if (backendHasFD) {
+                if (!groups['Fixed Deposit Collateral']) groups['Fixed Deposit Collateral'] = [];
+                groups['Fixed Deposit Collateral'].unshift({ ...photoDoc });
+            }
         }
-
-        // Add photo to Govt Employee section if present and no LIC
-        if (hasGovt && !hasLIC) {
-          if (!groups['Govt Employee Collateral']) groups['Govt Employee Collateral'] = [];
-          const already = groups['Govt Employee Collateral'].some(d => d.document_id === 35);
-          if (!already) groups['Govt Employee Collateral'].unshift({ ...photoDoc });
-          delete groups['LIC Policy Collateral'];
-        }
-
-        // Remove photo from LIC group if no actual LIC docs present
-        if (!hasLIC && groups['LIC Policy Collateral']) {
-          groups['LIC Policy Collateral'] = groups['LIC Policy Collateral']
-            .filter(d => d.document_id !== 35);
-          if (groups['LIC Policy Collateral'].length === 0)
-            delete groups['LIC Policy Collateral'];
-        }
-
-        // Add photo to FD group if FD docs present but no LIC docs
-        if (hasFD && !hasLIC) {
-          if (!groups['Fixed Deposit Collateral']) groups['Fixed Deposit Collateral'] = [];
-          const alreadyInFD = groups['Fixed Deposit Collateral'].some(d => d.document_id === 35);
-          if (!alreadyInFD) groups['Fixed Deposit Collateral'].unshift({ ...photoDoc });
-        }
-
-        // If BOTH LIC and FD present, duplicate photo into FD too
-        if (hasFD && hasLIC) {
-          if (!groups['Fixed Deposit Collateral']) groups['Fixed Deposit Collateral'] = [];
-          const alreadyInFD = groups['Fixed Deposit Collateral'].some(d => d.document_id === 35);
-          if (!alreadyInFD) groups['Fixed Deposit Collateral'].unshift({ ...photoDoc });
-        }
-      }
     }
 
     const order = subSectionOrder[tab] || Object.keys(groups);
     return order
-      .filter(name => groups[name] && groups[name].length > 0)
-      .map(name => ({ name, docs: groups[name] }));
-  }
+        .filter(name => groups[name] && groups[name].length > 0)
+        .map(name => ({ name, docs: groups[name] }));
+}
+
+
 
   // $: currentDocs = getDocsForTab(activeTab);
   // $: activeTabs = appData ? tabs.filter(tab => getDocsForTab(tab.key).length > 0) : tabs;
@@ -673,7 +738,8 @@ const cpData = await getCheckpoints(adminToken);
 
         <!-- Left: Document list grouped by sub-section -->
         <div class="lg:col-span-1 space-y-3">
-          {#each getGroupedDocsForTab(activeTab) as group}
+        <!-- {#each getGroupedDocsForTab(activeTab) as group} -->
+          {#each getGroupedDocsForTab(activeTab, appData) as group}
             <div class="overflow-hidden rounded-lg border border-gray-200">
               <div class="bg-purple-800 px-4 py-2.5 flex items-center justify-between">
                 <p class="text-white text-xs font-bold uppercase tracking-wider">{group.name}</p>
