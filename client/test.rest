@@ -512,7 +512,8 @@ Content-Type: application/json
 
 # APPLICATIONS
 
-@tokan = eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI1UGNLYXRXdWlPWUFnV0c4NFZsdUF5aXoxYldrZTBWVHZEWXpzZjFWWkZrIn0.eyJleHAiOjE3NzQwODk0ODUsImlhdCI6MTc3NDA4OTE4NSwianRpIjoiYzhlZTUzYjktYTFjZS00ZTRlLWFhMTAtNzM5OGQwNWVkMWFlIiwiaXNzIjoiaHR0cHM6Ly9rZXljbG9hay5jaGFuYWt5YXNvZnQuY29tL3JlYWxtcy9lZHVjYXRpb24tbG9hbiIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiIwMjM2NjRjOS0xODk2LTRmNjItOWYzYi1jODcxZGY0MTk2NGUiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJlZHVjYXRpb24tYWRtaW4iLCJzaWQiOiI3MTAwMTQyOC0yNGNlLTQ4YjUtYmI3Yy02Njc0OTg0NTcwMTQiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImRpc3RyaWN0X2FkbWluIiwiZGVmYXVsdC1yb2xlcy1lZHVjYXRpb24tbG9hbiIsIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6InByb2ZpbGUgZW1haWwiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsIm5hbWUiOiJrb2xoYXB1ciBBZG1pbiIsInByZWZlcnJlZF91c2VybmFtZSI6ImtvbGhhcHVyX2FkbWluIiwiZ2l2ZW5fbmFtZSI6ImtvbGhhcHVyIiwiZmFtaWx5X25hbWUiOiJBZG1pbiIsImVtYWlsIjoia29saGFwdXJAZ21haWwuY29tIn0.qMc3rgNupJdA0SZrr34DPp4VtfODhc63EOoYOH1HpxM6xBdDP2Iglwb2FFVCtfkHvv4EOYuQsXp3i-H_w7pf7z0MFXv0hPiDlHlYt6Ga-hFyHVFyDZcqW_S8T-_7nZ6RdlmfjDpLk-uga-erU-60TCWzhiMjufwrwB5VHjcwmDJJvxdIMQ6NAhvZkVcfyRJ_T0CY0KS35Xx6H3vkdgnfJq1e8F_yAFSemBjoadRcDp_uWoZb0nGN9mI5oPfTIqL9l_aaOdsQKhZZgHhvCwNJwaMQQ5ucBBVjH8BmEKr1aDhm2ZOv2u6s0jU0slkprtv7GsADEEKgnjfTBn29-CdimA
+@tokan = eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI1UGNLYXRXdWlPWUFnV0c4NFZsdUF5aXoxYldrZTBWVHZEWXpzZjFWWkZrIn0.eyJleHAiOjE3NzQ0MjExNjgsImlhdCI6MTc3NDQyMDg2OCwianRpIjoiZGYwY2Y4MzItMmU5MC00NjM2LTk4NDctMzIyMGYwYmI4ZWM3IiwiaXNzIjoiaHR0cHM6Ly9rZXljbG9hay5jaGFuYWt5YXNvZnQuY29tL3JlYWxtcy9lZHVjYXRpb24tbG9hbiIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiIwMjM2NjRjOS0xODk2LTRmNjItOWYzYi1jODcxZGY0MTk2NGUiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJlZHVjYXRpb24tYWRtaW4iLCJzaWQiOiJjZjc4YmQ3OS02MTM2LTQxMDEtOTkwMS1hNzBkZGZmZWU2NjAiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImRpc3RyaWN0X2FkbWluIiwiZGVmYXVsdC1yb2xlcy1lZHVjYXRpb24tbG9hbiIsIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6InByb2ZpbGUgZW1haWwiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsIm5hbWUiOiJrb2xoYXB1ciBBZG1pbiIsInByZWZlcnJlZF91c2VybmFtZSI6ImtvbGhhcHVyX2FkbWluIiwiZ2l2ZW5fbmFtZSI6ImtvbGhhcHVyIiwiZmFtaWx5X25hbWUiOiJBZG1pbiIsImVtYWlsIjoia29saGFwdXJAZ21haWwuY29tIn0.KEO0rj7vCYQkFWB_T4lOj0t2YJ-7m70WirWif3yNiliqxyJwCD6kl7zVbxtgEV8dX-KhrSEsqH_8ZzkBOJcKuqODVR9bfjUKi2yoskVBWDYRsfDhqqGSdZAjzjmTMQpQdnkEcfhYIuSWBqtT1--v7rhO4eceRYSetiTyv4sXO9cug0AmYCnJHQtxPnZCtuGSabJNAGNLfSLd11CCYH2J4_3OXq6sxj7yaiERgfSVUuPVmAGnrhgjxoSjpOeBi3mmKtWAaa_2YF9DbW_XpFcu-cAdE0eaY88_0reQTLhKhEkE3DHs_wxWaJ4mYMNlfGc1OzZWjbRwKQXByELxGeunCA
+
 ### Get Pune applications (paste token from above)
 GET http://localhost:5173/api/admin/applications?district=kolhapur
 Authorization: Bearer {{token}}
@@ -600,4 +601,84 @@ Authorization: Bearer {{token}}
   "level": 1,
   "verification_type": 1,
   "iteration": 1
+}
+
+
+# final 
+
+### Get verification answers
+GET http://localhost:5173/api/admin/verification?application_id=10
+Authorization: Bearer {{token}}
+Cookie: adminUsername=kolhapur_admin
+
+
+
+### Save verification answers
+POST http://localhost:5173/api/admin/verification
+Content-Type: application/json
+Authorization: Bearer {{token}}
+Cookie: adminUsername=kolhapur_admin
+
+{
+  "action": "saveAnswers",
+  "application_id": 10,
+  "answers": [
+    {
+      "checkpoint_id": 1,
+      "question_id": ,
+      "answer": "yes"
+    },
+    {
+      "checkpoint_id": 1,
+      "question_id": 102,
+      "answer": "no"
+    },
+    {
+      "checkpoint_id": 5,
+      "question_id": 201,
+      "answer": "yes"
+    }
+  ]
+}
+
+
+### Forward application
+POST http://localhost:5173/api/admin/verification
+Content-Type: application/json
+Authorization: Bearer {{token}}
+Cookie: adminUsername=kolhapur_admin
+
+{
+  "action": "finalDecision",
+  "application_id": 123,
+  "decision": "forward",
+  "remark": "All documents verified"
+}
+
+
+### Reject application
+POST http://localhost:5173/api/admin/verification
+Content-Type: application/json
+Authorization: Bearer {{token}}
+Cookie: adminUsername=kolhapur_admin
+
+{
+  "action": "finalDecision",
+  "application_id": 123,
+  "decision": "reject",
+  "remark": "Invalid Aadhaar document"
+}
+
+
+### Return application
+POST http://localhost:5173/api/admin/verification
+Content-Type: application/json
+Authorization: Bearer {{token}}
+Cookie: adminUsername=kolhapur_admin
+
+{
+  "action": "finalDecision",
+  "application_id": 123,
+  "decision": "return",
+  "remark": "Upload clearer documents"
 }

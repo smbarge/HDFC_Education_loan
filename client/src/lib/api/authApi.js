@@ -473,6 +473,7 @@ const getUserApplication = async (userId) => {
     }
 
     const result = await response.json();
+    console.log("Result ----",result);
 
     return {
       error: result.error ?? 0,
