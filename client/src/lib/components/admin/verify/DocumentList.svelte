@@ -18,111 +18,6 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import { getVerificationAnswers, saveAnswers } from '$lib/api/adminapi.js';
 
- // console.log("Masters...",masters)
-// function getFilledDataForQuestion(questionText) {
-//   if (!appData || !questionText) return null;
-//   const q = questionText.toLowerCase();
-//   const p = appData.personal || {};
-//   const edu = appData.education || {};
-//   const g = appData.guarantor || {};
-
-//   // Addhar card
-//   if (q.includes('aadhaar number') || q.includes('aadhar number'))   return p.aadhar || null;
-//   if (q.includes('name of the applicant') || (q.includes('name') && q.includes('correct'))) return p.name || null;
-//   if (q.includes('date of birth') || q.includes('dob'))              return p.dob ? new Date(p.dob).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : null;
-//   if (q.includes('gender'))                                           return p.gender ? `${p.gender.toUpperCase()} - ${p.gender.toLowerCase()==='male'?'पुरुष':p.gender.toLowerCase()==='female'?'महिला':p.gender}` : null;
-//   if (q.includes('address'))                                          return p.current_address ? [p.current_address,p.current_place,p.current_pincode].filter(Boolean).join(', ') : null;
- 
-//   //Pan card
-//   if (q.includes('name on the PAN card') || (q.includes('name'))) return p.name || null;
-//   if (q.includes('pan') && (q.includes('number')||q.includes('correct')||q.includes('matching'))) return p.pan || null;
- 
-
-//   if (q.includes('mobile') || q.includes('phone'))                   return p.mobile || null;
-  
-//   //Minority
-
-//   //if (q.includes('religion'))                                      return p.religion || null;
-//   if (q.includes('certificate match the applicant’s details?'))      return p.caste || p.category || null;
-//   //m
-//   if (q.includes('minority') || q.includes('religion'))              return p.religion || null;
- 
-//   //Domasile  
-//   //if (q.includes('domicile') || q.includes('state of domicile'))     return p.resident || p.domicile_state || null;
-  
-//   if (q.includes('marital'))                                          return p.marital_status || null;
-//   if (q.includes('guardian') || q.includes('parent') || q.includes("father") || q.includes("mother")) return p.guardian_name || null;
-//   if (q.includes('occupation'))                                       return p.occupation || null;
-//   if (q.includes('income'))                                           return p.income ? '₹'+Number(p.income).toLocaleString('en-IN') : null;
-//   if (q.includes('ration card'))                                      return p.ration_card_number || null;
-
-//   //Education
-//   if (q.includes('course name') || q.includes('programme'))          return edu.course_name || null;
-//   if (q.includes('institute') || q.includes('college'))     return edu.institution_name || null;
-//   if (q.includes('university'))                                      return edu.university || edu.institution_name || null;
-//   if (q.includes('academic year'))                                   return edu.admission_year ? String(edu.admission_year) : null;
-//   if (q.includes('admission status'))                                 return edu.admission_status || null;
-//   if (q.includes('mode of study'))                                    return edu.mode_of_study || null;
-//   if (q.includes('total') && q.includes('fee'))                      return edu.total_course_fee ? '₹'+Number(edu.total_course_fee).toLocaleString('en-IN') : null;
-//   if (q.includes('marksheets belong to the applicant') || (q.includes('name'))) return p.name || null;
-  
-//   if (q.includes('loan amount') || q.includes('loan required'))      return edu.loan_required_amount ? '₹'+Number(edu.loan_required_amount).toLocaleString('en-IN') : null;
-  
-//   //Bank
-//   if (q.includes('bank name'))                                        return edu.bank_name || null;
-//   if (q.includes('branch'))                                           return edu.branch_name || null;
-//   if (q.includes('ifsc'))                                             return edu.ifsc_code || null;
-//   if (q.includes('account number'))                                   return edu.account_number || null;
-
-//   if (q.includes('guarantor') && q.includes('name'))                 return g.name || null;
-//   if (q.includes('guarantor') && q.includes('mobile'))               return g.mobile || null;
-//   if (q.includes('guarantor') && (q.includes('aadhaar')||q.includes('aadhar'))) return g.aadhar || null;
-//   if (q.includes('guarantor') && q.includes('income'))               return g.income ? '₹'+Number(g.income).toLocaleString('en-IN') : null;
-//   if (q.includes('guarantor') && q.includes('address'))              return g.current_address ? [g.current_address,g.current_place,g.current_pincode].filter(Boolean).join(', ') : null;
-
-//   //Abrod 
-//   if (q.includes('passport belong'))    return p.name || null;
-//   if (q.includes('visa contain correct applicant details'))    return p.name || null;
-
-
-//   // Collateral — FD
-//   const fds = (appData.collateral?.fds || [])[0] || {};
-//     if (q.includes('holder details'))                 return g.name || null;
-//     if (q.includes('amount') || q.includes('value'))   return fds.fd_amount ? '₹'+Number(fds.fd_amount).toLocaleString('en-IN') : null;
-//     if (q.includes('bank'))                            return fds.bank_name || null;
-//     if (q.includes('account'))                         return fds.fd_acc_no || null;
-//     if (q.includes('maturity'))                        return fds.maturity_date || null;
-//     if (q.includes('fd details') || q.includes('fixed deposit details'))
-//     return `Bank: ${fds.bank_name || '-'}, Branch: ${fds.branch_name || '-'}, Account: ${fds.fd_acc_no || '-'}`;
-
-//   // Collateral — Property
-//   const prop = (appData.collateral?.properties || [])[0] || {};
-//     if (q.includes('owner'))    return prop.owner_name || null;
-//     if (q.includes('area'))     return prop.area || null;
-//     if (q.includes('survey') || q.includes('7/12')) return prop.survey_number || null;
-//     if (q.includes('value') || q.includes('valuation')) return prop.property_value ? '₹'+Number(prop.property_value).toLocaleString('en-IN') : null;
-//     if (q.includes('address') || q.includes('location')) return prop.address || prop.village || null;
-
-
-//   // Collateral — LIC
-//   const lic = (appData.collateral?.lics || [])[0]||{};
-//     if (q.includes('number'))   return lic.policy_number || null;
-//     if (q.includes('amount') || q.includes('sum assured')) return lic.sum_assured ? '₹'+Number(lic.sum_assured).toLocaleString('en-IN') : null;
-//     if (q.includes('premium'))  return lic.premium_amount ? '₹'+Number(lic.premium_amount).toLocaleString('en-IN') : null;
-//     if (q.includes('maturity')) return lic.maturity_date || null;
-//     if (q.includes('holder') || q.includes('name')) return lic.holder_name || null;
-
-//   // Collateral — Govt Employee
-//   const govt = (appData.collateral?.govtEmployees || [])[0]||{};
-//     if (q.includes('name'))       return govt.employee_name || null;
-//     if (q.includes('department') || q.includes('office')) return govt.department || govt.office_name || null;
-//     if (q.includes('salary') || q.includes('income'))     return govt.salary ? '₹'+Number(govt.salary).toLocaleString('en-IN') : null;
-//     if (q.includes('designation'))  return govt.designation || null;
-//     if (q.includes('employee id') || q.includes('id card')) return govt.employee_id || null;
-
-//   return null;
-// }
-
 
 function getFilledDataForQuestion(questionText) {
   if (!appData || !questionText) return null;
@@ -248,26 +143,6 @@ function getFilledDataForQuestion(questionText) {
 }
   const dispatch = createEventDispatcher();
 
-  // Load existing answers on mount from new /api/admin/verification
-  // onMount(async () => {
-  //   if (!applicationId || !adminToken) return;
-  //   try {
-  //     const res = await fetch(
-  //       `/api/admin/verification?application_id=${applicationId}`,
-  //       { headers: { 'Authorization': `Bearer ${adminToken}` }, credentials: 'include' }
-  //     );
-  //     const data = await res.json();
-  //     if (data.error === 0 && data.answers) {
-  //       const converted = {};
-  //       Object.entries(data.answers).forEach(([k, v]) => {
-  //         converted[k] = (v === 1 || v === '1') ? 'yes' : (v === 2 || v === '2') ? 'no' : v;
-  //       });
-  //       checkpointAnswers = { ...checkpointAnswers, ...converted };
-  //     }
-  //   } catch (e) { console.error('Load answers error:', e); }
-  // });
-
-
   // Load existing answers on mount via adminapi
   onMount(async () => {
     if (!applicationId || !adminToken) return;
@@ -289,34 +164,6 @@ function getFilledDataForQuestion(questionText) {
     checkpointAnswers = { ...checkpointAnswers };
     pendingAnswers[questionId] = { checkpoint_id: checkpointId, question_id: questionId, answer };
   }
-
-  // Save & Continue — sends all pending answers to backend in one call
-  // async function handleSave() {
-  //   if (!allCheckpointsAnswered) return;
-  //   if (applicationId && adminToken && Object.keys(pendingAnswers).length > 0) {
-  //     try {
-  //       await fetch('/api/admin/verification', {
-  //         method: 'POST',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //           'Authorization': `Bearer ${adminToken}`
-  //         },
-  //         credentials: 'include',
-  //         body: JSON.stringify({
-  //           action: 'saveAnswers',
-  //           application_id: applicationId,
-  //           answers: Object.values(pendingAnswers)
-  //         })
-  //       });
-  //       pendingAnswers = {};
-  //     } catch (e) { console.error('Save answers error:', e); }
-  //   }
-  //   dispatch('saveDoc', { docId: expandedDocId });
-  //   expandedDocId = null;
-  //   expandedDocUrl = null;
-  //   expandedDocName = '';
-  // }
-
 
   // Save & Continue — sends all pending answers via adminapi
   async function handleSave() {
@@ -346,8 +193,8 @@ function getFilledDataForQuestion(questionText) {
     (docs || []).forEach(doc => {
       const questions = getQuestionsForDoc(doc.document_id);
       if (questions.length === 0) { map[doc.document_id] = null; return; }
-      const yes = questions.filter(q => checkpointAnswers[q.id] === 'yes').length;
-      map[doc.document_id] = { yes, total: questions.length };
+      const answered = questions.filter(q => checkpointAnswers[q.id] === 'yes' || checkpointAnswers[q.id] === 'no').length;
+      map[doc.document_id] = { answered, total: questions.length };
     });
     return map;
   })();
@@ -376,14 +223,6 @@ function getFilledDataForQuestion(questionText) {
 </script>
 
 <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-
-  <!-- Header
-  <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-    <div>
-      <p class="text-base font-semibold text-gray-800">{sectionLabel}</p>
-      <p class="text-sm text-gray-400 mt-0.5">{docs.length} document{docs.length !== 1 ? 's' : ''}</p>
-    </div>
-  </div> -->
 
   <!-- Document Rows -->
   {#if docs.length === 0}
@@ -421,20 +260,20 @@ function getFilledDataForQuestion(questionText) {
             <!-- Status badge -->
             {#if status === 'verified'}
               <span class="text-sm font-medium px-2 py-0.5 rounded border flex-shrink-0 text-green-600 bg-green-50 border-green-200">
-                ✓ {score !== null ? `${score.yes}/${score.total}` : 'Verified'}
+                ✓ {score !== null ? `${score.answered}/${score.total}` : 'Verified'}
               </span>
             {:else if status === 'rejected'}
               <span class="text-sm font-medium px-2 py-0.5 rounded border flex-shrink-0 text-red-600 bg-red-50 border-red-200">
-                ✕ {score !== null ? `${score.yes}/${score.total}` : 'Rejected'}
+                ✕ {score !== null ? `${score.answered}/${score.total}` : 'Rejected'}
               </span>
             {:else if score !== null}
               <span class="text-sm font-medium px-2 py-0.5 rounded border flex-shrink-0
-                {score.yes === score.total && score.total > 0
+                {score.answered === score.total && score.total > 0
                   ? 'text-green-600 bg-green-50 border-green-200'
-                  : score.yes === 0
+                  : score.answered === 0
                     ? 'text-gray-500 bg-gray-50 border-gray-200'
                     : 'text-amber-600 bg-amber-50 border-amber-200'}">
-                {score.yes}/{score.total}
+                {score.answered}/{score.total}
               </span>
             {:else}
               <span class="text-sm font-medium px-2 py-0.5 rounded border flex-shrink-0 text-gray-500 bg-gray-50 border-gray-200">
