@@ -236,7 +236,7 @@ function formatDate(dateStr) {
       <!-- Right: language + user + logout -->
       <div class="flex items-center gap-1.5 sm:gap-2 md:gap-3 flex-shrink-0">
         <!-- Language switcher -->
-        <div class="hidden sm:flex items-center gap-0.5 sm:gap-1">
+        <!-- <div class="hidden sm:flex items-center gap-0.5 sm:gap-1">
           {#each [['en','English'],['hi','हिंदी'],['mr','मराठी']] as [code, label]}
             <button
               on:click={() => goto(`/${code}/admin/dashboard`)}
@@ -244,7 +244,7 @@ function formatDate(dateStr) {
                 {locale === code ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100'}"
             >{label}</button>
           {/each}
-        </div>
+        </div> -->
 
         <!-- Admin badge + district -->
         {#if adminUser}

@@ -447,7 +447,7 @@ const cpData = await getCheckpoints(adminToken);
         </div>
         <div class="leading-tight min-w-0 flex-1">
           <h1 class="text-xs sm:text-sm md:text-base lg:text-xl font-semibold text-gray-900 truncate">
-            {t?.header?.title || 'MAMFDC'}
+            {t?.header?.title || 'Maulana Azad Minorities Financial Development Corporation Limited'}
           </h1>
           <p class="text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-gray-600 truncate">
             {t?.header?.subtitle || 'A Govt. of Maharashtra Undertaking'}
@@ -456,7 +456,7 @@ const cpData = await getCheckpoints(adminToken);
       </div>
 
       <div class="flex items-center gap-1.5 sm:gap-2 md:gap-3 flex-shrink-0">
-        <div class="hidden sm:flex items-center gap-0.5 sm:gap-1">
+        <!-- <div class="hidden sm:flex items-center gap-0.5 sm:gap-1">
           {#each [['en','English'],['hi','हिंदी'],['mr','मराठी']] as [code, label]}
             <button
               on:click={() => goto(`/${code}/admin/dashboard`)}
@@ -464,7 +464,7 @@ const cpData = await getCheckpoints(adminToken);
                 {locale === code ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100'}"
             >{label}</button>
           {/each}
-        </div>
+        </div> -->
 
         {#if adminUser}
           <div class="hidden md:flex items-center gap-2 px-2 lg:px-3 py-1.5 bg-purple-50 border border-purple-200 rounded-lg">
@@ -505,11 +505,41 @@ const cpData = await getCheckpoints(adminToken);
 
     <div class="w-full px-4 py-4 space-y-4">
 
-              <!-- Back to Dashboard -->
-        <div class="flex justify-end ">
+        <!--  Applicant info -->
+
+        <div class="flex items-center justify-between gap-4">
+
+        <!-- Left: Applicant Info -->
+        <div class="flex items-center gap-3 flex-shrink-0">
+          {#if appData.documents?.photo}
+            <img src={appData.documents.photo} alt="Photo" class="w-10 h-12 object-cover rounded border border-gray-200 flex-shrink-0"/>
+          {:else}
+            <div class="w-10 h-12 bg-gray-100 rounded border border-gray-200 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+            </div>
+          {/if}
+
+          <div class="min-w-0">
+            <p class="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-0.5">
+              Document Verification
+            </p>
+            <p class="text-base font-bold text-gray-900">
+              {appData.personal?.name || '—'}
+            </p>
+            <p class="text-sm text-gray-400">
+              {appData.personal?.mobile || ''} · Form:
+              <span class="text-gray-600 font-medium">{formNo || appId}</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Right: Back Button -->
+        <div class="flex-shrink-0">
           <button
             on:click={() => goto(`/${locale}/admin/dashboard`)}
-            class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-purple-600 border border-purple-200 bg-purple-50 hover:bg-purple-100 transition-colors flex-shrink-0 whitespace-nowrap"
+            class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-purple-600 border border-purple-200 bg-purple-50 hover:bg-purple-100 transition-colors whitespace-nowrap"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
@@ -517,12 +547,14 @@ const cpData = await getCheckpoints(adminToken);
             Back to Dashboard
           </button>
         </div>
+
+      </div>
         
       <!-- Applicant bar -->
       <div class="bg-white rounded-lg border border-gray-200 px-4 py-4 flex flex-col sm:flex-row sm:items-center gap-6">
 
         <!-- Left: Applicant info -->
-        <div class="flex items-center gap-3 flex-shrink-0">
+        <!-- <div class="flex items-center gap-3 flex-shrink-0">
           {#if appData.documents?.photo}
             <img src={appData.documents.photo} alt="Photo" class="w-10 h-12 object-cover rounded border border-gray-200 flex-shrink-0"/>
           {:else}
@@ -537,13 +569,14 @@ const cpData = await getCheckpoints(adminToken);
             <p class="text-base font-bold text-gray-900">{appData.personal?.name || '—'}</p>
             <p class="text-sm text-gray-400">{appData.personal?.mobile || ''} · Form: <span class="text-gray-600 font-medium">{formNo || appId}</span></p>
           </div>
-        </div>
+        </div> -->
 
         <!-- Divider -->
-        <div class="hidden sm:block w-px self-stretch bg-gray-200 flex-shrink-0 ml-[5%]"></div>
+        <!-- <div class="hidden sm:block w-px self-stretch bg-gray-200 flex-shrink-0 ml-[5%]"></div> -->
 
         <!-- Step flow navigation -->
-        <div class="flex flex-wrap items-start flex-1 py-2 gap-x-2 gap-y-4 ml">          {#each activeTabs as tab, i}
+        <div class="flex flex-wrap items-start flex-1 py-2 gap-x-2 gap-y-4 ml">          
+          {#each activeTabs as tab, i}
             {#if i > 0}
             <div class="hidden sm:block flex-1 h-1 min-w-[16px] rounded-full self-center mb-5
               {sectionStatus[activeTabs[i-1].key] === 'verified' ? 'bg-blue-500' : 'bg-gray-200'}">
