@@ -58,6 +58,31 @@
 //     };
 // }
 
+export function validateAdminToken(token) {
+  if (!token) return false;
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return false;
+    const payload = JSON.parse(atob(parts[1]));
+    const now = Math.floor(Date.now() / 1000);
+    if (payload.exp && payload.exp < now) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function clearAdminSession() {
+  document.cookie = 'adminToken=; Path=/; Max-Age=0';
+  document.cookie = 'adminDistrict=; Path=/; Max-Age=0';
+  document.cookie = 'adminUsername=; Path=/; Max-Age=0';
+  document.cookie = 'adminRefreshToken=; Path=/; Max-Age=0';
+  localStorage.removeItem('adminToken');
+  localStorage.removeItem('adminDistrict');
+  localStorage.removeItem('adminUsername');
+}
+
+
 async function adminLogin(username, password) {
   try {
     const response = await fetch('/api/admin/auth', {

@@ -7,6 +7,8 @@
  import { getViewApplicationData } from '$lib/api/authApi.js';
   import { submitDecision, getCheckpoints } from '$lib/api/adminapi.js';
   import { token } from '$lib/stores/userStore';
+  import { validateAdminToken, clearAdminSession } from '$lib/api/adminapi.js';
+
 
   let showRemarkModal = false;
   let pendingDecision = '';
@@ -487,6 +489,12 @@ return sections
   onMount(async () => {
    const adminToken = getCookie('adminToken') || localStorage.getItem('adminToken');
     if (!adminToken) { goto(`/${locale}/admin/login`); return; }
+
+      if (!adminToken || !validateAdminToken(adminToken)) {
+    clearAdminSession();
+    goto(`/${locale}/admin/login`);
+    return;
+  }
 
 
    const adminUsername = getCookie('adminUsername') || localStorage.getItem('adminUsername') || 'Admin';

@@ -4,6 +4,8 @@
   import { i18n } from '$lib/i18n';
   import { onMount } from 'svelte';
   import { getDistrictApplicationsPaginated} from '$lib/api/adminapi.js';
+  import { validateAdminToken, clearAdminSession } from '$lib/api/adminapi.js';
+
 
   
   // getDistrictApplications
@@ -87,6 +89,13 @@
    const adminToken = localStorage.getItem('adminToken') 
       || document.cookie.match(/adminToken=([^;]+)/)?.[1] || '';
     if (!adminToken) { goto(`/${locale}/admin/login`); return; }
+
+
+   if (!adminToken || !validateAdminToken(adminToken)) {
+    clearAdminSession();
+    goto(`/${locale}/admin/login`);
+    return;
+  }
 
     district = localStorage.getItem('adminDistrict') 
       || document.cookie.match(/adminDistrict=([^;]+)/)?.[1] || '';
