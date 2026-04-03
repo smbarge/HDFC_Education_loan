@@ -118,26 +118,36 @@
     18:'guarantor', 
     19:'guarantor',
 
-    21:'collateral', // Property Ownership Proof
-    22:'collateral', // 7/12, 6D, 8A Extract
-    23:'collateral', // Property Registration Document
-    24:'collateral', // Property Valuation Certificate
-    25:'collateral', // Form-24 (A)
+     // D. Collateral — Property
+    20:'collateral', // Property Ownership Proof
+    21:'collateral', // 7/12, 6D, 8A Extract
+    22:'collateral', // Property Registration Document
+    23:'collateral', // Property Valuation Certificate
+    24:'collateral', // Form-24 (A)
+    45:'collateral', // Property collateral Aadhar card
 
     // D. Collateral — Govt Employee
-    26:'collateral', // Government Employee ID Card
-    27:'collateral', // Salary Certificate
-    28:'collateral', // Office Certificate
-    29:'collateral', // Retirement Proof
-    30:'collateral', // Form-24 (B)
+    25:'collateral', // Government Employee ID Card
+    26:'collateral', // Salary Certificate
+    27:'collateral', // Office Certificate
+    28:'collateral', // Retirement Proof
+    29:'collateral', // Form-24 (B)
+    48:'collateral', // Govt collateral Aadhar card
 
-    // D. Collateral — LIC photo
-    35:'collateral', // Passport Size Colour Photograph (LIC/FD)
+    // D. Collateral — LIC
+    30:'collateral', // Passport Size Photo (LIC)
+    31:'collateral', // Original LIC Policy
+    32:'collateral', // LIC Premium Payment Receipts
+    33:'collateral', // Policy Bond Copy
+    34:'collateral', // Policy Status Certificate
+    47:'collateral', // LIC collateral Aadhar card
 
+    // D. Collateral — FD
+    35:'collateral', // Passport Size Photo (FD)
     36:'collateral', // Original Fixed Deposit Receipt
     37:'collateral', // Bank Confirmation Letter
     38:'collateral', // FD Account Statement
-    46:'collateral', // FD collateral Aadhar card (separate from LIC photo)
+    46:'collateral', // FD collateral Aadhar card
 
     // E. Study Abroad
     39:'abroad',    // Complete Passport (All Pages)
@@ -179,42 +189,54 @@
     43:'Guarantor Documents',
     44:'Guarantor Documents',
 
-    // D. Property Collateral
-    21:'Property Collateral',
-    22:'Property Collateral',
-    23:'Property Collateral',
-    24:'Property Collateral',
-    25:'Property Collateral',
+   // D. Property Collateral
+    20:'Property Collateral (मालमत्ता तारण)',
+    21:'Property Collateral (मालमत्ता तारण)',
+    22:'Property Collateral (मालमत्ता तारण)',
+    23:'Property Collateral (मालमत्ता तारण)',
+    24:'Property Collateral (मालमत्ता तारण)',
+    45:'Property Collateral (मालमत्ता तारण)',
 
     // D. Govt Employee Collateral
-    26:'Govt Employee Collateral',
-    27:'Govt Employee Collateral',
-    28:'Govt Employee Collateral',
-    29:'Govt Employee Collateral',
-    30:'Govt Employee Collateral',
+    25:'Government Employee Collateral (शासकीय कर्मचारी तारण)',
+    26:'Government Employee Collateral (शासकीय कर्मचारी तारण)',
+    27:'Government Employee Collateral (शासकीय कर्मचारी तारण)',
+    28:'Government Employee Collateral (शासकीय कर्मचारी तारण)',
+    29:'Government Employee Collateral (शासकीय कर्मचारी तारण)',
+    48:'Government Employee Collateral (शासकीय कर्मचारी तारण)',
 
-    // D. LIC Collateral — only doc_id 35
-    35:'LIC Policy Collateral',
+    // D. LIC Policy Collateral
+    30:'LIC Policy Collateral (LIC पॉलिसी तारण)',
+    31:'LIC Policy Collateral (LIC पॉलिसी तारण)',
+    32:'LIC Policy Collateral (LIC पॉलिसी तारण)',
+    33:'LIC Policy Collateral (LIC पॉलिसी तारण)',
+    34:'LIC Policy Collateral (LIC पॉलिसी तारण)',
+    47:'LIC Policy Collateral (LIC पॉलिसी तारण)',
 
-    // D. FD Collateral — doc_ids 36, 37, 38, 46
-    36:'Fixed Deposit Collateral',
-    37:'Fixed Deposit Collateral',
-    38:'Fixed Deposit Collateral',
-    46:'Fixed Deposit Collateral',
+    // D. Fixed Deposit Collateral
+    35:'Fixed Deposit (FD) Collateral (ठेव तारण - FD)',
+    36:'Fixed Deposit (FD) Collateral (ठेव तारण - FD)',
+    37:'Fixed Deposit (FD) Collateral (ठेव तारण - FD)',
+    38:'Fixed Deposit (FD) Collateral (ठेव तारण - FD)',
+    46:'Fixed Deposit (FD) Collateral (ठेव तारण - FD)',
 
     // E. Study Abroad
     39:'Study Abroad Documents',
     40:'Study Abroad Documents',
   };
 
-  const subSectionOrder = {
+ const subSectionOrder = {
     personal:   ['Personal & Identity Documents', 'Co-Applicant (Parent / Guardian)'],
     academic:   ['Educational Documents', 'Bank Documents'],
     guarantor:  ['Guarantor Documents'],
-    collateral: [ 'Property Collateral','Govt Employee Collateral','LIC Policy Collateral', 'Fixed Deposit Collateral'],
+    collateral: [
+      'Property Collateral (मालमत्ता तारण)',
+      'Government Employee Collateral (शासकीय कर्मचारी तारण)',
+      'LIC Policy Collateral (LIC पॉलिसी तारण)',
+      'Fixed Deposit (FD) Collateral (ठेव तारण - FD)'
+    ],
     abroad:     ['Study Abroad Documents'],
   };
-
   //documnet id match with the tab and tab  wise showing documents ..
   function getDocsForTab(tab) {
     if (!appData?.allDocs) return [];
@@ -290,65 +312,83 @@
   //     .map(name => ({ name, docs: groups[name] }));
   // }
 
-  function getGroupedDocsForTab(tab, data = appData) {
-    const docs = getDocsForTab(tab);
+function getGroupedDocsForTab(tab, data = appData) {
+  const docs = getDocsForTab(tab);
 
-    // For collateral tab, determine which sections have backend data FIRST
-    const backendHasProperty = (data?.collateral?.properties?.length || 0) > 0;
-    const backendHasGovt     = (data?.collateral?.govtEmployees?.length || 0) > 0;
-    const backendHasFD       = (data?.collateral?.fds?.length || 0) > 0;
-    const backendHasLIC      = (data?.collateral?.lics?.length || 0) > 0;
-
+  // ── All tabs except collateral — keep existing logic completely untouched ──
+  if (tab !== 'collateral') {
     const groups = {};
     docs.forEach(doc => {
-        // For collateral tab — skip docs that belong to sections with no backend data
-        if (tab === 'collateral') {
-            const isPropertyDoc = [21,22,23,24,25].includes(doc.document_id);
-            const isGovtDoc     = [26,27,28,29,30].includes(doc.document_id);
-            const isPhotoDoc    = doc.document_id === 35;
-            const isFDDoc       = [36,37,38,46].includes(doc.document_id);
-            const isLICDoc      = [32,33,34].includes(doc.document_id);
-
-            // Skip entirely if backend has no data for that section
-            if (isPropertyDoc && !backendHasProperty) return;
-            if (isGovtDoc     && !backendHasGovt)     return;
-            if (isPhotoDoc)                            return; // handle photo separately below
-            if (isFDDoc       && !backendHasFD)        return;
-            if (isLICDoc      && !backendHasLIC)       return;
-        }
-
-        const sub = docIdToSubSection[doc.document_id] || 'Documents';
-        if (!groups[sub]) groups[sub] = [];
-        groups[sub].push(doc);
+      const sub = docIdToSubSection[doc.document_id] || 'Documents';
+      if (!groups[sub]) groups[sub] = [];
+      groups[sub].push(doc);
     });
-
-    // Handle photo doc (35) — add only to sections with backend data
-    if (tab === 'collateral') {
-        const photoDoc = docs.find(d => d.document_id === 35);
-        if (photoDoc) {
-            if (backendHasProperty) {
-                if (!groups['Property Collateral']) groups['Property Collateral'] = [];
-                groups['Property Collateral'].unshift({ ...photoDoc });
-            }
-            if (backendHasGovt) {
-                if (!groups['Govt Employee Collateral']) groups['Govt Employee Collateral'] = [];
-                groups['Govt Employee Collateral'].unshift({ ...photoDoc });
-            }
-            if (backendHasLIC) {
-                if (!groups['LIC Policy Collateral']) groups['LIC Policy Collateral'] = [];
-                groups['LIC Policy Collateral'].unshift({ ...photoDoc });
-            }
-            if (backendHasFD) {
-                if (!groups['Fixed Deposit Collateral']) groups['Fixed Deposit Collateral'] = [];
-                groups['Fixed Deposit Collateral'].unshift({ ...photoDoc });
-            }
-        }
-    }
-
     const order = subSectionOrder[tab] || Object.keys(groups);
     return order
-        .filter(name => groups[name] && groups[name].length > 0)
-        .map(name => ({ name, docs: groups[name] }));
+      .filter(name => groups[name] && groups[name].length > 0)
+      .map(name => ({ name, docs: groups[name] }));
+  }
+
+  // ── Collateral tab only ──
+  // Check which sections actually have backend data
+  const backendHasProperty = (data?.collateral?.properties?.length || 0) > 0;
+  const backendHasGovt     = (data?.collateral?.govtEmployees?.length || 0) > 0;
+  const backendHasLIC      = (data?.collateral?.lics?.length || 0) > 0;
+  const backendHasFD       = (data?.collateral?.fds?.length || 0) > 0;
+
+  // Section labels in display order
+ const sections = [
+    {
+      key:     'property',
+      label:   'Property Collateral (मालमत्ता तारण)',
+      docIds:  [20,21,22,23,24,45],
+      hasData: backendHasProperty
+    },
+    {
+      key:     'govt',
+      label:   'Government Employee Collateral (शासकीय कर्मचारी तारण)',
+      docIds:  [25,26,27,28,29,48],
+      hasData: backendHasGovt
+    },
+    {
+      key:     'lic',
+      label:   'LIC Policy Collateral (LIC पॉलिसी तारण)',
+      docIds:  [31,32,33,34,47],
+      hasData: backendHasLIC
+    },
+    {
+      key:     'fd',
+      label:   'Fixed Deposit (FD) Collateral (ठेव तारण - FD)',
+      docIds:  [36,37,38,46],
+      hasData: backendHasFD
+    },
+  ];
+
+  // Photo docs — each section has its own photo doc
+  // 30 = LIC photo, 35 = FD photo, 45 = Property Aadhar (already in docIds)
+  // No shared photo logic needed anymore — each section has its own dedicated doc
+
+  // doc_id 35 is the shared photo — added to each section that has backend data
+  const photoDoc = docs.find(d => d.document_id === 35);
+
+return sections
+    .filter(s => s.hasData)
+    .map(s => {
+      const sectionDocs = docs.filter(d => s.docIds.includes(d.document_id));
+
+      // Add section-specific photo doc
+      if (s.key === 'lic') {
+        const licPhoto = docs.find(d => d.document_id === 30);
+        if (licPhoto) sectionDocs.unshift({ ...licPhoto });
+      }
+      if (s.key === 'fd') {
+        const fdPhoto = docs.find(d => d.document_id === 35);
+        if (fdPhoto) sectionDocs.unshift({ ...fdPhoto });
+      }
+
+      return { name: s.label, docs: sectionDocs };
+    })
+    .filter(g => g.docs.length > 0);
 }
 
 
