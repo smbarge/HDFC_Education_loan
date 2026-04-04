@@ -391,25 +391,43 @@ function getGroupedDocsForTab(tab, data = appData) {
 
   const photoDoc = docs.find(d => d.document_id === 35);
 
-  return sections
-      .filter(s => s.hasData)
-      .map(s => {
-        const sectionDocs = docs.filter(d => s.docIds.includes(d.document_id));
+return sections
+    .filter(s => s.hasData)
+    .map(s => {
+      const sectionDocs = docs.filter(d => s.docIds.includes(d.document_id));
 
-        // Add section-specific photo doc
-        if (s.key === 'lic') {
-          const licPhoto = docs.find(d => d.document_id === 30);
-          if (licPhoto) sectionDocs.unshift({ ...licPhoto });
-        }
-        if (s.key === 'fd') {
-          const fdPhoto = docs.find(d => d.document_id === 35);
-          if (fdPhoto) sectionDocs.unshift({ ...fdPhoto });
-        }
+      // Add section-specific photo doc
+      if (s.key === 'lic') {
+        const licPhoto = docs.find(d => d.document_id === 30);
+        if (licPhoto) sectionDocs.unshift({ ...licPhoto });
+      }
+      if (s.key === 'fd') {
+        const fdPhoto = docs.find(d => d.document_id === 35);
+        if (fdPhoto) sectionDocs.unshift({ ...fdPhoto });
+      }
 
-        return { name: s.label, docs: sectionDocs };
-      })
-      .filter(g => g.docs.length > 0);
-  }
+      return { name: s.label, docs: sectionDocs };
+    })
+    .filter(g => g.docs.length > 0);
+}
+
+  // $: currentDocs = getDocsForTab(activeTab);
+  // $: activeTabs = appData ? tabs.filter(tab => getDocsForTab(tab.key).length > 0) : tabs;
+
+  // Check if ALL tabs have all questions answered (for final decision buttons)
+  $: allTabsCompleted = (() => {
+    const docTabs = activeTabs.filter(t => t.key !== 'summary');
+    for (const tab of docTabs) {
+      const docs = getDocsForTab(tab.key);
+      for (const doc of docs) {
+        const questions = (checkpointsByDoc[String(doc.document_id)]?.questions) || [];
+        for (const q of questions) {
+          if (checkpointAnswers[q.id] !== 'yes' && checkpointAnswers[q.id] !== 'no') return false;
+        }
+      }
+    }
+  return true;
+  })();
 
   $: currentDocs = getDocsForTab(activeTab);
 
@@ -936,16 +954,20 @@ function verifyDoc(docId) {
           <div class="pt-4 border-t border-gray-200">
             <p class="text-sm font-semibold text-gray-700 mb-3">Submit Final Decision</p>
             <div class="flex gap-3 flex-wrap">
-              <button on:click={() => handleFinalDecision('return')}
+              <!-- <button on:click={() => handleFinalDecision('return')}
                 class="px-5 py-2.5 text-sm font-semibold text-amber-600 border border-amber-300 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors">
                 ↩ Return to Applicant
-              </button>
+              </button> -->
               <button on:click={() => handleFinalDecision('reject')}
-                class="px-5 py-2.5 text-sm font-semibold text-red-600 border border-red-300 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
+                disabled={!allTabsCompleted}
+                title={!allTabsCompleted ? 'Complete all verification questions first' : ''}
+                class="px-5 py-2.5 text-sm font-semibold text-red-600 border border-red-300 bg-red-50 hover:bg-red-100 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
                 ✕ Reject Application
               </button>
               <button on:click={() => handleFinalDecision('forward')}
-                class="px-5 py-2.5 text-sm font-bold text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors">
+                disabled={!allTabsCompleted}
+                title={!allTabsCompleted ? 'Complete all verification questions first' : ''}
+                class="px-5 py-2.5 text-sm font-bold text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
                 ✓ Forward Application
               </button>
             </div>
