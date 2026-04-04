@@ -27,7 +27,7 @@ async function getOfficeId(client, username) {
   return result.rows[0]?.dist_id || 1;
 }
 
-// ── GET: load existing answers ──
+// GET for :loading the existing answers
 export async function GET({ request, url }) {
   if (!checkAuth(request)) return json({ error: -1, errorMsg: 'Unauthorized' }, { status: 401 });
 
@@ -39,7 +39,6 @@ export async function GET({ request, url }) {
     const { username } = getUserFromCookie(request);
     const office_id = await getOfficeId(client, username);
 
-    // Get latest verification row for this application + office + level=1
    const verRes = await client.query(
       `SELECT id FROM verification
       WHERE application_id = $1 AND office_id = $2 AND level = 1
@@ -58,7 +57,6 @@ export async function GET({ request, url }) {
 
     const answers = {};
     ansRes.rows.forEach(r => { answers[r.question_id] = r.answer; });
-
     return json({ error: 0, answers, office_id, verification_id });
   } catch (err) {
     console.error('verification GET error:', err.message);
@@ -68,7 +66,7 @@ export async function GET({ request, url }) {
   }
 }
 
-// ── POST: saveAnswers OR finalDecision ──
+// POST: saveAnswers OR finalDecision
 export async function POST({ request }) {
   if (!checkAuth(request)) return json({ error: -1, errorMsg: 'Unauthorized' }, { status: 401 });
 
@@ -81,12 +79,12 @@ export async function POST({ request }) {
     await client.query('BEGIN');
     const office_id = await getOfficeId(client, username);
 
-    // ── saveAnswers: called on Save & Continue ──
+    // saveAnswers
     if (action === 'saveAnswers') {
       const { application_id, answers, iteration = 1 } = body;
       // answers = [ { checkpoint_id, question_id, answer } ]
 
-      // STEP 1: Mark application as "Under Review" (status=3)
+      // STEP 1: "Under Review" (status=3)
       await client.query(
         `UPDATE personal_details SET application_status = 3, updated_at = NOW() WHERE id = $1`,
         [application_id]
@@ -146,7 +144,8 @@ export async function POST({ request }) {
       return json({ error: 0, verification_id });
     }
 
-    // ── finalDecision: forward / reject / return ──
+    // finalDecision: forward / reject / return 
+    
     if (action === 'finalDecision') {
       const { application_id, decision, remark, iteration = 1 } = body;
 

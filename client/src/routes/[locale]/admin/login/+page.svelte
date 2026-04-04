@@ -3,7 +3,7 @@
   import { page } from '$app/stores';
   import { i18n } from '$lib/i18n';
   import { onMount } from 'svelte';
-  import { adminLogin, getDistrictApplications} from '$lib/api/adminapi.js';
+import { adminLogin, validateAdminToken } from '$lib/api/adminapi.js';
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
@@ -14,11 +14,11 @@
   let isSubmitting = false;
   let showPassword = false;
 
-  onMount(() => {
-    const adminToken = localStorage.getItem('adminToken') 
-      || document.cookie.includes('adminToken=');
-    if (adminToken) goto(`/${locale}/admin/dashboard`);
-  });
+ onMount(() => {
+  const adminToken = document.cookie.match(/(?:^|; )adminTokenJS=([^;]*)/)?.[1]
+                  || localStorage.getItem('adminToken') || '';
+  if (adminToken && validateAdminToken(adminToken)) goto(`/${locale}/admin/dashboard`);
+});
 
   function validateField(field) {
     if (field === 'username') {
@@ -53,11 +53,22 @@ async function handleLogin() {
 
   try {
         const result = await adminLogin(formData.username, formData.password);
+            console.log('=== ADMIN LOGIN SUCCESS ===');
+            console.log('Access Token:', result.access_token);
 
         if (result.error !== 0) {
         submitError = result.errorMsg;
         return;
         }
+
+        // IF DONT WANT CONSOLE REMVE 
+        try {
+        const payload = JSON.parse(atob(result.access_token.split('.')[1]));
+       // console.log('Token Payload (decoded):', payload);
+        console.log('Token expires at:', new Date(payload.exp * 1000).toLocaleString());
+      } catch(e) {
+        console.log('Could not decode token payload');
+      }
 
         // store token + district
         // cookies set by server — keep these only as client-side fallback

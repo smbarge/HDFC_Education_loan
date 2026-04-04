@@ -4,11 +4,10 @@
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
 
- import { getViewApplicationData } from '$lib/api/authApi.js';
-  import { submitDecision, getCheckpoints } from '$lib/api/adminapi.js';
+  import { getViewApplicationData } from '$lib/api/authApi.js';
   import { token } from '$lib/stores/userStore';
-  import { validateAdminToken, clearAdminSession } from '$lib/api/adminapi.js';
-
+  import { submitDecision, getCheckpoints, getVerificationAnswers, validateAdminToken, clearAdminSession, refreshAdminToken } from '$lib/api/adminapi.js';
+  import DocumentList from '$lib/components/admin/verify/DocumentList.svelte';
 
   let showRemarkModal = false;
   let pendingDecision = '';
@@ -21,31 +20,52 @@
     decisionRemark = '';
   }
 
-  async function confirmDecision() {
-    if (!pendingDecision) return;
-    isSubmitting = true;
-    const adminToken = getCookie('adminToken') || localStorage.getItem('adminToken') || '';
-    try {
-      const result = await submitDecision(adminToken, {
-        application_id: appId,
-        decision: pendingDecision,
-        remark: decisionRemark
-      });
-      if (result.error === 0) {
-        showRemarkModal = false;
-        alert(`Application ${pendingDecision}ed successfully!`);
-        goto(`/${locale}/admin/dashboard`);
-      } else {
-        alert('Error: ' + (result.errorMsg || 'Failed'));
-      }
-    } catch (e) {
-      alert('Error submitting decision');
-    } finally {
-      isSubmitting = false;
-    }
-  }
+  // async function confirmDecision() {
+  //   if (!pendingDecision) return;
+  //   isSubmitting = true;
+  //   const adminToken = getCookie('adminToken') || localStorage.getItem('adminToken') || '';
+  //   try {
+  //     const result = await submitDecision(adminToken, {
+  //       application_id: appId,
+  //       decision: pendingDecision,
+  //       remark: decisionRemark
+  //     });
+  //     if (result.error === 0) {
+  //       showRemarkModal = false;
+  //       alert(`Application ${pendingDecision}ed successfully!`);
+  //       goto(`/${locale}/admin/dashboard`);
+  //     } else {
+  //       alert('Error: ' + (result.errorMsg || 'Failed'));
+  //     }
+  //   } catch (e) {
+  //     alert('Error submitting decision');
+  //   } finally {
+  //     isSubmitting = false;
+  //   }
+  // }
 
-  import DocumentList from '$lib/components/admin/verify/DocumentList.svelte';
+  async function confirmDecision() {
+  if (!pendingDecision) return;
+  isSubmitting = true;
+  try {
+    const result = await submitDecision({   
+      application_id: appId,
+      decision: pendingDecision,
+      remark: decisionRemark
+    });
+    if (result.error === 0) {
+      showRemarkModal = false;
+      alert(`Application ${pendingDecision}ed successfully!`);
+      goto(`/${locale}/admin/dashboard`);
+    } else {
+      alert('Error: ' + (result.errorMsg || 'Failed'));
+    }
+  } catch (e) {
+    alert('Error submitting decision');
+  } finally {
+    isSubmitting = false;
+  }
+}
 
   $: locale = $page.params.locale || 'en';
 
@@ -87,6 +107,7 @@
 
   
   // EXACT document_id values from upload_docs table (confirmed from console log)
+
   const docIdToTab = {
     // A. Personal & Identity
     1:'personal',   // Applicant Aadhar Card
@@ -239,6 +260,7 @@
     ],
     abroad:     ['Study Abroad Documents'],
   };
+
   //documnet id match with the tab and tab  wise showing documents ..
   function getDocsForTab(tab) {
     if (!appData?.allDocs) return [];
@@ -317,7 +339,7 @@
 function getGroupedDocsForTab(tab, data = appData) {
   const docs = getDocsForTab(tab);
 
-  // ── All tabs except collateral — keep existing logic completely untouched ──
+  // All tabs except collateral
   if (tab !== 'collateral') {
     const groups = {};
     docs.forEach(doc => {
@@ -331,7 +353,8 @@ function getGroupedDocsForTab(tab, data = appData) {
       .map(name => ({ name, docs: groups[name] }));
   }
 
-  // ── Collateral tab only ──
+  // Collateral tab only
+
   // Check which sections actually have backend data
   const backendHasProperty = (data?.collateral?.properties?.length || 0) > 0;
   const backendHasGovt     = (data?.collateral?.govtEmployees?.length || 0) > 0;
@@ -339,7 +362,7 @@ function getGroupedDocsForTab(tab, data = appData) {
   const backendHasFD       = (data?.collateral?.fds?.length || 0) > 0;
 
   // Section labels in display order
- const sections = [
+  const sections = [
     {
       key:     'property',
       label:   'Property Collateral (मालमत्ता तारण)',
@@ -366,38 +389,27 @@ function getGroupedDocsForTab(tab, data = appData) {
     },
   ];
 
-  // Photo docs — each section has its own photo doc
-  // 30 = LIC photo, 35 = FD photo, 45 = Property Aadhar (already in docIds)
-  // No shared photo logic needed anymore — each section has its own dedicated doc
-
-  // doc_id 35 is the shared photo — added to each section that has backend data
   const photoDoc = docs.find(d => d.document_id === 35);
 
-return sections
-    .filter(s => s.hasData)
-    .map(s => {
-      const sectionDocs = docs.filter(d => s.docIds.includes(d.document_id));
+  return sections
+      .filter(s => s.hasData)
+      .map(s => {
+        const sectionDocs = docs.filter(d => s.docIds.includes(d.document_id));
 
-      // Add section-specific photo doc
-      if (s.key === 'lic') {
-        const licPhoto = docs.find(d => d.document_id === 30);
-        if (licPhoto) sectionDocs.unshift({ ...licPhoto });
-      }
-      if (s.key === 'fd') {
-        const fdPhoto = docs.find(d => d.document_id === 35);
-        if (fdPhoto) sectionDocs.unshift({ ...fdPhoto });
-      }
+        // Add section-specific photo doc
+        if (s.key === 'lic') {
+          const licPhoto = docs.find(d => d.document_id === 30);
+          if (licPhoto) sectionDocs.unshift({ ...licPhoto });
+        }
+        if (s.key === 'fd') {
+          const fdPhoto = docs.find(d => d.document_id === 35);
+          if (fdPhoto) sectionDocs.unshift({ ...fdPhoto });
+        }
 
-      return { name: s.label, docs: sectionDocs };
-    })
-    .filter(g => g.docs.length > 0);
-}
-
-
-
-  // $: currentDocs = getDocsForTab(activeTab);
-  // $: activeTabs = appData ? tabs.filter(tab => getDocsForTab(tab.key).length > 0) : tabs;
-
+        return { name: s.label, docs: sectionDocs };
+      })
+      .filter(g => g.docs.length > 0);
+  }
 
   $: currentDocs = getDocsForTab(activeTab);
 
@@ -420,9 +432,6 @@ return sections
     return true;
   })();
 
-
-
-
   // Reset viewer when tab changes
   $: if (activeTab) {
     expandedDocId = null;
@@ -440,10 +449,16 @@ return sections
     return /\.pdf(\?.*)?$/i.test(url);
   }
 
-  function verifyDoc(docId) {
-    docVerification[docId] = 'verified';
-    docVerification = { ...docVerification };
-  }
+function verifyDoc(docId) {
+
+  // Only mark verified if all questions for this doc are answered
+  const questions = checkpointsByDoc[String(docId)]?.questions || [];
+  const allAnswered = questions.length === 0 || questions.every(q =>
+    checkpointAnswers[q.id] === 'yes' || checkpointAnswers[q.id] === 'no'
+  );
+  docVerification[docId] = allAnswered ? 'verified' : 'pending';
+  docVerification = { ...docVerification };
+}
 
   function rejectDoc(docId) {
     docVerification[docId] = 'rejected';
@@ -468,12 +483,7 @@ return sections
   }
 
  function handleLogout() {
-    document.cookie = 'adminToken=; Path=/; Max-Age=0';
-    document.cookie = 'adminDistrict=; Path=/; Max-Age=0';
-    document.cookie = 'adminUsername=; Path=/; Max-Age=0';
-    localStorage.removeItem('adminToken');
-    localStorage.removeItem('adminDistrict');
-    localStorage.removeItem('adminUsername');
+    clearAdminSession();
     goto(`/${locale}/admin/login`);
   }
 
@@ -486,18 +496,118 @@ return sections
     return document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`))?.[1] || '';
   }
 
-  onMount(async () => {
-   const adminToken = getCookie('adminToken') || localStorage.getItem('adminToken');
-    if (!adminToken) { goto(`/${locale}/admin/login`); return; }
-
-      if (!adminToken || !validateAdminToken(adminToken)) {
-    clearAdminSession();
-    goto(`/${locale}/admin/login`);
-    return;
+  function getToken() {
+  return getCookie('adminTokenJS') || localStorage.getItem('adminToken') || '';
   }
 
+//   onMount(async () => {
+//    const adminToken = getCookie('adminToken') || localStorage.getItem('adminToken');
+//     if (!adminToken) { goto(`/${locale}/admin/login`); return; }
 
-   const adminUsername = getCookie('adminUsername') || localStorage.getItem('adminUsername') || 'Admin';
+//       if (!adminToken || !validateAdminToken(adminToken)) {
+//     clearAdminSession();
+//     goto(`/${locale}/admin/login`);
+//     return;
+//   }
+
+
+//    const adminUsername = getCookie('adminUsername') || localStorage.getItem('adminUsername') || 'Admin';
+//     district = getCookie('adminDistrict') || localStorage.getItem('adminDistrict') || '';
+//     adminUser = { username: adminUsername };
+
+//     appId         = $page.url.searchParams.get('appId');
+//     applicantName = $page.url.searchParams.get('name') || '';
+//     formNo        = $page.url.searchParams.get('formNo') || '';
+
+//     if (!appId) { error = 'No application ID provided.'; isLoading = false; return; }
+
+//    // localStorage.setItem('accessToken', adminToken);
+// const cpData = await getCheckpoints(adminToken);
+//     if (cpData.error === 0) {
+//       checkpointsByDoc = cpData.byDocument || {};
+//     }
+
+//     try {
+//     const ansData = await getVerificationAnswers(adminToken, appId);
+//       if (ansData.error === 0 && ansData.answers) {
+//         const converted = {};
+//         Object.entries(ansData.answers).forEach(([k, v]) => {
+//           converted[k] = (v === 1 || v === '1') ? 'yes' : (v === 2 || v === '2') ? 'no' : v;
+//         });
+//         checkpointAnswers = { ...converted };
+
+//         // Update docVerification based on loaded answers
+//         // A doc is 'verified' if all its questions are answered
+//         (appData?.allDocs || []).forEach(doc => {
+//           const questions = checkpointsByDoc[String(doc.document_id)]?.questions || [];
+//           if (questions.length === 0) {
+//             docVerification[doc.document_id] = 'pending';
+//             return;
+//           }
+//           const allAnswered = questions.every(q =>
+//             converted[q.id] === 'yes' || converted[q.id] === 'no'
+//           );
+//           docVerification[doc.document_id] = allAnswered ? 'verified' : 'pending';
+//         });
+//         docVerification = { ...docVerification };
+//       }
+//   } catch(e) {
+//     console.error('Load answers error:', e);
+//   }
+
+//     try {
+//       token.set(adminToken);
+//       const result = await getViewApplicationData(0, appId);
+//       if (result.error !== 0) {
+//         error = result.errorMsg || 'Failed to load application';
+//       } else {
+//         appData = result.data;
+//         try {
+//           const mastersRes = await fetch('/api/admin/masters', {
+//             headers: { 'Authorization': `Bearer ${adminToken}` }
+//           });
+//           const mastersData = await mastersRes.json();
+//           if (mastersData.error === 0 || mastersData.districtMap) {
+//             masters = mastersData.masters || mastersData;
+//           }
+//         } catch(e) { console.error('Masters load error:', e); }
+//         console.log("app adta...",appData);
+        
+//         (appData.allDocs || []).forEach(doc => {
+//           docVerification[doc.document_id] = 'pending';
+//         });
+
+//         //console.log("app adta1...",appData);
+//       }
+//     } catch (e) {
+//       error = 'Failed to load application data';
+//     } finally {
+//       isLoading = false;
+//     }
+//   });
+
+  onMount(async () => {
+  let adminToken = getToken();
+
+  console.log('=== VERIFY PAGE ===');
+  console.log('Token from cookie:', getCookie('adminTokenJS') ? getCookie('adminTokenJS').substring(0, 50) + '...' : 'not in cookie');
+  console.log('Token from localStorage:', localStorage.getItem('adminToken') ? localStorage.getItem('adminToken').substring(0, 50) + '...' : 'not in storage');
+
+  if (!adminToken) { goto(`/${locale}/admin/login`); return; }
+
+  if (!validateAdminToken(adminToken)) {
+    console.log('Token expired — attempting refresh...');
+    const refreshed = await refreshAdminToken();
+    if (!refreshed) {
+      clearAdminSession();
+      goto(`/${locale}/admin/login`);
+      return;
+    }
+    adminToken = getToken();
+    console.log('Token refreshed successfully');
+  }
+
+    const adminUsername = getCookie('adminUsername') || localStorage.getItem('adminUsername') || 'Admin';
     district = getCookie('adminDistrict') || localStorage.getItem('adminDistrict') || '';
     adminUser = { username: adminUsername };
 
@@ -507,43 +617,72 @@ return sections
 
     if (!appId) { error = 'No application ID provided.'; isLoading = false; return; }
 
-   // localStorage.setItem('accessToken', adminToken);
-const cpData = await getCheckpoints(adminToken);
-    if (cpData.error === 0) {
-      checkpointsByDoc = cpData.byDocument || {};
-    }
-
     try {
-      token.set(adminToken);
+      // STEP 1: Load checkpoints
+      const cpData = await getCheckpoints();
+      if (cpData.error === 0) {
+        checkpointsByDoc = cpData.byDocument || {};
+      }
+
+      // STEP 2: Load application data
+      token.set(adminToken);  
       const result = await getViewApplicationData(0, appId);
       if (result.error !== 0) {
         error = result.errorMsg || 'Failed to load application';
-      } else {
-        appData = result.data;
-        try {
-          const mastersRes = await fetch('/api/admin/masters', {
-            headers: { 'Authorization': `Bearer ${adminToken}` }
-          });
-          const mastersData = await mastersRes.json();
-          if (mastersData.error === 0 || mastersData.districtMap) {
-            masters = mastersData.masters || mastersData;
-          }
-        } catch(e) { console.error('Masters load error:', e); }
-        console.log("app adta...",appData);
-        
-        (appData.allDocs || []).forEach(doc => {
-          docVerification[doc.document_id] = 'pending';
-        });
-
-        //console.log("app adta1...",appData);
+        isLoading = false;
+        return;
       }
+
+      appData = result.data;
+      (appData.allDocs || []).forEach(doc => {
+        docVerification[doc.document_id] = 'pending';
+      });
+
+      // STEP 3: Load masters
+      try {
+        const mastersRes = await fetch('/api/admin/masters', {
+          headers: { 'Authorization': `Bearer ${adminToken}` }
+        });
+        const mastersData = await mastersRes.json();
+        if (mastersData.error === 0 || mastersData.districtMap) {
+          masters = mastersData.masters || mastersData;
+        }
+      } catch(e) { console.error('Masters load error:', e); }
+
+      // STEP 4: Load existing answers — no token arg, no dynamic import
+      try {
+        const ansData = await getVerificationAnswers(appId); 
+        if (ansData.error === 0 && ansData.answers && Object.keys(ansData.answers).length > 0) {
+          const converted = {};
+          Object.entries(ansData.answers).forEach(([k, v]) => {
+            converted[k] = (v === 1 || v === '1') ? 'yes' : (v === 2 || v === '2') ? 'no' : v;
+          });
+          checkpointAnswers = { ...converted };
+
+          (appData.allDocs || []).forEach(doc => {
+            const questions = checkpointsByDoc[String(doc.document_id)]?.questions || [];
+            if (questions.length === 0) {
+              docVerification[doc.document_id] = 'pending';
+              return;
+            }
+            const allAnswered = questions.every(q =>
+              converted[q.id] === 'yes' || converted[q.id] === 'no'
+            );
+            docVerification[doc.document_id] = allAnswered ? 'verified' : 'pending';
+          });
+          docVerification = { ...docVerification };
+        }
+      } catch(e) {
+        console.error('Load answers error:', e);
+      }
+
     } catch (e) {
       error = 'Failed to load application data';
+      console.error(e);
     } finally {
       isLoading = false;
     }
   });
-
 
 </script>
 
@@ -834,7 +973,7 @@ const cpData = await getCheckpoints(adminToken);
                 {checkpointsByDoc}
                 bind:checkpointAnswers
                 applicationId={appId}
-                adminToken={getCookie('adminToken') || localStorage.getItem('adminToken') || ''}
+                adminToken={getToken()}
                 sectionStatus={sectionStatus[activeTab]}
                 sectionLabel={group.name}
                 bind:expandedDocId

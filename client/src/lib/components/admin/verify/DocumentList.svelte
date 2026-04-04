@@ -144,17 +144,19 @@ function getFilledDataForQuestion(questionText) {
   const dispatch = createEventDispatcher();
 
   // Load existing answers on mount via adminapi
-  onMount(async () => {
-    if (!applicationId || !adminToken) return;
-    const data = await getVerificationAnswers(adminToken, applicationId);
-    if (data.error === 0 && data.answers) {
-      const converted = {};
-      Object.entries(data.answers).forEach(([k, v]) => {
-        converted[k] = (v === 1 || v === '1') ? 'yes' : (v === 2 || v === '2') ? 'no' : v;
-      });
-      checkpointAnswers = { ...checkpointAnswers, ...converted };
-    }
-  });
+  // onMount(async () => {
+  //   if (!applicationId || !adminToken) return;
+  //   const data = await getVerificationAnswers(adminToken, applicationId);
+  //   if (data.error === 0 && data.answers) {
+  //     const converted = {};
+  //     Object.entries(data.answers).forEach(([k, v]) => {
+  //       converted[k] = (v === 1 || v === '1') ? 'yes' : (v === 2 || v === '2') ? 'no' : v;
+  //     });
+  //     checkpointAnswers = { ...checkpointAnswers, ...converted };
+  //   }
+  // });
+
+  
 
   // pendingAnswers holds in-memory answers not yet saved
   let pendingAnswers = {};

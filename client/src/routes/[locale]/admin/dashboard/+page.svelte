@@ -3,8 +3,9 @@
   import { page } from '$app/stores';
   import { i18n } from '$lib/i18n';
   import { onMount } from 'svelte';
-  import { getDistrictApplicationsPaginated} from '$lib/api/adminapi.js';
-  import { validateAdminToken, clearAdminSession } from '$lib/api/adminapi.js';
+
+  import { getDistrictApplicationsPaginated, validateAdminToken, clearAdminSession, refreshAdminToken } from '$lib/api/adminapi.js';
+
 
 
   
@@ -68,59 +69,74 @@
   // Reset to page 1 on filter change
   $: if (searchQuery || filterStatus || filterDistrict) currentPage = 1;
 
-  async function updateStatus(id, status) {
-    try {
-      const token = localStorage.getItem('adminToken');
-      const res = await fetch('/api/admin/candidates', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ action: 'updateStatus', id, status })
-      });
-      const result = await res.json();
-      if (result.error === 0) {
-        candidates = candidates.map(c => c.id === id ? { ...c, status } : c);
-        if (selectedCandidate?.id === id) selectedCandidate = { ...selectedCandidate, status };
-      }
-    } catch {}
-  }
+ async function updateStatus(id, status) {
+  try {
+   const token = document.cookie.match(/(?:^|; )adminTokenJS=([^;]*)/)?.[1]
+           || localStorage.getItem('adminToken') || '';
+    const res = await fetch('/api/admin/candidates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ action: 'updateStatus', id, status })
+    });
+    const result = await res.json();
+    if (result.error === 0) {
+      candidates = candidates.map(c => c.id === id ? { ...c, status } : c);
+      if (selectedCandidate?.id === id) selectedCandidate = { ...selectedCandidate, status };
+    }
+  } catch {}
+}
 
 
   onMount(async () => {
-   const adminToken = localStorage.getItem('adminToken') 
-      || document.cookie.match(/adminToken=([^;]+)/)?.[1] || '';
-    if (!adminToken) { goto(`/${locale}/admin/login`); return; }
+  const tokenFromCookie  = document.cookie.match(/(?:^|; )adminTokenJS=([^;]*)/)?.[1] || '';
+  const tokenFromStorage = localStorage.getItem('adminToken') || '';
+  let adminToken         = tokenFromCookie || tokenFromStorage;
 
+  console.log('=== DASHBOARD LOADED ===');
+  console.log('Token from adminTokenJS cookie:', tokenFromCookie ? tokenFromCookie.substring(0, 50) + '...' : 'not in cookie');
+  console.log('Token from localStorage:', tokenFromStorage ? tokenFromStorage.substring(0, 50) + '...' : 'not in storage');
+  console.log('All cookies:', document.cookie);
+  console.log('Token valid:', validateAdminToken(adminToken));
 
-   if (!adminToken || !validateAdminToken(adminToken)) {
-    clearAdminSession();
-    goto(`/${locale}/admin/login`);
-    return;
+  if (!adminToken) { goto(`/${locale}/admin/login`); return; }
+
+  if (!validateAdminToken(adminToken)) {
+    console.log('Token expired — attempting refresh...');
+    const refreshed = await refreshAdminToken();
+    if (!refreshed) {
+      clearAdminSession();
+      goto(`/${locale}/admin/login`);
+      return;
+    }
+    adminToken = document.cookie.match(/(?:^|; )adminTokenJS=([^;]*)/)?.[1]
+              || localStorage.getItem('adminToken') || '';
+    console.log('Token refreshed:', adminToken.substring(0, 50) + '...');
   }
 
-    district = localStorage.getItem('adminDistrict') 
-      || document.cookie.match(/adminDistrict=([^;]+)/)?.[1] || '';
-    userName = localStorage.getItem('adminUsername') 
-      || document.cookie.match(/adminUsername=([^;]+)/)?.[1] || 'Admin';
+      district = localStorage.getItem('adminDistrict') 
+        || document.cookie.match(/adminDistrict=([^;]+)/)?.[1] || '';
+      userName = localStorage.getItem('adminUsername') 
+        || document.cookie.match(/adminUsername=([^;]+)/)?.[1] || 'Admin';
 
-    try {
-      const raw = localStorage.getItem('adminUser');
-      if (raw) adminUser = JSON.parse(raw);
-    } catch {}
+      try {
+        const raw = localStorage.getItem('adminUser');
+        if (raw) adminUser = JSON.parse(raw);
+      } catch {}
 
-    if (!adminUser) {
-      adminUser = { username: userName };
-    }
+      if (!adminUser) {
+        adminUser = { username: userName };
+      }
 
-    await fetchCandidates(1);
-  });
+      await fetchCandidates(1);
+    });
 
-  function mapStatus(statusId, statusName) {
-  if (statusId == 4 || statusId == 8 || statusId == 9) return 'Forwarded';
-  if (statusId == 5 || statusId == 6 || statusId == 7) return 'Rejected';
-  if (statusId == 3) return 'Under Review';
-  if (statusId == 2) return 'Pending';
-  return 'Pending';
-}
+    function mapStatus(statusId, statusName) {
+    if (statusId == 4 || statusId == 8 || statusId == 9) return 'Forwarded';
+    if (statusId == 5 || statusId == 6 || statusId == 7) return 'Rejected';
+    if (statusId == 3) return 'Under Review';
+    if (statusId == 2) return 'Pending';
+    return 'Pending';
+  }
 
 function mapVerifyStatus(app) {
   const answerCount = parseInt(app.answer_count) || 0;
@@ -181,15 +197,7 @@ function mapVerifyStatus(app) {
   }
 
 function handleLogout() {
-    // Clear cookies
-    document.cookie = 'adminToken=; Path=/; Max-Age=0';
-    document.cookie = 'adminDistrict=; Path=/; Max-Age=0';
-    document.cookie = 'adminRefreshToken=; Path=/; Max-Age=0'; 
-    document.cookie = 'adminUsername=; Path=/; Max-Age=0';
-    // Clear localStorage
-    localStorage.removeItem('adminToken');
-    localStorage.removeItem('adminDistrict');
-    localStorage.removeItem('adminUsername');
+    clearAdminSession();
     goto(`/${locale}/admin`);
   }
 
