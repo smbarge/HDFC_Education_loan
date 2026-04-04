@@ -449,7 +449,7 @@ function formatDate(dateStr) {
                 <th class="text-left px-3 lg:px-4 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">District</th>
                 <th class="text-left px-3 lg:px-4 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Mobile</th>
                 <th class="text-left px-3 lg:px-4 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Email</th>
-                <th class="text-left px-3 lg:px-4 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Submitted Date</th>
+                <!-- <th class="text-left px-3 lg:px-4 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Submitted Date</th> -->
                 <th class="text-left px-3 lg:px-4 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Religion</th>
                 <th class="text-left px-3 lg:px-4 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Loan Amount</th>
                 <th class="text-left px-3 lg:px-4 py-3 text-xs font-semibold text-gray-600 whitespace-nowrap">Course Name</th>
@@ -488,9 +488,9 @@ function formatDate(dateStr) {
                     {candidate.email || '—'}
                   </td>
                   <!-- Submitted Date -->
-                  <td class="px-3 lg:px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
+                  <!-- <td class="px-3 lg:px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
                     {formatDate(candidate.appliedOn)}
-                  </td>
+                  </td> -->
                   <!-- Religion -->
                   <td class="px-3 lg:px-4 py-3 text-gray-600 text-xs whitespace-nowrap">
                     {candidate.religion || '—'}
