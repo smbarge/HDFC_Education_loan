@@ -1,12 +1,16 @@
-// ─── Token helpers ────────────────────────────────────────────────────────────
+// ─── Token helpers ────────────────────────────────
 
-// Read token once, prefer cookie (set by server), fall back to localStorage.
-// Why two places? The HttpOnly cookie is the secure store. localStorage is the
-// fallback for places where the cookie isn't available (e.g. cross-tab, SSR).
+// function getAdminToken() {
+//   if (typeof document === 'undefined') return '';
+// const fromCookie = document.cookie.match(/(?:^|; )adminTokenJS=([^;]*)/)?.[1];
+//   return fromCookie || localStorage.getItem('adminToken') || '';
+// }
+
 function getAdminToken() {
   if (typeof document === 'undefined') return '';
-const fromCookie = document.cookie.match(/(?:^|; )adminTokenJS=([^;]*)/)?.[1];
-  return fromCookie || localStorage.getItem('adminToken') || '';
+  return localStorage.getItem('adminToken') 
+    || document.cookie.match(/(?:^|; )adminTokenJS=([^;]*)/)?.[1] 
+    || '';
 }
 
 function getCookieValue(name) {
@@ -14,10 +18,8 @@ function getCookieValue(name) {
   return document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`))?.[1] || '';
 }
 
-// Client-side expiry check ONLY — this is a UX optimisation (redirect before
-// wasting a network call). It does NOT verify the signature — only the server
-// can do that using JWT_SECRET. Never trust this check for access control.
-export function validateAdminToken(token) {
+
+function validateAdminToken(token) {
   if (!token) return false;
   try {
     const parts = token.split('.');
@@ -30,7 +32,8 @@ export function validateAdminToken(token) {
   }
 }
 
-export function clearAdminSession() {
+
+function clearAdminSession() {
   // Clear all four cookies by setting Max-Age=0
   ['adminToken', 'adminTokenJS', 'adminDistrict', 'adminUsername', 'adminRefreshToken'].forEach(name => {
     document.cookie = `${name}=; Path=/; Max-Age=0; SameSite=Strict`;
@@ -40,12 +43,12 @@ export function clearAdminSession() {
   localStorage.removeItem('adminUsername');
 }
 
-// Call GET /api/admin/auth to refresh using HttpOnly refresh token cookie
-export async function refreshAdminToken() {
+// refresh using HttpOnly refresh token cookie
+async function refreshAdminToken() {
   try {
     const response = await fetch('/api/admin/auth', {
-      method: 'GET',              // ← GET on same route
-      credentials: 'include'     // sends HttpOnly adminRefreshToken cookie automatically
+      method: 'GET',
+      credentials: 'include'
     });
     const data = await response.json();
 
@@ -54,13 +57,15 @@ export async function refreshAdminToken() {
       return false;
     }
 
-    // Update localStorage with new token
+    // Update localStorage
     localStorage.setItem('adminToken',    data.access_token);
     localStorage.setItem('adminDistrict', data.district || '');
     localStorage.setItem('adminUsername', data.username || '');
 
+    //refresh the cookies refresh
+    document.cookie = `adminTokenJS=${data.access_token}; Path=/; SameSite=Strict; Max-Age=86400`;
+
     console.log('=== TOKEN REFRESHED ===');
-    console.log('New token (first 50):', data.access_token.substring(0, 50) + '...');
     return true;
 
   } catch (err) {
@@ -69,13 +74,13 @@ export async function refreshAdminToken() {
   }
 }
 
-// ─── API functions ─────────────────────────────────────────────────────────────
+// ─── API functions ────────────────────────
 
-export async function adminLogin(username, password) {
+async function adminLogin(username, password) {
   const response = await fetch('/api/admin/auth', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include', // sends/receives cookies
+    credentials: 'include', 
     body: JSON.stringify({ username, password })
   });
   const data = await response.json();
@@ -83,8 +88,8 @@ export async function adminLogin(username, password) {
   return data; // { error:0, access_token, refresh_token, district, username }
 }
 
-export async function getDistrictApplicationsPaginated(district, page = 1, limit = 10) {
-  const token = getAdminToken(); // ← single helper, consistent everywhere
+async function getDistrictApplicationsPaginated(district, page = 1, limit = 10) {
+  const token = getAdminToken();
   try {
     const response = await fetch(
       `/api/admin/applications?district=${encodeURIComponent(district)}&page=${page}&limit=${limit}`,
@@ -100,24 +105,61 @@ export async function getDistrictApplicationsPaginated(district, page = 1, limit
   }
 }
 
-export async function getCheckpoints() {
-  const token = getAdminToken();
+// async function getCheckpoints() {
+//   const token = getAdminToken();
+//   try {
+//     const response = await fetch('/api/admin/checkpoints', {
+//       headers: { 'Authorization': `Bearer ${token}` }
+//     });
+//     const result = await response.json();
+//     return result.error === 0
+//       ? { error: 0, byDocument: result.byDocument || {} }
+//       : { error: 1, errorMsg: result.errorMsg, byDocument: {} };
+//   } catch {
+//     return { error: 1, errorMsg: 'Server error', byDocument: {} };
+//   }
+// }
+
+async function getCheckpoints() {
   try {
+    const token = getAdminToken();
     const response = await fetch('/api/admin/checkpoints', {
-      headers: { 'Authorization': `Bearer ${token}` }
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
     });
     const result = await response.json();
-    return result.error === 0
-      ? { error: 0, byDocument: result.byDocument || {} }
-      : { error: 1, errorMsg: result.errorMsg, byDocument: {} };
-  } catch {
+    if (!response.ok || result.error !== 0) {
+      return { error: 1, errorMsg: result.errorMsg || 'Failed to fetch checkpoints', byDocument: {} };
+    }
+    return { error: 0, byDocument: result.byDocument || {} };
+  } catch (err) {
     return { error: 1, errorMsg: 'Server error', byDocument: {} };
   }
 }
 
-export async function getVerificationAnswers(application_id) {
-  const token = getAdminToken();
+// async function getVerificationAnswers(application_id) {
+//   const token = getAdminToken();
+//   try {
+//     const response = await fetch(`/api/admin/verification?application_id=${application_id}`, {
+//       headers: { 'Authorization': `Bearer ${token}` },
+//       credentials: 'include'
+//     });
+//     const result = await response.json();
+//     return result.error === 0
+//       ? { error: 0, answers: result.answers || {}, office_id: result.office_id, verification_id: result.verification_id }
+//       : { error: 1, answers: {} };
+//   } catch {
+//     return { error: 1, answers: {} };
+//   }
+// }
+
+
+async function getVerificationAnswers(application_id) {
   try {
+    const token = getAdminToken();
     const response = await fetch(`/api/admin/verification?application_id=${application_id}`, {
       headers: { 'Authorization': `Bearer ${token}` },
       credentials: 'include'
@@ -126,17 +168,39 @@ export async function getVerificationAnswers(application_id) {
     return result.error === 0
       ? { error: 0, answers: result.answers || {}, office_id: result.office_id, verification_id: result.verification_id }
       : { error: 1, answers: {} };
-  } catch {
+  } catch (err) {
     return { error: 1, answers: {} };
   }
 }
 
-export async function saveAnswers({ application_id, answers, iteration = 1 }) {
-  const token = getAdminToken();
+// async function saveAnswers({ application_id, answers, iteration = 1 }) {
+//   const token = getAdminToken();
+//   try {
+//     const response = await fetch('/api/admin/verification', {
+//       method: 'POST',
+//       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+//       credentials: 'include',
+//       body: JSON.stringify({ action: 'saveAnswers', application_id, answers, iteration })
+//     });
+//     const result = await response.json();
+//     return result.error === 0
+//       ? { error: 0, verification_id: result.verification_id }
+//       : { error: 1, errorMsg: result.errorMsg };
+//   } catch {
+//     return { error: 1, errorMsg: 'Server error' };
+//   }
+// }
+
+
+async function saveAnswers({ application_id, answers, iteration = 1 }) {
   try {
+    const token = getAdminToken();
     const response = await fetch('/api/admin/verification', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       credentials: 'include',
       body: JSON.stringify({ action: 'saveAnswers', application_id, answers, iteration })
     });
@@ -144,33 +208,64 @@ export async function saveAnswers({ application_id, answers, iteration = 1 }) {
     return result.error === 0
       ? { error: 0, verification_id: result.verification_id }
       : { error: 1, errorMsg: result.errorMsg };
-  } catch {
+  } catch (err) {
     return { error: 1, errorMsg: 'Server error' };
   }
 }
 
-export async function submitDecision({ application_id, decision, remark, iteration = 1 }) {
-  const token = getAdminToken();
+// async function submitDecision({ application_id, decision, remark, iteration = 1 }) {
+//   const token = getAdminToken();
+//   try {
+//     const response = await fetch('/api/admin/verification', {
+//       method: 'POST',
+//       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+//       credentials: 'include',
+//       body: JSON.stringify({ action: 'finalDecision', application_id, decision, remark, iteration })
+//     });
+//     const result = await response.json();
+//     return result.error === 0
+//       ? { error: 0, ...result }
+//       : { error: 1, errorMsg: result.errorMsg };
+//   } catch {
+//     return { error: 1, errorMsg: 'Server error' };
+//   }
+// }
+
+async function submitDecision({ application_id, decision, remark, iteration = 1 }) {
   try {
+    const token = getAdminToken();
     const response = await fetch('/api/admin/verification', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       credentials: 'include',
       body: JSON.stringify({ action: 'finalDecision', application_id, decision, remark, iteration })
     });
     const result = await response.json();
     return result.error === 0
-      ? { error: 0, ...result }
+      ? { error: 0, verification_id: result.verification_id, newVerStatus: result.newVerStatus, newAppStatus: result.newAppStatus }
       : { error: 1, errorMsg: result.errorMsg };
-  } catch {
+  } catch (err) {
     return { error: 1, errorMsg: 'Server error' };
   }
 }
 
-export async function loadAnswers(application_id) {
-  return getVerificationAnswers(application_id); // same thing — remove the duplicate
+
+async function loadAnswers(application_id) {
+  return getVerificationAnswers(application_id); 
 }
 
-// export {
-  
-// };
+ export {
+    validateAdminToken,
+    clearAdminSession,
+    refreshAdminToken,
+    adminLogin,
+    getDistrictApplicationsPaginated,
+    getCheckpoints,
+    getVerificationAnswers,
+    saveAnswers,
+    submitDecision,
+    loadAnswers
+ };

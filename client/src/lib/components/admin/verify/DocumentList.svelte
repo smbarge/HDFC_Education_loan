@@ -171,10 +171,10 @@ function getFilledDataForQuestion(questionText) {
   async function handleSave() {
     if (!allCheckpointsAnswered) return;
     if (applicationId && adminToken && Object.keys(pendingAnswers).length > 0) {
-      await saveAnswers(adminToken, {
-        application_id: applicationId,
-        answers: Object.values(pendingAnswers)
-      });
+     await saveAnswers({
+      application_id: applicationId,
+      answers: Object.values(pendingAnswers)
+    });
       pendingAnswers = {};
     }
     dispatch('saveDoc', { docId: expandedDocId });
