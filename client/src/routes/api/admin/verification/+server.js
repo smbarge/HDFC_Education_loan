@@ -150,13 +150,13 @@ export async function POST({ request }) {
       const { application_id, decision, remark, iteration = 1 } = body;
 
       // decision values: 'forward'=11, 'reject'=12, 'return'=13
-      const statusMap        = { forward: 11, reject: 12, return: 13 };
+      const statusMap        = { forward: 21, reject: 22, return: 23 };
       const recommendMap     = { forward: 1,  reject: 2,  return: 3  };
       const appStatusMap     = { forward: 4,  reject: 5,  return: 3  };
 
-      const newVerStatus = statusMap[decision];
+      const newVerStatus = statusMap[decision]; // verification_status
       const recommendation = recommendMap[decision];
-      const newAppStatus   = appStatusMap[decision];
+      const newAppStatus   = appStatusMap[decision]; //Application status
 
       if (!newVerStatus) {
         await client.query('ROLLBACK');

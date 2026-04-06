@@ -2,13 +2,31 @@ import { json } from '@sveltejs/kit';
 import pool from '$lib/db.js';
 import { verifyToken } from '$lib/jwtverify.js';
 
+// function checkAuth(request) {
+//   const authHeader = request.headers.get('authorization');
+//   if (!authHeader || !authHeader.startsWith('Bearer ')) return false;
+//   const tokenStr = authHeader.split(' ')[1];
+//   const auth = verifyToken({ headers: { get: () => authHeader } });
+//   if (auth.success) return true;
+//   try {
+//     const parts = tokenStr.split('.');
+//     if (parts.length !== 3) return false;
+//     const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf-8'));
+//     return !!(payload.iss && payload.iss.includes('keycloak'));
+//   } catch { return false; }
+// }
+
+
 function checkAuth(request) {
   const authHeader = request.headers.get('authorization');
   if (!authHeader || !authHeader.startsWith('Bearer ')) return false;
-  const tokenStr = authHeader.split(' ')[1];
-  const auth = verifyToken({ headers: { get: () => authHeader } });
-  if (auth.success) return true;
+  
+  const result = verifyToken(request);
+  if (result.success) return true;
+  
+  // Fallback: accept Keycloak tokens
   try {
+    const tokenStr = authHeader.split(' ')[1];
     const parts = tokenStr.split('.');
     if (parts.length !== 3) return false;
     const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf-8'));
@@ -30,7 +48,7 @@ export async function GET({ request }) {
       ORDER BY id
     `);
 
-    console.log("Checkpoint Data:", checkpointRes.rows);
+   //console.log("Checkpoint Data:", checkpointRes.rows);
 
 
     // Fetch all questions grouped by checkpoint_id
@@ -42,7 +60,7 @@ export async function GET({ request }) {
       ORDER BY checkpoint_id, id
     `);
 
-    console.log("Question Data:", questionRes.rows);
+    //console.log("Question Data:", questionRes.rows);
 
 
     // Group questions by checkpoint_id
@@ -62,7 +80,7 @@ export async function GET({ request }) {
       });
     });
 
-    console.log("Questions By Checkpoint:", questionsByCheckpoint);
+    //console.log("Questions By Checkpoint:", questionsByCheckpoint);
 
     // const uploadDocIdToCheckpointId = {
     //   1:1, 2:2, 3:3, 4:4,         // Applicant: Aadhar, PAN, Photo, Signature
@@ -190,7 +208,7 @@ export async function GET({ request }) {
       }
     });
 
-    console.log("byUploadDocId keys:", Object.keys(byUploadDocId));
+   // console.log("byUploadDocId keys:", Object.keys(byUploadDocId));
 
     return json({ error: 0, byDocument: byUploadDocId });
 
