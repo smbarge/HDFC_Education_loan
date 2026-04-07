@@ -32,7 +32,6 @@ function validateAdminToken(token) {
   }
 }
 
-
 function clearAdminSession() {
   // Clear all four cookies by setting Max-Age=0
   ['adminToken', 'adminTokenJS', 'adminDistrict', 'adminUsername', 'adminRefreshToken'].forEach(name => {

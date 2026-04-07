@@ -20,6 +20,8 @@
     decisionRemark = '';
   }
 
+  console.log()
+
   // async function confirmDecision() {
   //   if (!pendingDecision) return;
   //   isSubmitting = true;
@@ -48,11 +50,15 @@
   if (!pendingDecision) return;
   isSubmitting = true;
   try {
+
+    console.log("desigen:",pendingDecision);
     const result = await submitDecision({   
       application_id: appId,
       decision: pendingDecision,
       remark: decisionRemark
     });
+
+    //console.log("result desigen ___",result);
     if (result.error === 0) {
       showRemarkModal = false;
       alert(`Application ${pendingDecision}ed successfully!`);
