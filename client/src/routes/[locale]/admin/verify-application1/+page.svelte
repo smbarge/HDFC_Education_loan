@@ -1130,7 +1130,7 @@ function verifyDoc(docId) {
         </div>
     </div>
       {/if}
-
+    
       <!-- Final decision bar -->
       <div class="bg-white rounded-lg border border-gray-200 px-5 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div>
