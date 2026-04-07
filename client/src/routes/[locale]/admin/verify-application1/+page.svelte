@@ -13,6 +13,8 @@
   let pendingDecision = '';
   let decisionRemark = '';
   let isSubmitting = false;
+  let successMessage = '';
+  let successDecision = '';
 
   function handleFinalDecision(decision) {
     pendingDecision = decision;
@@ -60,10 +62,11 @@
 
     //console.log("result desigen ___",result);
     if (result.error === 0) {
-      showRemarkModal = false;
-      alert(`Application ${pendingDecision}ed successfully!`);
-      goto(`/${locale}/admin/dashboard`);
-    } else {
+    showRemarkModal = false;
+    successDecision = pendingDecision;
+    successMessage = `Application has been ${pendingDecision === 'forward' ? 'forwarded' : 'rejected'} successfully.`;
+    setTimeout(() => goto(`/${locale}/admin/dashboard`), 3000);
+  }else {
       alert('Error: ' + (result.errorMsg || 'Failed'));
     }
   } catch (e) {
@@ -779,6 +782,45 @@ function verifyDoc(docId) {
 
   {:else if appData}
 
+      {#if successMessage}
+      <div class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 flex flex-col items-center text-center gap-4 animate-fade-in">
+
+          <!-- Icon -->
+          <div class="w-16 h-16 rounded-full flex items-center justify-center
+            {successDecision === 'forward' ? 'bg-green-100' : 'bg-red-100'}">
+            {#if successDecision === 'forward'}
+              <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+              </svg>
+            {:else}
+              <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            {/if}
+          </div>
+
+          <!-- Text -->
+          <div>
+            <p class="text-lg font-bold text-gray-900 mb-1">
+              {successDecision === 'forward' ? 'Application Forwarded!' : 'Application Rejected'}
+            </p>
+            <p class="text-sm text-gray-500">{successMessage}</p>
+            <p class="text-xs text-gray-400 mt-2">Redirecting to dashboard…</p>
+          </div>
+
+          <!-- Progress bar -->
+          <div class="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div
+              class="h-full rounded-full transition-all {successDecision === 'forward' ? 'bg-green-500' : 'bg-red-500'}"
+              style="animation: shrink 3s linear forwards;"
+            ></div>
+          </div>
+
+        </div>
+      </div>
+    {/if}
+
     <div class="w-full px-4 py-4 space-y-4">
 
         <!--  Applicant info -->
@@ -1171,3 +1213,10 @@ function verifyDoc(docId) {
     </div>
   </div>
 {/if}
+
+<style>
+  @keyframes shrink {
+    from { width: 100%; }
+    to   { width: 0%; }
+  }
+</style>
