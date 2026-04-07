@@ -18,6 +18,18 @@ function getUserFromCookie(request) {
   return { user_id: username || 'unknown', username };
 }
 
+function getUserFromToken(request) {
+  try {
+    const authHeader = request.headers.get('authorization') || '';
+    const token = authHeader.split(' ')[1];
+    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString('utf-8'));
+    const username = payload.preferred_username || payload.sub || '';
+    return { user_id: username || 'unknown', username };
+  } catch {
+    return { user_id: 'unknown', username: '' };
+  }
+}
+
 async function getOfficeId(client, username) {
   const districtName = username.replace('_admin', '').replace(/_/g, ' ');
   const result = await client.query(
@@ -36,7 +48,7 @@ export async function GET({ request, url }) {
 
   const client = await pool.connect();
   try {
-    const { username } = getUserFromCookie(request);
+    const { username } = getUserFromToken(request);
     const office_id = await getOfficeId(client, username);
 
    const verRes = await client.query(
@@ -72,7 +84,7 @@ export async function POST({ request }) {
 
   const body = await request.json();
   const { action } = body;
-  const { user_id, username } = getUserFromCookie(request);
+  const { user_id, username } = getUserFromToken(request);
 
   const client = await pool.connect();
   try {
@@ -202,6 +214,19 @@ export async function POST({ request }) {
          WHERE id = $3`,
         [newAppStatus, newVerStatus, application_id]
       );
+
+
+//console.log('Rows updated:', updateResult.rowCount);  // must be 1
+console.log('application_id:', application_id, '→ parseInt:', parseInt(application_id));
+console.log('newAppStatus:', newAppStatus, 'newVerStatus:', newVerStatus);
+
+      console.log('Updated personal_details:', {
+        application_id,
+        newAppStatus,   // should be 5 for reject
+        newVerStatus,   // should be 22 for reject
+        office_id,
+        username  
+      });
 
       // If rejected — store rejection reason
       if (decision === 'reject' && remark) {
