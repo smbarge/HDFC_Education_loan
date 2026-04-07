@@ -207,39 +207,36 @@ export async function POST({ request }) {
         );
       }
 
-      // Update personal_details
-      await client.query(
-        `UPDATE personal_details
-         SET application_status = $1, verification_status = $2, updated_at = NOW()
-         WHERE id = $3`,
-        [newAppStatus, newVerStatus, application_id]
-      );
+              // REPLACE WITH (fixed):
+        const updateResult = await client.query(
+          `UPDATE personal_details
+          SET application_status = $1, verification_status = $2, updated_at = NOW()
+          WHERE id = $3`,
+          [newAppStatus, newVerStatus, parseInt(application_id)]
+        );
 
+        console.log('Rows updated:', updateResult.rowCount);
+        console.log('Updated personal_details:', {
+          application_id,
+          newAppStatus,
+          newVerStatus,
+          office_id,
+          username
+        });
 
-//console.log('Rows updated:', updateResult.rowCount);  // must be 1
-console.log('application_id:', application_id, '→ parseInt:', parseInt(application_id));
-console.log('newAppStatus:', newAppStatus, 'newVerStatus:', newVerStatus);
+        // If rejected — store reason codes into application_reject_reasons
+        if (decision === 'reject' && body.reason_codes && body.reason_codes.length > 0) {
+          for (const code of body.reason_codes) {
+            await client.query(
+              `INSERT INTO application_reject_reasons (application_id, reason_code)
+              VALUES ($1, $2)
+              ON CONFLICT (application_id, reason_code) DO NOTHING`,
+              [parseInt(application_id), code]
+            );
+          }
+        }
+        await client.query('COMMIT');
 
-      console.log('Updated personal_details:', {
-        application_id,
-        newAppStatus,   // should be 5 for reject
-        newVerStatus,   // should be 22 for reject
-        office_id,
-        username  
-      });
-
-      // If rejected — store rejection reason
-      if (decision === 'reject' && remark) {
-        await client.query(
-          `INSERT INTO application_reject_reasons
-             (application_id, office_id, reason, user_id, created_at)
-           VALUES ($1, $2, $3, $4, NOW())
-           ON CONFLICT DO NOTHING`,
-          [application_id, office_id, remark, user_id]
-        ).catch(() => {}); // skip if table doesn't exist yet
-      }
-
-      await client.query('COMMIT');
       return json({ error: 0, verification_id, newVerStatus, newAppStatus });
     }
 

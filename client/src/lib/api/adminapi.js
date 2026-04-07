@@ -230,9 +230,35 @@ async function saveAnswers({ application_id, answers, iteration = 1 }) {
 //   }
 // }
 
-async function submitDecision({ application_id, decision, remark, iteration = 1 }) {
+// async function submitDecision({ application_id, decision, remark, iteration = 1 }) {
+//   try {
+//     const token = getAdminToken();
+//     const response = await fetch('/api/admin/verification', {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//         'Authorization': `Bearer ${token}`
+//       },
+//       credentials: 'include',
+//       body: JSON.stringify({ action: 'finalDecision', application_id, decision, remark, iteration })
+//     });
+//     const result = await response.json();
+//     return result.error === 0
+//       ? { error: 0, verification_id: result.verification_id, newVerStatus: result.newVerStatus, newAppStatus: result.newAppStatus }
+//       : { error: 1, errorMsg: result.errorMsg };
+//   } catch (err) {
+//     return { error: 1, errorMsg: 'Server error' };
+//   }
+// }
+
+
+// REPLACE WITH this complete correct version:
+async function submitDecision({ application_id, decision, remark, reason_codes = [], iteration = 1 }) {
   try {
     const token = getAdminToken();
+
+    console.log('submitDecision called with:', { application_id, decision, remark, reason_codes });
+
     const response = await fetch('/api/admin/verification', {
       method: 'POST',
       headers: {
@@ -240,20 +266,73 @@ async function submitDecision({ application_id, decision, remark, iteration = 1 
         'Authorization': `Bearer ${token}`
       },
       credentials: 'include',
-      body: JSON.stringify({ action: 'finalDecision', application_id, decision, remark, iteration })
+      body: JSON.stringify({
+        action: 'finalDecision',
+        application_id,
+        decision,
+        remark,
+        reason_codes,
+        iteration
+      })
     });
+
+    console.log('API response status:', response.status);
+
     const result = await response.json();
-    return result.error === 0
-      ? { error: 0, verification_id: result.verification_id, newVerStatus: result.newVerStatus, newAppStatus: result.newAppStatus }
-      : { error: 1, errorMsg: result.errorMsg };
+
+    console.log('API response body:', result);
+
+    if (result.error === 0) {
+      return {
+        error: 0,
+        verification_id: result.verification_id,
+        newVerStatus: result.newVerStatus,
+        newAppStatus: result.newAppStatus
+      };
+    } else {
+      return { error: 1, errorMsg: result.errorMsg || 'Failed' };
+    }
+
   } catch (err) {
-    return { error: 1, errorMsg: 'Server error' };
+    //console.error('submitDecision fetch error:', err);
+    return { error: 1, errorMsg: err.message || 'Server error' };
   }
 }
 
 
 async function loadAnswers(application_id) {
   return getVerificationAnswers(application_id); 
+}
+
+async function getRejectReasons(){
+  try{
+    const token = getAdminToken();
+
+      const response = await fetch('/api/admin/reject-reasons', {
+      method : 'GET',
+      headers:{
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    const result = await response.json();
+
+    if(!response.ok || result.error !== 0){
+      return{
+        error : 1,
+        erroMsg : result.errorMsg || 'Failed to fetch reject reasons',
+        resions :[]
+      };
+    }
+    return {
+      error : 0,
+      reasons: result.reasons || []
+    }
+  }
+  catch(err){
+    return {error : 1, errorMsg : err.message ||'server error',reasons : []};
+  }
 }
 
  export {
@@ -266,5 +345,6 @@ async function loadAnswers(application_id) {
     getVerificationAnswers,
     saveAnswers,
     submitDecision,
-    loadAnswers
+    loadAnswers,
+    getRejectReasons,
  };
