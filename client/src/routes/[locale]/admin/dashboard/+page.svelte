@@ -39,10 +39,19 @@
   let showModal = false;
 
   // Stats
+  // $: totalCandidates = serverTotal || candidates.length;
+  // $: approved = candidates.filter(c => c.status === 'Forwarded').length;
+  // $: pending = candidates.filter(c => c.status === 'Pending' || c.status === 'Under Review').length;
+  // $: rejected = candidates.filter(c => c.status === 'Rejected').length;
+
   $: totalCandidates = serverTotal || candidates.length;
-  $: approved = candidates.filter(c => c.status === 'Forwarded').length;
-  $: pending = candidates.filter(c => c.status === 'Pending' || c.status === 'Under Review').length;
-  $: rejected = candidates.filter(c => c.status === 'Rejected').length;
+  let serverApproved = 0;
+  let serverPending = 0;
+  let serverRejected = 0;
+
+  $: approved = serverApproved;
+  $: pending = serverPending;
+  $: rejected = serverRejected;
 
   // Unique districts for filter
   $: districts = [...new Set(candidates.map(c => c.district).filter(Boolean))];
@@ -156,9 +165,16 @@ function mapVerifyStatus(app) {
     if (result.error !== 0) {
       fetchError = result.errorMsg || 'Failed to load candidates';
     } else {
-      serverTotal      = result.total;
+      // serverTotal      = result.total;
+      // serverTotalPages = result.totalPages;
+      // currentPage      = result.page;
+
+       serverTotal      = result.total;
       serverTotalPages = result.totalPages;
       currentPage      = result.page;
+      serverApproved   = result.approved || 0;
+      serverPending    = result.pending  || 0;
+      serverRejected   = result.rejected || 0;
 
       candidates = (result.applications || []).map(app => ({
         id:            app.id,

@@ -29,22 +29,39 @@ export async function GET({ url, request }) {
     const distId = districtResult.rows[0].dist_id;
 
     // total count 
+    // const countResult = await pool.query(
+    //   `SELECT COUNT(*) AS total FROM personal_details
+    //    WHERE district_id = $1     
+    //    AND application_status IN (2,3,4)`,
+    //   [distId]
+    // );
     const countResult = await pool.query(
       `SELECT COUNT(*) AS total FROM personal_details
-       WHERE district_id = $1     
-       AND application_status IN (2,3,4)`,
+      WHERE district_id = $1
+      AND application_status != 1`,
       [distId]
     );
     const totalCount = parseInt(countResult.rows[0].total);
 
     // stats (approved / pending / rejected)
+    // const statsResult = await pool.query(
+    //   `SELECT application_status, COUNT(*) AS cnt
+    //    FROM personal_details
+    //    WHERE district_id = $1
+    //    GROUP BY application_status`,
+    //   [distId]
+    // );
+
+
     const statsResult = await pool.query(
       `SELECT application_status, COUNT(*) AS cnt
-       FROM personal_details
-       WHERE district_id = $1
-       GROUP BY application_status`,
+      FROM personal_details
+      WHERE district_id = $1
+      AND application_status != 1
+      GROUP BY application_status`,
       [distId]
     );
+
 
     let approved = 0, pending = 0, rejected = 0;
     statsResult.rows.forEach(r => {
@@ -105,8 +122,6 @@ export async function GET({ url, request }) {
 
 
 //without pagination 
-
-
 
 // import { json } from '@sveltejs/kit';
 // import pool from '$lib/db.js';
