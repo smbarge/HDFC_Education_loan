@@ -103,36 +103,39 @@ export async function POST({ request }) {
       );
 
       // STEP 2: Check if verification row exists
-      const verCheck = await client.query(
-        `SELECT id FROM verification
-         WHERE application_id = $1 AND office_id = $2 AND level = 1 AND iteration = $3
-         LIMIT 1`,
-        [application_id, office_id, iteration]
-      );
+      // const verCheck = await client.query(
+      //   `SELECT id FROM verification
+      //    WHERE application_id = $1 AND office_id = $2 AND level = 1 AND iteration = $3
+      //    LIMIT 1`,
+      //   [application_id, office_id, iteration]
+      // );
+    
 
-      let verification_id;
-      if (verCheck.rows.length > 0) {
-        // UPDATE existing row
-        verification_id = verCheck.rows[0].id;
-        await client.query(
-          `UPDATE verification SET status = 19, updated_at = NOW()
-           WHERE id = $1 AND application_id = $2`,
-          [verification_id, application_id]
-        );
-      } else {
-        // INSERT new row
-        const maxRes = await client.query(
-          `SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM verification`
-        );
-        verification_id = maxRes.rows[0].next_id;
-        await client.query(
-          `INSERT INTO verification
-             (id, application_id, verification_type, level, user_id,
-              status, office_id, recommendation, remark, iteration)
-           VALUES ($1, $2, 1, 1, $3, 19, $4, 0, NULL, $5)`,
-          [verification_id, application_id, user_id, office_id, iteration]
-        );
-      }
+      // let verification_id;
+      // if (verCheck.rows.length > 0) {
+      //   // UPDATE existing row
+      //   verification_id = verCheck.rows[0].id;
+      //   await client.query(
+      //     `UPDATE verification SET status = 19, updated_at = NOW()
+      //      WHERE id = $1 AND application_id = $2`,
+      //     [verification_id, application_id]
+      //   );
+      // } else {
+      //   // INSERT new row
+      //   const maxRes = await client.query(
+      //     `SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM verification`
+      //   );
+      //   verification_id = maxRes.rows[0].next_id;
+      //   await client.query(
+      //     `INSERT INTO verification
+      //        (id, application_id, verification_type, level, user_id,
+      //         status, office_id, recommendation, remark, iteration)
+      //      VALUES ($1, $2, 1, 1, $3, 19, $4, 0, NULL, $5)`,
+      //     [verification_id, application_id, user_id, office_id, iteration]
+      //   );
+      // }
+
+      //For the new status 
 
       // STEP 3: Upsert each answer
       for (const ans of answers) {
@@ -162,7 +165,7 @@ export async function POST({ request }) {
       const { application_id, decision, remark, iteration = 1 } = body;
 
       // decision values: 'forward'=11, 'reject'=12, 'return'=13
-      const statusMap        = { forward: 21, reject: 22, return: 23 };
+      const statusMap        = { forward: 11, reject: 12, return: 13 };
       const recommendMap     = { forward: 1,  reject: 2,  return: 3  };
       const appStatusMap     = { forward: 4,  reject: 5,  return: 3  };
 
@@ -175,39 +178,52 @@ export async function POST({ request }) {
         return json({ error: -1, errorMsg: 'Invalid decision' });
       }
 
-      // Get existing verification row
-      const verCheck = await client.query(
-        `SELECT id FROM verification
-         WHERE application_id = $1 AND office_id = $2 AND level = 1 AND iteration = $3
-         LIMIT 1`,
-        [application_id, office_id, iteration]
-      );
+      // Get existing verification row old one 
+      // const verCheck = await client.query(
+      //   `SELECT id FROM verification
+      //    WHERE application_id = $1 AND office_id = $2 AND level = 1 AND iteration = $3
+      //    LIMIT 1`,
+      //   [application_id, office_id, iteration]
+      // );
+    
+      // let verification_id;
+      // if (verCheck.rows.length > 0) {
+      //   verification_id = verCheck.rows[0].id;
+      //   await client.query(
+      //     `UPDATE verification
+      //      SET status = $1, recommendation = $2, remark = $3, updated_at = NOW()
+      //      WHERE id = $4 AND application_id = $5`,
+      //     [newVerStatus, recommendation, remark || '', verification_id, application_id]
+      //   );
+      // } else {
+      //   const maxRes = await client.query(
+      //     `SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM verification`
+      //   );
+      //   verification_id = maxRes.rows[0].next_id;
+      //   await client.query(
+      //     `INSERT INTO verification
+      //        (id, application_id, verification_type, level, user_id,
+      //         status, office_id, recommendation, remark, iteration)
+      //      VALUES ($1, $2, 1, 1, $3, $4, $5, $6, $7, $8)`,
+      //     [verification_id, application_id, user_id,
+      //      newVerStatus, office_id, recommendation, remark || '', iteration]
+      //   );
+      // }
 
-      let verification_id;
-      if (verCheck.rows.length > 0) {
-        verification_id = verCheck.rows[0].id;
-        await client.query(
-          `UPDATE verification
-           SET status = $1, recommendation = $2, remark = $3, updated_at = NOW()
-           WHERE id = $4 AND application_id = $5`,
-          [newVerStatus, recommendation, remark || '', verification_id, application_id]
-        );
-      } else {
-        const maxRes = await client.query(
-          `SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM verification`
-        );
-        verification_id = maxRes.rows[0].next_id;
-        await client.query(
-          `INSERT INTO verification
-             (id, application_id, verification_type, level, user_id,
-              status, office_id, recommendation, remark, iteration)
-           VALUES ($1, $2, 1, 1, $3, $4, $5, $6, $7, $8)`,
-          [verification_id, application_id, user_id,
-           newVerStatus, office_id, recommendation, remark || '', iteration]
-        );
-      }
-
-              // REPLACE WITH (fixed):
+      // REPLACE WITH:
+          const maxRes = await client.query(
+            `SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM verification`
+          );
+          const verification_id = maxRes.rows[0].next_id;
+          await client.query(
+            `INSERT INTO verification
+              (id, application_id, verification_type, level, user_id,
+                status, office_id, recommendation, remark, iteration)
+            VALUES ($1, $2, 1, 1, $3, $4, $5, $6, $7, $8)`,
+            [verification_id, application_id, user_id,
+            newVerStatus, office_id, recommendation, remark || '', iteration]
+          );
+        // final change in the personal_details 
         const updateResult = await client.query(
           `UPDATE personal_details
           SET application_status = $1, verification_status = $2, updated_at = NOW()
@@ -241,7 +257,7 @@ export async function POST({ request }) {
     }
 
     await client.query('ROLLBACK');
-    return json({ error: -1, errorMsg: 'Invalid action' });
+    return json({ error: -1, errorMsg: 'Invalid action'});
 
   } catch (err) {
     await client.query('ROLLBACK');

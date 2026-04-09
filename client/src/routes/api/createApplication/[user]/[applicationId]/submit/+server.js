@@ -33,26 +33,30 @@ export async function POST({ params,request }) {
         { status: 404 }
       );
     }
-    
-  //   // Update application status to "submitted" (status = 2)
-  //  // Update user_applications status = 2 (Submitted)
-  //   await client.query(
-  //     `UPDATE user_applications
-  //      SET status = 2
-  //      WHERE user_id = $1 AND application_id = $2`,
-  //     [user, applicationId]
-  //   );
-
     // Update personal_details.application_status = 'submitted'
     // This stores the status text from m_application_status id=2 (Submitted)
     await client.query(
-      `UPDATE personal_details
-       SET application_status = 2,
+    `UPDATE personal_details
+      SET application_status = 2,verification_status = '00',
       updated_at = now()
        WHERE id = $1`,
       [applicationId]
     );
-    
+
+    // insert verification entry with status 1
+    const maxRes = await client.query(
+      `SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM verification`
+    );
+    const verification_id = maxRes.rows[0].next_id;
+
+    await client.query(
+      `INSERT INTO verification
+        (id, application_id, verification_type, level, user_id,
+        status, created_at, updated_at, office_id, recommendation, remark, iteration)
+      VALUES ($1, $2, 1, 0, NULL, 0, NOW(), NOW(), NULL, 0, NULL, 0)`,
+      [verification_id, applicationId]
+    );
+        
     await client.query('COMMIT');
     
     console.log('Application submitted successfully:', applicationId);

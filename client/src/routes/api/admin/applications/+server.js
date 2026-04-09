@@ -35,6 +35,7 @@ export async function GET({ url, request }) {
     //    AND application_status IN (2,3,4)`,
     //   [distId]
     // );
+
     const countResult = await pool.query(
       `SELECT COUNT(*) AS total FROM personal_details
       WHERE district_id = $1
@@ -60,8 +61,8 @@ export async function GET({ url, request }) {
       AND application_status != 1
       GROUP BY application_status`,
       [distId]
+      
     );
-
 
     let approved = 0, pending = 0, rejected = 0;
     statsResult.rows.forEach(r => {
@@ -70,6 +71,7 @@ export async function GET({ url, request }) {
       if ([4, 8, 9].includes(status)) approved += parseInt(r.cnt);
       else if ([5, 6, 7].includes(status)) rejected += parseInt(r.cnt);
       else if ([2, 3].includes(status)) pending += parseInt(r.cnt);
+
     });
     
     // Step 4: paginated data with joins
