@@ -6,23 +6,68 @@
 
   import { getViewApplicationData } from '$lib/api/authApi.js';
   import { token } from '$lib/stores/userStore';
-  import { submitDecision, getCheckpoints, getVerificationAnswers, validateAdminToken, clearAdminSession, refreshAdminToken } from '$lib/api/adminapi.js';
+  import { submitDecision, getCheckpoints, getVerificationAnswers, validateAdminToken, clearAdminSession, refreshAdminToken,getRejectReasons } from '$lib/api/adminapi.js';
   import DocumentList from '$lib/components/admin/verify/DocumentList.svelte';
 
-  let showRemarkModal = false;
-  let pendingDecision = '';
-  let decisionRemark = '';
-  let isSubmitting = false;
-  let successMessage = '';
-  let successDecision = '';
 
-  function handleFinalDecision(decision) {
-    pendingDecision = decision;
-    showRemarkModal = true;
-    decisionRemark = '';
+  //Old with not the drop down 
+  // let showRemarkModal = false;
+  // let pendingDecision = '';
+  // let decisionRemark = '';
+  // let isSubmitting = false;
+
+  // function handleFinalDecision(decision) {
+  //   pendingDecision = decision;
+  //   showRemarkModal = true;
+  //   decisionRemark = '';
+  // }
+
+let showRemarkModal = false;
+let pendingDecision = '';
+let decisionRemark = '';
+let isSubmitting = false;
+
+let toastMessage = '';
+let toastType = '';
+let showToast = false;
+
+function showNotification(message, type = 'success') {
+  toastMessage = message;
+  toastType = type;
+  showToast = true;
+  setTimeout(() => { showToast = false; }, 1500);
+}
+
+// Reject reasons
+let rejectReasons = [];
+let rejectReasonsLoading = false;
+let selectedReasonCode = ''; 
+
+async function handleFinalDecision(decision) {
+  pendingDecision = decision;
+  showRemarkModal = true;
+  decisionRemark = '';
+  selectedReasonCode = '';
+
+  // Load reject reasons when reject is clicked
+  if (decision === 'reject' && rejectReasons.length === 0) {
+    rejectReasonsLoading = true;
+    try {
+      const res = await getRejectReasons();
+      if (res.error === 0) {
+        rejectReasons = res.reasons || [];
+      } else {
+        console.error('Failed to load reject reasons:', res.errorMsg);
+      }
+    } catch (e) {
+      console.error('Failed to load reject reasons:', e);
+    } finally {
+      rejectReasonsLoading = false;
+    }
   }
+}
 
-  console.log()
+  // REPLACE WITH old one not the drop down 
 
   // async function confirmDecision() {
   //   if (!pendingDecision) return;
@@ -48,33 +93,39 @@
   //   }
   // }
 
+
   async function confirmDecision() {
-  if (!pendingDecision) return;
-  isSubmitting = true;
-  try {
+    if (!pendingDecision) return;
+    isSubmitting = true;
+    try {
+      const result = await submitDecision({
+        application_id: appId,
+        decision: pendingDecision,
+        remark: decisionRemark,
+        reason_codes: pendingDecision === 'reject' && selectedReasonCode ? [selectedReasonCode] : []
+      });
 
-    console.log("desigen:",pendingDecision);
-    const result = await submitDecision({   
-      application_id: appId,
-      decision: pendingDecision,
-      remark: decisionRemark
-    });
+      console.log('submitDecision result:', result);
 
-    //console.log("result desigen ___",result);
-    if (result.error === 0) {
-    showRemarkModal = false;
-    successDecision = pendingDecision;
-    successMessage = `Application has been ${pendingDecision === 'forward' ? 'forwarded' : 'rejected'} successfully.`;
-    setTimeout(() => goto(`/${locale}/admin/dashboard`), 3000);
-  }else {
-      alert('Error: ' + (result.errorMsg || 'Failed'));
+      if (result.error === 0) {
+        showRemarkModal = false;
+        showNotification(
+          pendingDecision === 'forward' 
+            ? '✓ Application forwarded successfully!' 
+            : '✕ Application rejected successfully!',
+          'success'
+        );
+        setTimeout(() => goto(`/${locale}/admin/dashboard`), 1800);
+      } else {
+        showNotification('Error: ' + (result.errorMsg || 'Failed'), 'error');
+      }
+    } catch (e) {
+      console.error('confirmDecision caught error:', e);
+      showNotification('Error: ' + (e.message || 'Something went wrong'), 'error');
+    } finally {
+      isSubmitting = false;
     }
-  } catch (e) {
-    alert('Error submitting decision');
-  } finally {
-    isSubmitting = false;
   }
-}
 
   $: locale = $page.params.locale || 'en';
 
@@ -276,76 +327,7 @@
     return appData.allDocs.filter(d => docIdToTab[d.document_id] === tab);
   }
 
-  //Here form the goroup in the tab
-
-  //old
-  
-  // function getGroupedDocsForTab(tab) {
-  //   const docs = getDocsForTab(tab);
-
-  //   const groups = {};
-  //   docs.forEach(doc => {
-  //     const sub = docIdToSubSection[doc.document_id] || 'Documents';
-  //     if (!groups[sub]) groups[sub] = [];
-  //     groups[sub].push(doc);
-  //   });
-
-  // if (tab === 'collateral') {
-  //     const photoDoc = docs.find(d => d.document_id === 35);
-  //     if (photoDoc) {
-  //       const hasProperty = docs.some(d => [21, 22, 23, 24, 25].includes(d.document_id));
-  //       const hasGovt     = docs.some(d => [26, 27, 28, 29, 30].includes(d.document_id));
-  //       const hasLIC = docs.some(d => [32, 33, 34].includes(d.document_id));
-  //       const hasFD  = docs.some(d => [36, 37, 38, 46].includes(d.document_id));
-
-  //       // Add photo to Property section if present and no LIC
-  //       if (hasProperty && !hasLIC) {
-  //         if (!groups['Property Collateral']) groups['Property Collateral'] = [];
-  //         const already = groups['Property Collateral'].some(d => d.document_id === 35);
-  //         if (!already) groups['Property Collateral'].unshift({ ...photoDoc });
-  //         // Remove from LIC group since no LIC
-  //         delete groups['LIC Policy Collateral'];
-  //       }
-
-  //       // Add photo to Govt Employee section if present and no LIC
-  //       if (hasGovt && !hasLIC) {
-  //         if (!groups['Govt Employee Collateral']) groups['Govt Employee Collateral'] = [];
-  //         const already = groups['Govt Employee Collateral'].some(d => d.document_id === 35);
-  //         if (!already) groups['Govt Employee Collateral'].unshift({ ...photoDoc });
-  //         delete groups['LIC Policy Collateral'];
-  //       }
-
-  //       // Remove photo from LIC group if no actual LIC docs present
-  //       if (!hasLIC && groups['LIC Policy Collateral']) {
-  //         groups['LIC Policy Collateral'] = groups['LIC Policy Collateral']
-  //           .filter(d => d.document_id !== 35);
-  //         if (groups['LIC Policy Collateral'].length === 0)
-  //           delete groups['LIC Policy Collateral'];
-  //       }
-
-  //       // Add photo to FD group if FD docs present but no LIC docs
-  //       if (hasFD && !hasLIC) {
-  //         if (!groups['Fixed Deposit Collateral']) groups['Fixed Deposit Collateral'] = [];
-  //         const alreadyInFD = groups['Fixed Deposit Collateral'].some(d => d.document_id === 35);
-  //         if (!alreadyInFD) groups['Fixed Deposit Collateral'].unshift({ ...photoDoc });
-  //       }
-
-  //       // If BOTH LIC and FD present, duplicate photo into FD too
-  //       if (hasFD && hasLIC) {
-  //         if (!groups['Fixed Deposit Collateral']) groups['Fixed Deposit Collateral'] = [];
-  //         const alreadyInFD = groups['Fixed Deposit Collateral'].some(d => d.document_id === 35);
-  //         if (!alreadyInFD) groups['Fixed Deposit Collateral'].unshift({ ...photoDoc });
-  //       }
-  //     }
-  //   }
-
-  //   const order = subSectionOrder[tab] || Object.keys(groups);
-  //   return order
-  //     .filter(name => groups[name] && groups[name].length > 0)
-  //     .map(name => ({ name, docs: groups[name] }));
-  // }
-
-function getGroupedDocsForTab(tab, data = appData) {
+  function getGroupedDocsForTab(tab, data = appData) {
   const docs = getDocsForTab(tab);
 
   // All tabs except collateral
@@ -782,45 +764,6 @@ function verifyDoc(docId) {
 
   {:else if appData}
 
-      {#if successMessage}
-      <div class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 flex flex-col items-center text-center gap-4 animate-fade-in">
-
-          <!-- Icon -->
-          <div class="w-16 h-16 rounded-full flex items-center justify-center
-            {successDecision === 'forward' ? 'bg-green-100' : 'bg-red-100'}">
-            {#if successDecision === 'forward'}
-              <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-              </svg>
-            {:else}
-              <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
-            {/if}
-          </div>
-
-          <!-- Text -->
-          <div>
-            <p class="text-lg font-bold text-gray-900 mb-1">
-              {successDecision === 'forward' ? 'Application Forwarded!' : 'Application Rejected'}
-            </p>
-            <p class="text-sm text-gray-500">{successMessage}</p>
-            <p class="text-xs text-gray-400 mt-2">Redirecting to dashboard…</p>
-          </div>
-
-          <!-- Progress bar -->
-          <div class="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              class="h-full rounded-full transition-all {successDecision === 'forward' ? 'bg-green-500' : 'bg-red-500'}"
-              style="animation: shrink 3s linear forwards;"
-            ></div>
-          </div>
-
-        </div>
-      </div>
-    {/if}
-
     <div class="w-full px-4 py-4 space-y-4">
 
         <!--  Applicant info -->
@@ -1180,7 +1123,108 @@ function verifyDoc(docId) {
   {/if}
 </div>
 
+<!-- REPLACE entire {#if showRemarkModal} block WITH: -->
 {#if showRemarkModal}
+  <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+
+      <!-- Header -->
+      <h3 class="text-base font-bold text-gray-800 mb-1">
+        {pendingDecision === 'forward' ? '✓ Forward' : '✕ Reject'} Application
+      </h3>
+      <p class="text-sm text-gray-500 mb-4">
+        Form: <span class="font-semibold">{formNo || appId}</span>
+      </p>
+
+      {#if pendingDecision === 'reject'}
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          Select Reject Reason <span class="text-red-500">*</span>
+        </label>
+        {#if rejectReasonsLoading}
+          <p class="text-sm text-gray-400 py-3">Loading reasons...</p>
+        {:else if rejectReasons.length === 0}
+          <p class="text-sm text-red-400 py-3">No reject reasons found.</p>
+        {:else}
+          <select
+            bind:value={selectedReasonCode}
+            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-red-400 mb-3"
+          >
+            <option value="">-- Select a reason --</option>
+            {#each rejectReasons as reason}
+              <option value={reason.reason_code}>
+                {reason.reason_text_english} — {reason.reason_text_marathi}
+              </option>
+            {/each}
+          </select>
+        {/if}
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          Additional Remark <span class="text-gray-400">(optional)</span>
+        </label>
+        <textarea
+          bind:value={decisionRemark}
+          rows="2"
+          placeholder="Any additional notes..."
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 resize-none"
+        ></textarea>
+      {:else}
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          Remark <span class="text-gray-400">(optional)</span>
+        </label>
+        <textarea
+          bind:value={decisionRemark}
+          rows="3"
+          placeholder="Enter your remark..."
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
+        ></textarea>
+      {/if}
+
+      <div class="flex gap-3 mt-4 justify-end">
+        <button
+          on:click={() => { showRemarkModal = false; pendingDecision = ''; selectedReasonCode = ''; decisionRemark = ''; }}
+          disabled={isSubmitting}
+          class="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-40"
+        >Cancel</button>
+
+        <button
+          on:click={confirmDecision}
+          disabled={isSubmitting || (pendingDecision === 'reject' && !selectedReasonCode)}
+          class="px-5 py-2 text-sm font-bold text-white rounded transition-colors disabled:opacity-50 flex items-center gap-2
+            {pendingDecision === 'forward' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}"
+        >
+          {#if isSubmitting}
+            <!-- Spinner -->
+            <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            </svg>
+            Submitting...
+          {:else}
+            {pendingDecision === 'forward' ? '✓ Confirm Forward' : '✕ Confirm Reject'}
+          {/if}
+        </button>
+      </div>
+    </div>
+  </div>
+{/if}
+
+<!-- Toast notification — add this right after the modal -->
+{#if showToast}
+  <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-5 py-3 rounded-xl shadow-lg text-sm font-semibold transition-all
+    {toastType === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}">
+    {#if toastType === 'success'}
+      <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+      </svg>
+    {:else}
+      <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    {/if}
+    {toastMessage}
+  </div>
+{/if}
+
+<!-- {#if showRemarkModal}
   <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
       <h3 class="text-base font-bold text-gray-800 mb-1 capitalize">
@@ -1212,11 +1256,5 @@ function verifyDoc(docId) {
       </div>
     </div>
   </div>
-{/if}
+{/if} -->
 
-<style>
-  @keyframes shrink {
-    from { width: 100%; }
-    to   { width: 0%; }
-  }
-</style>

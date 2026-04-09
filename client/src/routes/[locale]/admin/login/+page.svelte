@@ -3,7 +3,7 @@
   import { page } from '$app/stores';
   import { i18n } from '$lib/i18n';
   import { onMount } from 'svelte';
-import { adminLogin, validateAdminToken } from '$lib/api/adminapi.js';
+  import { adminLogin, validateAdminToken } from '$lib/api/adminapi.js';
 
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
@@ -54,7 +54,7 @@ async function handleLogin() {
   try {
         const result = await adminLogin(formData.username, formData.password);
             console.log('=== ADMIN LOGIN SUCCESS ===');
-            console.log('Access Token:', result.access_token);
+           // console.log('Access Token:', result.access_token);
 
         if (result.error !== 0) {
         submitError = result.errorMsg;

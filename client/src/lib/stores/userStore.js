@@ -28,7 +28,6 @@ function setTokenToStorage(value) {
     else localStorage.removeItem('accessToken');
 }
 
-
 // Initialize from localStorage
 const storedUser = getFromLocalStorage('authUser');
 const storedToken = getTokenFromStorage();

@@ -29,7 +29,7 @@
     };
 
 
-    $: console.log("User data is______:", userData);
+    //$: console.log("User data is______:", userData);
   
     // onMount(() => {
     //   if (typeof window !== 'undefined') {
@@ -210,7 +210,6 @@ let submittedDate = null;
   }
 
   
-
 //   async function startNewApplication() {
 //   try {
 //     // Create new application
@@ -379,7 +378,6 @@ let submittedDate = null;
           applicationId={$applicationId}
           {userData}
         />
-
 
           <!-- end te sucessfuly submission data----------------------------- -->
 

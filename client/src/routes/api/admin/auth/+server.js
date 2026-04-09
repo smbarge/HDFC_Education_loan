@@ -2,6 +2,7 @@ import { json } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 
 // ─── POST: Login ───────────────────────────────────────────────────────────
+
 export async function POST({ request, cookies }) {
   const { username, password } = await request.json();
 
@@ -49,7 +50,7 @@ export async function GET({ cookies }) {
   // Read HttpOnly refresh token — only server can access this
   const refreshToken = cookies.get('adminRefreshToken');
 
-  console.log('Refresh attempt — token found:', !!refreshToken);
+  //console.log('Refresh attempt — token found:', !!refreshToken);
 
   if (!refreshToken) {
     return json({ error: -1, errorMsg: 'No refresh token. Please login again.' }, { status: 401 });
