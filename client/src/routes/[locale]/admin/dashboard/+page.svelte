@@ -5,10 +5,9 @@
   import { onMount } from 'svelte';
 
   import { getDistrictApplicationsPaginated, validateAdminToken, clearAdminSession, refreshAdminToken } from '$lib/api/adminapi.js';
+  import { reSubmitApplication } from '$lib/api/authApi';
 
 
-
-  
   // getDistrictApplications
 
   $: locale = $page.params.locale || 'en';
@@ -40,10 +39,17 @@
 
   // Stats
   $: totalCandidates = serverTotal || candidates.length;
-  $: approved = candidates.filter(c => c.status === 'Forwarded').length;
-  $: pending = candidates.filter(c => c.status === 'Pending').length;
-  $: underReview = candidates.filter(c => c.status === 'Under Review').length;
-  $: rejected = candidates.filter(c => c.status === 'Rejected').length;
+  let serverApproved = 0;
+  let serverPending = 0;
+  let serverRejected = 0;
+  let serverUnderReview = 0; 
+  let serverResubmitapplication = 0;
+
+  $: approved = serverApproved;
+  $: pending = serverPending;
+  $: rejected = serverRejected;
+  $: underReview = serverUnderReview; 
+  $: resubmitted  = serverResubmitapplication;
 
   // Unique districts for filter
   $: districts = [...new Set(candidates.map(c => c.district).filter(Boolean))];
@@ -131,24 +137,24 @@
       await fetchCandidates(1);
     });
 
-    function mapStatus(statusId, statusName) {
-    if (statusId == 4 || statusId == 8 || statusId == 9) return 'Forwarded';
-    if (statusId == 5 || statusId == 6 || statusId == 7) return 'Rejected';
-    if (statusId == 3) return 'Under Review';
-    if (statusId == 2) return 'Pending';
-    return 'Pending';
-  }
+   function mapStatus(statusId, statusName) {
+  if (statusId == 4 || statusId == 8 || statusId == 9) return 'Forwarded';
+  if (statusId == 5 || statusId == 6 || statusId == 7) return 'Rejected';
+  if (statusId == 3) return 'Under Review';
+  if (statusId == 10) return 'Resubmitted';  //--add this
+  if (statusId == 2) return 'Pending';
+  return 'Pending';
+}
 
 function mapVerifyStatus(app) {
   const answerCount = parseInt(app.answer_count) || 0;
   const status = mapStatus(app.application_status, app.application_status_name);
-
-  if (status === 'Forwarded') return 'Forwarded';
-  if (status === 'Rejected')  return 'Rejected';
-  if (answerCount > 0)        return 'continue'; 
-  return 'verify';                               
+  if (status === 'Forwarded')   return 'Forwarded';
+  if (status === 'Rejected')    return 'Rejected';
+  if (status === 'Resubmitted') return 'verify';   // ← ADD THIS — always show Verify
+  if (answerCount > 0)          return 'continue';
+  return 'verify';
 }
-
   async function fetchCandidates(page = 1) {
   isLoading = true;
   fetchError = '';
@@ -160,6 +166,14 @@ function mapVerifyStatus(app) {
       serverTotal      = result.total;
       serverTotalPages = result.totalPages;
       currentPage      = result.page;
+<<<<<<< HEAD
+=======
+      serverApproved   = result.approved || 0;
+      serverPending    = result.pending  || 0;
+      serverRejected   = result.rejected || 0;
+      serverUnderReview = result.underReview || 0; 
+      serverResubmitapplication = result.resubmitted ||0;
+>>>>>>> 406badd1094994bbd2fbf0fb62f14d8912dc31ae
 
       candidates = (result.applications || []).map(app => ({
         id:            app.id,
@@ -193,27 +207,45 @@ function mapVerifyStatus(app) {
     window.open(`/${locale}/admin/view-application?appId=${candidate.id}`, '_blank');
   }
 
+  // function openVerifyApplication(candidate) {
+  //   goto(`/${locale}/admin/verify-application1?appId=${candidate.id}&formNo=${encodeURIComponent(candidate.applicationId || '')}`, '_blank');
+  // }
+
   function openVerifyApplication(candidate) {
+  if (candidate.status === 'Resubmitted') {
+    // Resubmitted applications → separate Level-2 verification page
+    goto(
+      `/${locale}/admin/verify-resubmit` +
+      `?appId=${candidate.id}` +
+      `&formNo=${encodeURIComponent(candidate.applicationId || '')}`,
+      '_blank'
+    );
+  } else {
+    // All other statuses → existing Level-1 verification page
     goto(`/${locale}/admin/verify-application1?appId=${candidate.id}&formNo=${encodeURIComponent(candidate.applicationId || '')}`, '_blank');
   }
+}
 
 function handleLogout() {
     clearAdminSession();
     goto(`/${locale}/admin`);
   }
 
+
 function statusColor(status) {
-  if (status === 'Forwarded') return 'bg-green-100 text-green-700 border-green-200';
-  if (status === 'Rejected') return 'bg-red-100 text-red-700 border-red-200';
+  if (status === 'Forwarded')    return 'bg-green-100 text-green-700 border-green-200';
+  if (status === 'Rejected')     return 'bg-red-100 text-red-700 border-red-200';
   if (status === 'Under Review') return 'bg-red-50 text-red-400 border-red-200';
+  if (status === 'Resubmitted')  return 'bg-blue-100 text-blue-700 border-blue-200';  // ← ADD
   if (status === 'Pending')      return 'bg-yellow-100 text-yellow-700 border-yellow-200';
   return 'bg-yellow-100 text-yellow-700 border-yellow-200';
 }
 
 function statusDot(status) {
-  if (status === 'Forwarded') return 'bg-green-500';
-  if (status === 'Rejected') return 'bg-red-500';
+  if (status === 'Forwarded')    return 'bg-green-500';
+  if (status === 'Rejected')     return 'bg-red-500';
   if (status === 'Under Review') return 'bg-red-300';
+  if (status === 'Resubmitted')  return 'bg-blue-500';   // ← ADD
   if (status === 'Pending')      return 'bg-yellow-500';
   return 'bg-yellow-500';
 }
@@ -375,7 +407,22 @@ function formatDate(dateStr) {
           <p class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">{rejected}</p>
         </div>
       </div>
+
+      <!-- resubmitt?ed -->
+       <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 sm:p-4 lg:p-6 flex items-center gap-2 sm:gap-3 lg:gap-4">
+        <div class="w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-xl bg-purple-100 flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-[10px] sm:text-xs lg:text-sm text-gray-500 font-medium">Resubmitted Application</p>
+          <p class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">{resubmitted}</p>
+        </div>
     </div>
+    </div>
+
+     
 
     <!-- Table Section -->
     <div>

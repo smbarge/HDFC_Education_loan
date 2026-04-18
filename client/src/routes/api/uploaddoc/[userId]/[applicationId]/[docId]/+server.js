@@ -17,6 +17,8 @@ export async function POST({ params, request }) {
     const formData = await request.formData();
     const file = formData.get('file');
     const document_id = formData.get('document_id');
+    const isResubmit = formData.get('is_resubmit') === 'true'; 
+
 
     if (!file || !document_id) {
       return json({ error: -1, errorMsg: 'File and document_id are required' });
@@ -40,18 +42,32 @@ export async function POST({ params, request }) {
     const relativeFilePath = `/uploads/${userId}/${applicationId}/${fileName}`;
 
     //Delete existing document with same doc_key (replace strategy)
-    await pool.query(
+    // await pool.query(
+    //   `DELETE FROM public.upload_docs WHERE application_id = $1 AND document_id = $2`,
+    //   [applicationId, document_id]
+    // );
+
+    //       await pool.query(
+    //     `INSERT INTO public.upload_docs 
+    //       (seq_no, application_id, document_id, document_name, document_size, file_name, org_filename, status, upload_date, created_at, updated_at)
+    //     VALUES (nextval('upload_docs1_seq_no_seq'), $1, $2, $3, $4, $5, $6, 1, NOW(), NOW(), NOW())`,
+    //     [applicationId, document_id, file.name, file.size, relativeFilePath, file.name]
+    //   );
+
+   if (!isResubmit) {
+      // Normal upload: insert into upload_docs with status=1
+     await pool.query(
       `DELETE FROM public.upload_docs WHERE application_id = $1 AND document_id = $2`,
       [applicationId, document_id]
     );
 
-          await pool.query(
+     await pool.query(
         `INSERT INTO public.upload_docs 
-          (seq_no, application_id, document_id, document_name, document_size, file_name, org_filename, status, upload_date, created_at, updated_at)
+        (seq_no, application_id, document_id, document_name, document_size, file_name, org_filename, status, upload_date, created_at, updated_at)
         VALUES (nextval('upload_docs1_seq_no_seq'), $1, $2, $3, $4, $5, $6, 1, NOW(), NOW(), NOW())`,
         [applicationId, document_id, file.name, file.size, relativeFilePath, file.name]
       );
-
+    }
     return json({
       error: 0,
       errorMsg: 'Document uploaded successfully',

@@ -25,12 +25,15 @@
   let submitError = '';
   let showSuccessModal = false;
   let agreeChecked = false;
+    let applicantPhoto = null;
+
 
   $: userData = $user
-    ? { name: $user.name || '', phone: $user.mobile || '', username: $user.username || '' }
-    : { name: '', phone: '', username: '' };
+    ? { name: $user.name || '', phone: $user.mobile || '', username: $user.username || '', photo: applicantPhoto || $user.photo || null  }
+    : { name: '', phone: '', username: '', photo: null };
 
   $: isReviewMode = $page.url.searchParams.get('mode') === 'review';
+
 
   // onMount(async () => {
 
@@ -79,7 +82,18 @@
       }
       
     try {
-      const result = await getViewApplicationData($user.id, $applicationId);
+    //  const result = await getViewApplicationData($user.id, $applicationId);
+     const result = await getViewApplicationData($user.id, $applicationId);
+          if (result.error === 0 && result.data?.documents?.photo) {
+            applicantPhoto = result.data.documents.photo;
+            userData = {
+              ...$user,
+              name: $user.name || '',
+              phone: $user.mobile || '',
+              username: $user.username || '',
+              photo: applicantPhoto || ''
+            };
+          }
       if (result.error !== 0) {
         error = result.errorMsg || 'Failed to load application';
       } else {
@@ -626,17 +640,7 @@
             <h3 class="text-white text-lg font-bold tracking-wide">{t.step4.companyName}</h3>
             <p class="text-purple-200 text-sm mt-0.5">{t.dashboard.applicationId} :<span class="font-bold text-white">#{$applicationId}</span></p>
           </div>
-          {#if isReviewMode}
-            <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-amber-400 text-amber-900 rounded-full text-xs font-bold self-start sm:self-auto">
-              <span class="w-2 h-2 rounded-full bg-amber-700 animate-pulse"></span>
-              Pending Submission
-            </span>
-          {:else}
-            <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-green-400 text-green-900 rounded-full text-xs font-bold self-start sm:self-auto">
-              <span class="w-2 h-2 rounded-full bg-green-700 animate-pulse"></span>
-              {t.dashboard.applicationSubmittedLabel} — {t.dashboard.UnderReview}
-            </span>
-          {/if}
+         
         </div>
       </div>
 

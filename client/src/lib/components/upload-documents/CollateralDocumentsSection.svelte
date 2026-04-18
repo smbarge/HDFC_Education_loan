@@ -12,10 +12,35 @@
   export let onDelete = () => {};
   export let uploadedDocs = {};
   export let uploadErrors = {};
+  export let rejectedDocsMap = {};
+
+//   const collateralTypeKeyMap = {
+//   'property':      { 'aadharCard': 45, 'propertyOwnership': 20, 'extract712': 21, 'prCard': 22, 'valuationCert': 23, 'form24A': 24 },
+//   'fd':            { 'aadharCard': 46, 'aadharCardXerox': 46, 'photoWithSign': 35, 'fdReceipt': 36, 'bankConfirmation': 37, 'fdStatement': 38 },
+//   'lic':           { 'aadharCard': 47, 'photoWithSign': 30, 'licPolicyOriginal': 31, 'premiumReceipts': 32, 'policyBond': 33, 'policyStatus': 34 },
+//   'govt-employee': { 'aadharCard': 48, 'govtIdCard': 25, 'salaryCert': 26, 'officeCert': 27, 'retirementProof': 28, 'form24B': 29 },
+// };
+
+const collateralTypeKeyMap = {
+  'property':      { 'propertyAadharCard': 45, 'propertyOwnership': 20, 'extract712': 21, 'prCard': 22, 'valuationCert': 23, 'form24A': 24 },
+  'fd':            { 'fdAadharCardXerox': 46, 'fdPhotoWithSign': 35, 'fdReceipt': 36, 'bankConfirmation': 37, 'fdStatement': 38 },
+  'lic':           { 'licAadharCard': 47, 'licPhotoWithSign': 30, 'licPolicyOriginal': 31, 'premiumReceipts': 32, 'policyBond': 33, 'policyStatus': 34 },
+  'govt-employee': { 'govtAadharCard': 48, 'govtIdCard': 25, 'salaryCert': 26, 'officeCert': 27, 'retirementProof': 28, 'form24B': 29 },
+};
 
 
+
+function getDocIssues(collateralType, docKey) {
+  const masterId = String(collateralTypeKeyMap[collateralType]?.[docKey] || '');
+  if (!masterId) return [];
+  const flagged = rejectedDocsMap[masterId];
+  if (!flagged?.failingQuestions?.length) return [];
+  return flagged.failingQuestions.filter(q => q.instructionEng);
+}
+  
   const documentsMap = {
     property: [
+      // { id: 'aadharCard', key: 'propertyAadharCard', required: true },
       { id: 'aadharCard', key: 'propertyAadharCard', required: true },
       { id: 'propertyOwnership', key: 'propertyOwnership', required: true },
       { id: 'extract712', key: 'extract712', required: true },
@@ -119,11 +144,25 @@
               error={uploadErrors[`collateral_${type}_${index}_${doc.id}`] || ''}
               docId={`collateral_${type}_${index}_${doc.id}`}
             />
+
+            {#if getDocIssues(type, doc.id).length > 0}
+            {#each getDocIssues(type, doc.id) as q}
+            <div class="mb-2 ml-2 mr-2 bg-red-50 border-l-4 border-red-400 rounded-r-lg px-4 py-2 flex items-start gap-2">
+              <svg class="w-3.5 h-3.5 text-red-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+              </svg>
+              <p class="text-xs text-red-700"><strong>Issue:</strong> {q.instructionEng}</p>
+            </div>
+          {/each}
+        {/if}
+            
             {#if doc.showNote}
               <p class="text-xs text-orange-600 italic ml-4 mb-2">
                 {t.uploadDocuments?.CollateralDocuments?.note}: {t.uploadDocuments?.CollateralDocuments?.photoNote}
               </p>
             {/if}
+            
           </div>
         {/each}
       </div>

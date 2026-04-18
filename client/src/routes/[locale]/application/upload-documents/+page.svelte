@@ -42,9 +42,6 @@ import {
     validateAllRequiredDocuments,
   } from '$lib/validation/application/uploaddocuments';
 
-
-
-
   $: locale = $page.params.locale || 'en';
   $: t = i18n[locale];
 

@@ -569,7 +569,8 @@ export async function GET({ params, url,request }) {
                 6: 'cancelled',
                 7: 'expired',
                 8: 'sanctioned',
-                9: 'disbursed'
+                9: 'disbursed',
+                10 : 'resubmitted'
             };
 
             return json({

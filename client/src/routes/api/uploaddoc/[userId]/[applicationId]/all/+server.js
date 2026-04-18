@@ -22,6 +22,7 @@ export async function GET({ params ,request}) {
         ud.file_name,
         ud.org_filename,
         ud.status,
+        ud.iteration,
         mu.eng_name,
         mu.dev_name,
         mu.upload_for

@@ -104,14 +104,15 @@ const client = await pool.connect();
 
     // 8. Uploaded Documents (photo + signature)
 const docsResult = await client.query(
-  `SELECT u.file_name, u.org_filename, u.document_id, u.document_name,
+  `SELECT DISTINCT ON (u.document_id)
+          u.file_name, u.org_filename, u.document_id, u.document_name,
           m.eng_name as master_doc_name, m.upload_for as section_id,
           dt.eng_name as section_name
    FROM upload_docs u
    LEFT JOIN m_upload_docs m ON m.id = u.document_id
    LEFT JOIN m_document_type dt ON dt.id = m.upload_for
-   WHERE u.application_id = $1 AND u.status = 1
-   ORDER BY m.upload_for, m.id`,
+   WHERE u.application_id = $1
+   ORDER BY u.document_id, u.updated_at DESC`,
   [applicationId]
 );
 

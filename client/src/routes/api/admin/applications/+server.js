@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import pool from '$lib/db.js';
+import { reSubmitApplication } from '$lib/api/authApi';
 
 export async function GET({ url, request }) {
   const authHeader = request.headers.get('authorization');
@@ -64,13 +65,15 @@ export async function GET({ url, request }) {
       
     );
 
-    let approved = 0, pending = 0, rejected = 0;
+    let approved = 0, pending = 0, rejected = 0,underReview = 0,resubmitted = 0;
     statsResult.rows.forEach(r => {
       const status = Number(r.application_status);
 
       if ([4, 8, 9].includes(status)) approved += parseInt(r.cnt);
       else if ([5, 6, 7].includes(status)) rejected += parseInt(r.cnt);
-      else if ([2, 3].includes(status)) pending += parseInt(r.cnt);
+     else if (status === 3)           underReview  += parseInt(r.cnt);  // ← split out
+  else if (status === 2)           pending      += parseInt(r.cnt);  // ← only status 2
+  else if (status === 10)             resubmitted   += parseInt(r.cnt); 
 
     });
     
@@ -110,6 +113,8 @@ export async function GET({ url, request }) {
       approved,
       pending,
       rejected,
+      underReview,
+      resubmitted,
       page,
       perPage,
       totalPages: Math.ceil(totalCount / perPage),
@@ -127,7 +132,6 @@ export async function GET({ url, request }) {
 
 // import { json } from '@sveltejs/kit';
 // import pool from '$lib/db.js';
-
 
 // export async function GET({ url, request }) {
 //   const authHeader = request.headers.get('authorization');

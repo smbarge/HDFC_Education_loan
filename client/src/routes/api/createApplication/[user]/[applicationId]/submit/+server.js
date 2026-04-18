@@ -33,8 +33,7 @@ export async function POST({ params,request }) {
         { status: 404 }
       );
     }
-    // Update personal_details.application_status = 'submitted'
-    // This stores the status text from m_application_status id=2 (Submitted)
+   
     await client.query(
     `UPDATE personal_details
       SET application_status = 2,verification_status = '00',

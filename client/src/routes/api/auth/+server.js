@@ -163,7 +163,7 @@ export async function POST({ request }) {
                     sub: user.username
                 },
                 JWT_SECRET,
-                { expiresIn: '1m' }
+                { expiresIn: '10m' }
             );
 
             const refresh_token = jwt.sign(
