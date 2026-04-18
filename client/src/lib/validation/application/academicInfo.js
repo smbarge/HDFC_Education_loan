@@ -10,8 +10,16 @@ const academicInfoValidation = create((data, t) => {
     enforce(data.studentName).longerThanOrEquals(3);
   });
 
+  test('studentName', t?.academicInfo?.studentNameFormat || 'Student Name must contain letters and numbers only (no spaces)', () => {
+  enforce(data.studentName).matches(/^[A-Za-z0-9][A-Za-z0-9 ]*$/);
+  });
+
   test('courseName', t?.academicInfo?.courseNameRequired || 'Course name is required', () => {
     enforce(data.courseName).isNotEmpty();
+  });
+
+  test('courseName', t?.academicInfo?.courseNameFormat || 'Course Name must contain letters and numbers only (no spaces)', () => {
+  enforce(data.courseName).matches(/^[A-Za-z0-9][A-Za-z0-9 ]*$/);
   });
 
   test('courseType', t?.academicInfo?.courseTypeRequired || 'Course type is required', () => {
@@ -39,13 +47,26 @@ const academicInfoValidation = create((data, t) => {
     enforce(data.instituteName).isNotEmpty();
   });
 
+  test('instituteName', t?.academicInfo?.instituteNameFormat || 'Institute/College Name must contain letters and numbers only (no spaces)', () => {
+  enforce(data.instituteName).matches(/^[A-Za-z0-9][A-Za-z0-9 ]*$/);
+  });  
+
   test('universityName', t?.academicInfo?.universityNameRequired || 'University/Board name is required', () => {
     enforce(data.universityName).isNotEmpty();
   });
 
+  test('universityName', t?.academicInfo?.universityNameFormat || 'University/Board Name must contain letters and numbers only (no spaces)', () => {
+  enforce(data.universityName).matches(/^[A-Za-z0-9][A-Za-z0-9 ]*$/);
+  });    
+
   test('instituteAddress', t?.academicInfo?.instituteAddressRequired || 'Institute address is required', () => {
     enforce(data.instituteAddress).isNotEmpty();
   });
+
+  test('instituteAddress', t?.academicInfo?.instituteAddressFormat || 'Institute address must contain letters and numbers only (no spaces)', () => {
+  enforce(data.instituteAddress).matches(/^[A-Za-z0-9][A-Za-z0-9 ]*$/);
+  });    
+
 
   test('currentDistrict', t?.academicInfo?.districtRequired || 'District is required', () => {
     enforce(data.currentDistrict).isNotEmpty();
@@ -119,6 +140,10 @@ const academicInfoValidation = create((data, t) => {
     enforce(data.bankName).isNotEmpty();
   });
 
+  test('bankName', t?.academicInfo?.bankNameFormat || 'Bank Name must contain letters and numbers only (no spaces)', () => {
+  enforce(data.bankName).matches(/^[A-Za-z0-9][A-Za-z0-9 ]*$/);
+  });    
+
   test('ifscCode', t?.academicInfo?.ifscCodeRequired || 'IFSC code is required', () => {
     enforce(data.ifscCode).isNotEmpty();
   });
@@ -131,6 +156,10 @@ const academicInfoValidation = create((data, t) => {
     enforce(data.branchName).isNotEmpty();
   });
 
+  test('branchName', t?.academicInfo?.branchNameFormat || 'Branch Name must contain letters and numbers only (no spaces)', () => {
+  enforce(data.branchName).matches(/^[A-Za-z0-9][A-Za-z0-9 ]*$/);
+  });  
+
   test('accountNumber', t?.academicInfo?.accountNumberRequired || 'Account number is required', () => {
     enforce(data.accountNumber).isNotEmpty();
   });
@@ -142,6 +171,15 @@ const academicInfoValidation = create((data, t) => {
   test('bankAddress', t?.academicInfo?.bankAddressRequired || 'Bank address is required', () => {
     enforce(data.bankAddress).isNotEmpty();
   });
+
+  test('bankAddress', t?.academicInfo?.bankMinLength || 'Bank address must be at least 3 characters', () => {
+    enforce(data.bankAddress).longerThanOrEquals(3);
+  });
+
+  test('bankAddress', t?.academicInfo?.bankFormat || 'Bank address must contain letters and numbers only (no spaces)', () => {
+  enforce(data.bankAddress).matches(/^[A-Za-z0-9][A-Za-z0-9 ]*$/);
+  });
+
 });
 
 export default academicInfoValidation;

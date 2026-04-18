@@ -24,7 +24,7 @@ const registrationStartValidation = create((data, t) => {
     'name',
     t?.errors?.nameOnlyCharacters || 'Name must contain only letters',
     () => {
-      enforce(data.name).matches(/^[A-Za-z\s]+$/);
+      enforce(data.name).matches(/^[A-Za-z]+$/);
     }
   );
 

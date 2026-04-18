@@ -11,6 +11,10 @@ const guarantorDetailsValidation = create((data, t) => {
     enforce(data.guarantorFullName).longerThanOrEquals(3);
   });
 
+  test('guarantorFullName', t?.guarantorDetails?.guarantorFullNameFormat || 'Full name must contain letters and numbers only (no spaces)', () => {
+  enforce(data.guarantorFullName).matches(/^[A-Za-z][A-Za-z ]*$/);
+  });   
+
   // Date of Birth
   test('guarantorDOB', t?.guarantorDetails?.guarantorDOBRequired || 'Date of birth is required', () => {
     enforce(data.guarantorDOB).isNotEmpty();
@@ -56,6 +60,10 @@ const guarantorDetailsValidation = create((data, t) => {
     enforce(data.currentStreetAddress).isNotEmpty();
   });
 
+  test('currentStreetAddress', t?.guarantorDetails?.currentStreetAddressFormat || 'Street address must contain letters and numbers only (no spaces)', () => {
+  enforce(data.currentStreetAddress).matches(/^[A-Za-z0-9][A-Za-z0-9 ]*$/);
+  });     
+
   test('currentDistrict', t?.guarantorDetails?.currentDistrictRequired || 'District is required', () => {
     enforce(data.currentDistrict).isNotEmpty();
   });
@@ -86,6 +94,10 @@ const guarantorDetailsValidation = create((data, t) => {
   test('permanentStreetAddress', t?.guarantorDetails?.permanentStreetAddressRequired || 'Street address is required', () => {
     enforce(data.permanentStreetAddress).isNotEmpty();
   });
+
+  test('permanentStreetAddress', t?.guarantorDetails?.permanentStreetAddressFormat || 'Street address must contain letters and numbers only (no spaces)', () => {
+  enforce(data.permanentStreetAddress).matches(/^[A-Za-z0-9][A-Za-z0-9 ]*$/);
+  });     
 
   test('permanentDistrict', t?.guarantorDetails?.permanentDistrictRequired || 'District is required', () => {
     enforce(data.permanentDistrict).isNotEmpty();

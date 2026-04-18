@@ -982,12 +982,14 @@ async function handleProceed() {
           </label>
           <input
             type="text"
-            bind:value={formData.gstNumber}
-            on:input={() => validateField('gstNumber')}
+            value={formData.gstNumber}
+            on:input={(e) => {
+              formData.gstNumber = e.target.value.toUpperCase();
+              validateField('gstNumber');
+            }}
             placeholder={t.academicInfo?.gstNumberPlaceholder}
             maxlength="15"
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.gstNumber ? 'border-red-500' : 'border-gray-300'}"
-            style="text-transform: uppercase;"
           />
           {#if errors.gstNumber}
             <p class="error-message mt-1 text-xs text-red-600">{errors.gstNumber}</p>
@@ -1034,12 +1036,14 @@ async function handleProceed() {
           </label>
           <input
             type="text"
-            bind:value={formData.ifscCode}
-            on:input={() => validateField('ifscCode')}
+            value={formData.ifscCode}
+            on:input={(e) => {
+              formData.ifscCode = e.target.value.toUpperCase();
+              validateField('ifscCode');
+            }}
             placeholder={t.academicInfo?.ifscCodePlaceholder}
             maxlength="11"
             class="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {errors.ifscCode ? 'border-red-500' : 'border-gray-300'}"
-            style="text-transform: uppercase;"
           />
           {#if errors.ifscCode}
             <p class="error-message mt-1 text-xs text-red-600">{errors.ifscCode}</p>

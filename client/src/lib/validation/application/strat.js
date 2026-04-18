@@ -42,6 +42,15 @@ const applicationStartValidation = create((data, t, fieldName) => {
     test('fullName', t?.applicationStart?.nameMinLength || 'Name must be at least 3 characters', () => {
       enforce(data.fullName).longerThanOrEquals(3);
     });
+
+    // Only letters (no spaces, no numbers, no special characters)
+    test(
+      'fullName',
+      t?.errors?.nameOnlyCharacters || 'Name must contain only letters',
+      () => {
+        enforce(data.fullName).matches(/^[A-Za-z]+$/);
+      }
+    );
   }
 
   if (only('dateOfBirth')) {

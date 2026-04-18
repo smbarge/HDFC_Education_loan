@@ -12,32 +12,28 @@ export async function GET({ url, request }) {
   const offset  = (page - 1) * perPage;
 
   try {
-    // Total count — all applications state-wide (excluding status 1 = draft)
+    // ── Total count — only Forwarded applications (status 4, 8, 9) ──
     const countResult = await pool.query(
       `SELECT COUNT(*) AS total
        FROM personal_details
-       WHERE application_status != 1`
+       WHERE application_status IN (4, 8, 9)`
     );
     const totalCount = parseInt(countResult.rows[0].total);
 
-    // State-wide stats breakdown
+    // ── Stats breakdown within Forwarded only ──
     const statsResult = await pool.query(
       `SELECT application_status, COUNT(*) AS cnt
        FROM personal_details
-       WHERE application_status != 1
+       WHERE application_status IN (4, 8, 9)
        GROUP BY application_status`
     );
 
-    let approved = 0, pending = 0, underReview = 0, rejected = 0;
+    let approved = 0;
     statsResult.rows.forEach(r => {
-      const s = Number(r.application_status);
-      if ([4, 8, 9].includes(s))      approved   += parseInt(r.cnt);
-      else if ([5, 6, 7].includes(s)) rejected   += parseInt(r.cnt);
-      else if (s === 3)               underReview += parseInt(r.cnt);
-      else if (s === 2)               pending     += parseInt(r.cnt);
+      approved += parseInt(r.cnt);
     });
 
-    // Paginated applications with all joins
+    // ── Paginated applications — Forwarded only ──
     const dataResult = await pool.query(
       `SELECT
         pd.id,
@@ -55,11 +51,11 @@ export async function GET({ url, request }) {
         (SELECT COUNT(*) FROM verification_answers va
          WHERE va.application_id = pd.id) AS answer_count
        FROM personal_details pd
-       JOIN m_district md         ON pd.district_id::numeric = md.dist_id
-       JOIN m_religion mr         ON pd.religion = mr.id
-       JOIN education_details ed  ON pd.id = ed.id
+       JOIN m_district md            ON pd.district_id::numeric = md.dist_id
+       JOIN m_religion mr            ON pd.religion = mr.id
+       JOIN education_details ed     ON pd.id = ed.id
        JOIN m_application_status mas ON pd.application_status = mas.id
-       WHERE pd.application_status != 1
+       WHERE pd.application_status IN (4, 8, 9)
        ORDER BY pd.updated_at DESC
        LIMIT $1 OFFSET $2`,
       [perPage, offset]
@@ -67,11 +63,12 @@ export async function GET({ url, request }) {
 
     return json({
       error:        0,
+      errorMsg:     '',
       total:        totalCount,
       approved,
-      pending,
-      underReview,
-      rejected,
+      pending:      0,
+      underReview:  0,
+      rejected:     0,
       page,
       perPage,
       totalPages:   Math.ceil(totalCount / perPage),

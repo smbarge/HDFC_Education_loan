@@ -38,11 +38,6 @@
   let showModal = false;
 
   // Stats
-  // $: totalCandidates = serverTotal || candidates.length;
-  // $: approved = candidates.filter(c => c.status === 'Forwarded').length;
-  // $: pending = candidates.filter(c => c.status === 'Pending' || c.status === 'Under Review').length;
-  // $: rejected = candidates.filter(c => c.status === 'Rejected').length;
-
   $: totalCandidates = serverTotal || candidates.length;
   let serverApproved = 0;
   let serverPending = 0;
@@ -168,11 +163,7 @@ function mapVerifyStatus(app) {
     if (result.error !== 0) {
       fetchError = result.errorMsg || 'Failed to load candidates';
     } else {
-      // serverTotal      = result.total;
-      // serverTotalPages = result.totalPages;
-      // currentPage      = result.page;
-
-       serverTotal      = result.total;
+      serverTotal      = result.total;
       serverTotalPages = result.totalPages;
       currentPage      = result.page;
       serverApproved   = result.approved || 0;
