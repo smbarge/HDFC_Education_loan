@@ -166,14 +166,11 @@ function mapVerifyStatus(app) {
       serverTotal      = result.total;
       serverTotalPages = result.totalPages;
       currentPage      = result.page;
-<<<<<<< HEAD
-=======
       serverApproved   = result.approved || 0;
       serverPending    = result.pending  || 0;
       serverRejected   = result.rejected || 0;
       serverUnderReview = result.underReview || 0; 
       serverResubmitapplication = result.resubmitted ||0;
->>>>>>> 406badd1094994bbd2fbf0fb62f14d8912dc31ae
 
       candidates = (result.applications || []).map(app => ({
         id:            app.id,
