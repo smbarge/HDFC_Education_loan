@@ -25,8 +25,14 @@ export async function POST({ request, cookies }) {
     }
 
     const payload       = JSON.parse(Buffer.from(data.access_token.split('.')[1], 'base64').toString());
+    const adminUsername = payload.preferred_username || '';
     const district      = payload.district || payload.given_name || username.replace('_admin', '');
-    const adminUsername = payload.preferred_username || username;
+
+    // Case-sensitive username check — submitted must exactly match JWT
+    if (username !== adminUsername) {
+      console.warn('Login blocked — username case mismatch. Submitted:', username, '| Actual:', adminUsername);
+      return json({ error: -1, errorMsg: 'Invalid credentials.' }, { status: 401 });
+    }
 
     console.log('Login success — user:', adminUsername, '| district:', district);
 
