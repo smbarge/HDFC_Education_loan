@@ -3,6 +3,7 @@
   import { customSendOtp, customVerifyOtp, customChangePassword } from '$lib/api/authApi.js';
    import { i18n } from '$lib/i18n';
     import { logout } from '$lib/stores/userStore';
+    
 
   export let locale = 'en';
 
@@ -12,7 +13,8 @@
   export let userData = {
     name: "",
     phone: "",
-    username: ""
+    username: "",
+    photo:""
   };
 
   

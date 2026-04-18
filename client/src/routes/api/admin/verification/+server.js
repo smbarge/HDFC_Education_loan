@@ -57,7 +57,7 @@ export async function GET({ request, url }) {
       ORDER BY id DESC LIMIT 1`,
       [application_id, office_id]
     );
-    const verification_id = verRes.rows.length > 0 ? verRes.rows[0].id : 1;
+    const verification_id = 1;
 
     // Load answers
     const ansRes = await client.query(
@@ -92,72 +92,133 @@ export async function POST({ request }) {
     const office_id = await getOfficeId(client, username);
 
     // saveAnswers
-    if (action === 'saveAnswers') {
-      const { application_id, answers, iteration = 1 } = body;
-      // answers = [ { checkpoint_id, question_id, answer } ]
+    // if (action === 'saveAnswers') {
+    //   const { application_id, answers, iteration = 1 } = body;
+    //   // answers = [ { checkpoint_id, question_id, answer } ]
 
-      // STEP 1: "Under Review" (status=3)
-      await client.query(
-        `UPDATE personal_details SET application_status = 3, updated_at = NOW() WHERE id = $1`,
-        [application_id]
-      );
+    //   // STEP 1: "Under Review" (status=3)
+    //   await client.query(
+    //     `UPDATE personal_details SET application_status = 3, updated_at = NOW() WHERE id = $1`,
+    //     [application_id]
+    //   );
 
-      // STEP 2: Check if verification row exists
-      // const verCheck = await client.query(
-      //   `SELECT id FROM verification
-      //    WHERE application_id = $1 AND office_id = $2 AND level = 1 AND iteration = $3
-      //    LIMIT 1`,
-      //   [application_id, office_id, iteration]
-      // );
+    //   // STEP 2: Check if verification row exists
+    //   // const verCheck = await client.query(
+    //   //   `SELECT id FROM verification
+    //   //    WHERE application_id = $1 AND office_id = $2 AND level = 1 AND iteration = $3
+    //   //    LIMIT 1`,
+    //   //   [application_id, office_id, iteration]
+    //   // );
     
 
-      // let verification_id;
-      // if (verCheck.rows.length > 0) {
-      //   // UPDATE existing row
-      //   verification_id = verCheck.rows[0].id;
-      //   await client.query(
-      //     `UPDATE verification SET status = 19, updated_at = NOW()
-      //      WHERE id = $1 AND application_id = $2`,
-      //     [verification_id, application_id]
-      //   );
-      // } else {
-      //   // INSERT new row
-      //   const maxRes = await client.query(
-      //     `SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM verification`
-      //   );
-      //   verification_id = maxRes.rows[0].next_id;
-      //   await client.query(
-      //     `INSERT INTO verification
-      //        (id, application_id, verification_type, level, user_id,
-      //         status, office_id, recommendation, remark, iteration)
-      //      VALUES ($1, $2, 1, 1, $3, 19, $4, 0, NULL, $5)`,
-      //     [verification_id, application_id, user_id, office_id, iteration]
-      //   );
-      // }
+    //   // let verification_id;
+    //   // if (verCheck.rows.length > 0) {
+    //   //   // UPDATE existing row
+    //   //   verification_id = verCheck.rows[0].id;
+    //   //   await client.query(
+    //   //     `UPDATE verification SET status = 19, updated_at = NOW()
+    //   //      WHERE id = $1 AND application_id = $2`,
+    //   //     [verification_id, application_id]
+    //   //   );
+    //   // } else {
+    //   //   // INSERT new row
+    //   //   const maxRes = await client.query(
+    //   //     `SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM verification`
+    //   //   );
+    //   //   verification_id = maxRes.rows[0].next_id;
+    //   //   await client.query(
+    //   //     `INSERT INTO verification
+    //   //        (id, application_id, verification_type, level, user_id,
+    //   //         status, office_id, recommendation, remark, iteration)
+    //   //      VALUES ($1, $2, 1, 1, $3, 19, $4, 0, NULL, $5)`,
+    //   //     [verification_id, application_id, user_id, office_id, iteration]
+    //   //   );
+    //   // }
 
-      //For the new status 
+    //   //For the new status 
 
-      // STEP 3: Upsert each answer
-      for (const ans of answers) {
-        const ansInt = ans.answer === 'yes' || ans.answer === 1 ? 1
-                     : ans.answer === 'no'  || ans.answer === 2 ? 2 : null;
-        if (ansInt === null) continue;
+    //   // STEP 3: Upsert each answer
+    //   // STEP 3: Upsert each answer
+    //     for (const ans of answers) {
+    //       const ansInt = ans.answer === 'yes' || ans.answer === 1 ? 1
+    //                   : ans.answer === 'no'  || ans.answer === 2 ? 2 : null;
+    //       if (ansInt === null) continue;
 
-        await client.query(
-          `INSERT INTO verification_answers
-             (application_id, office_id, checkpoint_id, question_id,
-              user_id, answer, level, verification_id, property_id, created_at, updated_at)
-           VALUES ($1, $2, $3, $4, $5, $6, 1, $7, 1, NOW(), NOW())
-           ON CONFLICT (application_id, office_id, question_id, verification_id, property_id)
-           DO UPDATE SET answer = $6, updated_at = NOW()`,
-          [application_id, office_id, ans.checkpoint_id, ans.question_id,
-           user_id, ansInt, verification_id]
-        );
-      }
+    //       // First try to update existing row
+    //       const updateRes = await client.query(
+    //         `UPDATE verification_answers
+    //         SET answer = $1, updated_at = NOW()
+    //         WHERE application_id = $2 AND office_id = $3 
+    //           AND question_id = $4 AND verification_id = $5`,
+    //         [ansInt, application_id, office_id, ans.question_id, verification_id]
+    //       );
 
-      await client.query('COMMIT');
-      return json({ error: 0, verification_id });
+    //       // If no row existed, insert fresh
+    //       if (updateRes.rowCount === 0) {
+    //         await client.query(
+    //           `INSERT INTO verification_answers
+    //             (application_id, office_id, checkpoint_id, question_id,
+    //               user_id, answer, level, verification_id, property_id, created_at, updated_at)
+    //           VALUES ($1, $2, $3, $4, $5, $6, 1, $7, 1, NOW(), NOW())`,
+    //           [application_id, office_id, ans.checkpoint_id, ans.question_id,
+    //           user_id, ansInt, verification_id]
+    //         );
+    //       }
+    //     }
+
+    //   await client.query('COMMIT');
+    //   return json({ error: 0, verification_id });
+    // }
+if (action === 'saveAnswers') {
+  const { application_id, answers, iteration = 1 } = body;
+
+  console.log('saveAnswers hit:', { application_id, answersCount: answers?.length, office_id, verification_id: 1 });
+
+  if (!answers || answers.length === 0) {
+    await client.query('ROLLBACK');
+    return json({ error: -1, errorMsg: 'No answers provided' });
+  }
+
+  for (const ans of answers) {
+    const ansInt = ans.answer === 'yes' || ans.answer === 1 ? 1
+                 : ans.answer === 'no'  || ans.answer === 2 ? 2 : null;
+    if (ansInt === null) continue;
+
+    console.log('Saving answer:', { application_id, office_id, question_id: ans.question_id, ansInt });
+
+    const updateRes = await client.query(
+      `UPDATE verification_answers
+       SET answer = $1, updated_at = NOW()
+       WHERE application_id = $2 AND office_id = $3
+         AND question_id = $4 AND verification_id = $5`,
+      [ansInt, application_id, office_id, ans.question_id, 1]
+    );
+
+    if (updateRes.rowCount === 0) {
+      await client.query(
+        `INSERT INTO verification_answers
+           (application_id, office_id, checkpoint_id, question_id,
+            user_id, answer, level, verification_id, property_id, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, 1, 1, 1, NOW(), NOW())`,
+        [application_id, office_id, ans.checkpoint_id, ans.question_id, user_id, ansInt]
+      );
     }
+  }
+
+  // ── CRITICAL: Restore status to "Under Review / Resubmitted" (10) ──
+  // Saving answers must NEVER change application status.
+  // Only finalDecision changes personal_details.
+  // await client.query(
+  //   `UPDATE personal_details
+  //    SET application_status = 10, updated_at = NOW()
+  //    WHERE id = $1
+  //      AND application_status != 10`,
+  //   [application_id]
+  // );
+
+  await client.query('COMMIT');
+  return json({ error: 0, verification_id: 1 });
+}
 
     // finalDecision: forward / reject / return 
     
@@ -212,15 +273,15 @@ export async function POST({ request }) {
 
       // REPLACE WITH:
           const maxRes = await client.query(
-            `SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM verification`
+           `SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM verification`
           );
-          const verification_id = maxRes.rows[0].next_id;
+          const id = maxRes.rows[0].next_id;
           await client.query(
             `INSERT INTO verification
               (id, application_id, verification_type, level, user_id,
                 status, office_id, recommendation, remark, iteration)
             VALUES ($1, $2, 1, 1, $3, $4, $5, $6, $7, $8)`,
-            [verification_id, application_id, user_id,
+            [id, application_id, user_id,
             newVerStatus, office_id, recommendation, remark || '', iteration]
           );
         // final change in the personal_details 
@@ -253,7 +314,7 @@ export async function POST({ request }) {
         }
         await client.query('COMMIT');
 
-      return json({ error: 0, verification_id, newVerStatus, newAppStatus });
+      return json({ error: 0, id, newVerStatus, newAppStatus });
     }
 
     await client.query('ROLLBACK');

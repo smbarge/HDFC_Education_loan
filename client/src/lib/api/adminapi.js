@@ -252,7 +252,6 @@ async function saveAnswers({ application_id, answers, iteration = 1 }) {
 // }
 
 
-// REPLACE WITH this complete correct version:
 async function submitDecision({ application_id, decision, remark, reason_codes = [], iteration = 1 }) {
   try {
     const token = getAdminToken();
@@ -298,7 +297,6 @@ async function submitDecision({ application_id, decision, remark, reason_codes =
     return { error: 1, errorMsg: err.message || 'Server error' };
   }
 }
-
 
 async function loadAnswers(application_id) {
   return getVerificationAnswers(application_id); 

@@ -1135,7 +1135,6 @@ const deleteDocument = async (userId, applicationId, docKey) => {
   return response.json();
 };
 
-
 //view application 
 
 async function getViewApplicationData(userId, applicationId) {
@@ -1196,6 +1195,187 @@ export async function notifyApplicationSubmission(userId, applicationId) {
   }
 }
 
+//________New API's for the resubmit and reupload documents 
+
+async function getRejectionDetails(userId, applicationId) {
+  try {
+    const response = await apiFetch(
+     `/api/createApplication/${userId}/${applicationId}/rejection-details`,
+      {
+        method: 'GET',
+        headers: authHeaders(),
+      }
+    );
+    const result = await response.json();
+    return result;
+  } catch (e) {
+    console.error('getRejectionDetails failed:', e);
+    return { error: -1, errorMsg: e.message };
+  }
+};
+
+// Get rejected documents separately
+async function getRejectedDocuments(userId, applicationId) {
+  try {
+    const response = await apiFetch(
+      `/api/createApplication/${userId}/${applicationId}/rejected-documents`,
+      {
+        method: 'GET',
+        headers: authHeaders(),
+      }
+    );
+    const result = await response.json();
+    return result;
+  } catch (e) {
+    console.error('getRejectedDocuments failed:', e);
+    return { error: -1, errorMsg: e.message };
+  }
+}
+
+async function handleUpload(doc) {
+    const file = selectedFiles[doc.checkpointId];
+    if (!file) return;
+
+    uploadState[doc.checkpointId] = 'uploading';
+    uploadState = { ...uploadState };
+
+    try {
+      const result = await reUploadDocument(
+        $user.id,
+        $applicationId,
+        doc.checkpointId,
+        doc.checkpointId,
+        file
+      );
+
+      if (result.error === 0) {
+        uploadState[doc.checkpointId] = 'done';
+      } else {
+        uploadState[doc.checkpointId] = 'error';
+        errorMsg = result.errorMsg || 'Upload failed. Please try again.';
+      }
+    } catch (e) {
+      uploadState[doc.checkpointId] = 'error';
+      errorMsg = 'Upload failed. Please try again.';
+    }
+
+    uploadState = { ...uploadState };
+    checkAllUploaded();
+}
+
+async function reUploadDocument(userId, applicationId, docKey, documentId, file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('document_id', String(documentId));
+
+  try {
+    const response = await apiFetch(
+      `/api/createApplication/${userId}/${applicationId}/resubmit`,
+      {
+        method: 'POST',
+        headers: authHeadersFormData(),
+        body: formData
+      }
+    );
+    return response.json();
+  } catch (e) {
+    console.error('reUploadDocument failed:', e);
+    return { error: -1, errorMsg: e.message };
+  }
+}
+
+// async function reSubmitApplication(userId, applicationId) {
+//   try {
+//     const response = await fetch(
+//       `/api/createApplication/${userId}/${applicationId}/resubmit`,
+//       {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify({ application_id: applicationId })
+//       }
+//     );
+
+//     // ← This is likely where "Unexpected end of JSON input" comes from
+//     const text = await response.text();         // read as text first
+//     if (!text) return { error: 1, errorMsg: 'Empty server response' };
+    
+//     return JSON.parse(text);                    // then parse safely
+
+//   } catch (error) {
+//     console.error("reSubmitApplication error:", error);
+//     return { error: 1, errorMsg: error.message };
+//   }
+// }
+
+async function reSubmitApplication(userId, applicationId) {
+  try {
+    const response = await apiFetch(
+      `/api/createApplication/${userId}/${applicationId}/resubmit`,
+      {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ application_id: applicationId })
+      }
+    );
+    return response.json();
+  } catch (e) {
+    console.error('reSubmitApplication failed:', e);
+    return { error: -1, errorMsg: e.message };
+  }
+}
+
+async function deleteReuploadDocument(userId, applicationId, documentId) {
+  try {
+    const response = await apiFetch(
+      `/api/createApplication/${userId}/${applicationId}/resubmit?document_id=${documentId}`,
+      {
+        method: 'DELETE',
+        headers: authHeaders()
+      }
+    );
+    return response.json();
+  } catch (e) {
+    console.error('deleteReuploadDocument failed:', e);
+    return { error: -1, errorMsg: e.message };
+  }
+}
+
+// Get latest uploaded documents for resubmit 
+async function getLatestUploadedDocuments(userId, applicationId) {
+  try {
+    const response = await apiFetch(
+         `/api/createApplication/${userId}/${applicationId}/resubmit`,
+      {
+        method: 'GET',
+        headers: authHeaders()
+      }
+    );
+
+    if (!response.ok) {
+      const text = await response.text(); // avoid JSON crash
+      return {
+        error: -1,
+        errorMsg: text || `HTTP error ${response.status}`
+      };
+    }
+
+    const data = await response.json();
+
+    return {
+      error: data.error ?? -1,
+      documents: data.documents ?? []
+    };
+
+  } catch (e) {
+    console.error("getLatestUploadedDocuments failed:", e);
+    return {
+      error: -1,
+      errorMsg: e.message || "Failed to fetch documents",
+      documents: []
+    };
+  }
+};
+
 export {
   customVerifyApplicantAndSendOtp,
   customVerifyOtp,
@@ -1218,7 +1398,6 @@ export {
   customSaveEducationDetails,
   getGuarantorDetailsData,
   customSaveGuarantorDetails,
-
 
   getCollateralProperties,
   customSaveCollateralProperties,
@@ -1244,6 +1423,14 @@ export {
   deleteDocument,
   
   getViewApplicationData,
-  submitApplication
+  submitApplication,
 
+  //resubmit 
+  getRejectionDetails,
+  getRejectedDocuments,
+  reUploadDocument,
+  reSubmitApplication,
+  deleteReuploadDocument,
+  getLatestUploadedDocuments
+  
 };

@@ -20,7 +20,9 @@
     $: userData = $user ? {
       name: $user.name || "",
       phone: $user.mobile || "",
-      username: $user.username || ""
+      username: $user.username || "",
+       photo: applicantPhoto || $user.photo || null   
+
     } : {
       name: "",
       phone: "",
@@ -151,7 +153,7 @@ let submittedDate = null;
       hasExistingApplication = true;
       applicationStatus = result.status;
 
-      if (['submitted','under-review','approved','rejected','sanctioned','disbursed'].includes(applicationStatus)) {
+      if (['submitted','under-review','approved','rejected','sanctioned','disbursed','resubmitted'].includes(applicationStatus)) {
         try {
           const { getEducationDetailsData } = await import('$lib/api/authApi');
           const eduData = await getEducationDetailsData(result.applicationId);
@@ -174,8 +176,9 @@ let submittedDate = null;
               name: $user.name || '',
               phone: $user.mobile || '',
               username: $user.username || '',
-              photo: applicantPhoto
+              photo: applicantPhoto || ''
             };
+            console.log("USerdata______",userData);
           }
         } catch(e) {
           console.error('Could not fetch application data:', e);
@@ -208,33 +211,6 @@ let submittedDate = null;
   function startNewApplication() {
     goto(`/${locale}/application/start`);
   }
-
-  
-//   async function startNewApplication() {
-//   try {
-//     // Create new application
-//     const result = await customCreateApplication({
-//       user: userData.phone // User's mobile number
-//     });
-
-//     if (result.error !== 0) {
-//       alert(result.errorMsg || 'Failed to create application');
-//       return;
-//     }
-
-//     // Store application ID in session
-//     sessionStorage.setItem('currentApplicationId', result.applicationId);
-    
-//     console.log('Application created with ID:', result.applicationId);
-    
-//     // Navigate to application start
-//     goto(`/${locale}/application/start`);
-    
-//   } catch (error) {
-//     console.error('Error creating application:', error);
-//     alert('Failed to create application. Please try again.');
-//   }
-// }
 
   function viewEligibility() {
     
@@ -369,7 +345,7 @@ let submittedDate = null;
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
             </svg>
           </div>
-        {:else if ['submitted','under-review','approved','rejected','sanctioned','disbursed'].includes(applicationStatus)}
+        {:else if ['submitted','under-review','approved','rejected','sanctioned','disbursed','resubmitted'].includes(applicationStatus)}
 
         <SubmittedApplicationCard
           {locale}
@@ -402,7 +378,7 @@ let submittedDate = null;
                   {t.welcome.newUserMessage || 'Start your education loan application journey today. Get financial support for your educational dreams.'}
                 </p>
                 {#if hasExistingApplication}
-                    {#if applicationStatus === 'submitted'}
+                    {#if applicationStatus === 'submitted' && applicationStatus === 'resubmitted'}
                       <!-- view Application -->
                       <button
                         on:click={() => goto(`/${locale}/application/view-application`)}

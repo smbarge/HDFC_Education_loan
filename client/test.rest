@@ -63,8 +63,8 @@ Content-Type: application/json
 
 {
   "action": "login",
-  "mobile": "9999999999",
-  "password": "Admin@2024"
+  "mobile": "8777777777",
+  "password": "Admin@2025"
 }
 
 
@@ -687,12 +687,12 @@ Cookie: adminUsername=kolhapur_admin
 
 
 
-# **************New one test.rest for the ADMIN*******************
+# **************New one test.rest for the ADMIN > SIDE*******************
 
 
 @tokan = eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI1UGNLYXRXdWlPWUFnV0c4NFZsdUF5aXoxYldrZTBWVHZEWXpzZjFWWkZrIn0.eyJleHAiOjE3NzU2MjU1NDYsImlhdCI6MTc3NTYyNTI0NiwianRpIjoiYjk0MzQ0OWUtMmM5MS00NzA1LWI0OWQtNzE0ZTE1Nzg5ZGFkIiwiaXNzIjoiaHR0cHM6Ly9rZXljbG9hay5jaGFuYWt5YXNvZnQuY29tL3JlYWxtcy9lZHVjYXRpb24tbG9hbiIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiIwMjM2NjRjOS0xODk2LTRmNjItOWYzYi1jODcxZGY0MTk2NGUiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJlZHVjYXRpb24tYWRtaW4iLCJzaWQiOiIxZGFiZjQ3YS1iZDExLTQ5MTItYTdkZi1hZWQ4NzdmODkzN2YiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImRpc3RyaWN0X2FkbWluIiwiZGVmYXVsdC1yb2xlcy1lZHVjYXRpb24tbG9hbiIsIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6InByb2ZpbGUgZW1haWwiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsIm5hbWUiOiJrb2xoYXB1ciBBZG1pbiIsInByZWZlcnJlZF91c2VybmFtZSI6ImtvbGhhcHVyX2FkbWluIiwiZ2l2ZW5fbmFtZSI6ImtvbGhhcHVyIiwiZmFtaWx5X25hbWUiOiJBZG1pbiIsImVtYWlsIjoia29saGFwdXJAZ21haWwuY29tIn0.P3esj1gSGCkoQXlq0hbxiFQo5r461Fdul2TQsBY7QU9z34Zz6RLFXWaLeRbPaZIqZF9t1qtXlNepv7q3-s8hun3ZQ6-pdI-76vvNK6GnJ3vwlMBl_o9ZQ2NslakBGEIQ7mYm-J2LVe_cFKcDsG1j9bCLBVUCjChh4ENe6Rv3zQ3-JLVnJJiZPqothNkUgysJjSYCOXfsws0zVvVrPhe49FvrYywDZtf0I9_2mdCjXra-M3AACAJzBe9ihwJzIcrETuLasVLZT9zDO5C_bqtVrvWDaw65X5m4TMPWdiEYjoXRHbBe8xxZzI2okE9eXqmqmlBp5h2gpXMU42dS6xMIxg
 
-### ─── AUTH ──────────────────────────────────────────────────
+### ─── AUTH 
 
 ### 1. Login - valid credentials
 POST http://localhost:5173/api/admin/auth
@@ -705,7 +705,7 @@ Content-Type: application/json
 
 ###
 
-### 2. Login - wrong password (should return 401)
+### 2. Login - wrong password 
 POST http://localhost:5173/api/admin/auth
 Content-Type: application/json
 
@@ -716,7 +716,7 @@ Content-Type: application/json
 
 ###
 
-### 3. Login - empty fields (should return error)
+### 3. Login - empty fields 
 POST http://localhost:5173/api/admin/auth
 Content-Type: application/json
 
@@ -731,7 +731,7 @@ Content-Type: application/json
 GET http://localhost:5173/api/admin/auth
 
 
-### ─── APPLICATIONS ───────────────────────────────────────────
+### ─── APPLICATIONS 
 
 ### 5. Get applications - page 1
 GET http://localhost:5173/api/admin/applications?district=Kolhapur&page=1&limit=3
@@ -752,42 +752,21 @@ GET http://localhost:5173/api/admin/applications?district=Kolhapur&page=1&limit=
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
-###
-
-### 8. Get applications - missing district (should return 400)
-GET http://localhost:5173/api/admin/applications?page=1&limit=10
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-###
-
-### 9. Get applications - wrong district (should return 404)
-GET http://localhost:5173/api/admin/applications?district=FakeDistrict&page=1&limit=10
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-###
-
 ### 10. Get applications - no token (should return 401)
 GET http://localhost:5173/api/admin/applications?district=Kolhapur&page=1&limit=10
 Content-Type: application/json
 
 
-### ─── CHECKPOINTS ────────────────────────────────────────────
+### ─── CHECKPOINTS 
 
 ### 11. Get checkpoints - valid token
 GET http://localhost:5173/api/admin/checkpoints
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
-###
 
-### 12. Get checkpoints - no token (should return 401)
-GET http://localhost:5173/api/admin/checkpoints
-Content-Type: application/json
+### ─── VERIFICATION - GET ANSWERS 
 
-
-### ─── VERIFICATION - GET ANSWERS ────────────────────────────
 
 ### 13. Get verification answers - valid
 GET http://localhost:5173/api/admin/verification?application_id=1
@@ -808,7 +787,7 @@ GET http://localhost:5173/api/admin/verification?application_id=1
 Content-Type: application/json
 
 
-### ─── VERIFICATION - SAVE ANSWERS ───────────────────────────
+### ─── VERIFICATION - SAVE ANSWERS 
 
 ### 16. Save answers - mixed yes and no
 POST http://localhost:5173/api/admin/verification
@@ -845,21 +824,7 @@ Content-Type: application/json
   ]
 }
 
-###
-
-### 18. Save answers - no token (should return 401)
-POST http://localhost:5173/api/admin/verification
-Content-Type: application/json
-
-{
-  "action": "saveAnswers",
-  "application_id": 1,
-  "iteration": 1,
-  "answers": []
-}
-
-
-### ─── VERIFICATION - FINAL DECISION ─────────────────────────
+### ─── VERIFICATION - FINAL DECISION 
 
 ### 19. Final decision - Forward application
 POST http://localhost:5173/api/admin/verification
@@ -919,22 +884,6 @@ Content-Type: application/json
   "iteration": 1
 }
 
-###
-
-### 23. Final decision - no token (should return 401)
-POST http://localhost:5173/api/admin/verification
-Content-Type: application/json
-
-{
-  "action": "finalDecision",
-  "application_id": 1,
-  "decision": "forward",
-  "remark": "test",
-  "iteration": 1
-}
-
-###
-
 ### 24. POST with invalid action (should return error)
 POST http://localhost:5173/api/admin/verification
 Authorization: Bearer {{token}}
@@ -950,3 +899,114 @@ Content-Type: application/json
 GET http://localhost:5173/api/admin/reject-reasons
 Authorization: Bearer {{tokan}}
 Content-Type: application/json
+
+
+
+// REUPLAOD SECTION ......
+@tokan = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTgsInVzZXJuYW1lIjoiOTExMTExMTExMSIsIm1vYmlsZSI6IjkxMTExMTExMTEiLCJzdWIiOiI5MTExMTExMTExIiwiaWF0IjoxNzc2NDg5MzExLCJleHAiOjE3NzY0ODk5MTF9.fnndOdwFoeJHwen83Oie-G5u5wbH-t64D0S-BkobJ28
+@baseUrl =http://localhost:5173
+
+# Reupload APIS
+### Login user
+POST http://localhost:5173/api/auth
+Content-Type: application/json
+
+{
+  "action": "login",
+  "mobile": "9111111111",
+  "password": "Admin@2024"
+}
+
+### 2. GET Rejection Details 
+
+GET {{baseUrl}}/api/createApplication/12/13/rejection-details
+Authorization: Bearer {{tokan}}
+
+
+### 5. GET Rejection Details — Wrong userId (should return 404)
+
+GET {{baseUrl}}/api/createApplication/9999/13/rejection-details
+Authorization: Bearer {{token}}
+
+
+### 8. GET Rejection Details — Check adminDisplayName chain
+
+GET {{baseUrl}}/api/createApplication/42/13/rejection-details
+Authorization: Bearer {{token}}
+
+
+# *************** Rejection Documents *****************
+
+
+### 2. GET Rejected Documents
+
+GET {{baseUrl}}/api/createApplication/18/18/rejected-documents
+Authorization: Bearer {{tokan}}
+
+
+### 6. GET Rejected Documents
+GET {{baseUrl}}/api/createApplication/42/9999/rejected-documents
+Authorization: Bearer {{token}}
+
+
+### 9. GET Rejected Documents — Multiple documents flagged
+
+GET {{baseUrl}}/api/createApplication/12/13/rejected-documents
+Authorization: Bearer {{token}}
+
+
+////resubmit application _______________
+
+
+///reverify resubmitted application
+
+
+@baseUrl = http://localhost:5173
+@token = eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI1UGNLYXRXdWlPWUFnV0c4NFZsdUF5aXoxYldrZTBWVHZEWXpzZjFWWkZrIn0.eyJleHAiOjE3NzYzMjQ3MjcsImlhdCI6MTc3NjMyNDQyNywianRpIjoiN2YxYzAyMzUtZmQ1My00YzdmLTk0MTktNTBjOGZiNzVmNGM2IiwiaXNzIjoiaHR0cHM6Ly9rZXljbG9hay5jaGFuYWt5YXNvZnQuY29tL3JlYWxtcy9lZHVjYXRpb24tbG9hbiIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiI5NTE3ZWVhOS1hZmVlLTQzNDUtOTM5Ni04Njg2YWE4NWNmMDAiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJlZHVjYXRpb24tYWRtaW4iLCJzaWQiOiI5YjA2NGQyZi1hNjRlLTRhYmItOWFmMC0yN2QzODU2YTZmZWYiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImRpc3RyaWN0X2FkbWluIiwiZGVmYXVsdC1yb2xlcy1lZHVjYXRpb24tbG9hbiIsIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6InByb2ZpbGUgZW1haWwiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsIm5hbWUiOiJzYW5nbGkgQWRtaW4iLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJzYW5nbGlfYWRtaW4iLCJnaXZlbl9uYW1lIjoic2FuZ2xpIiwiZmFtaWx5X25hbWUiOiJBZG1pbiIsImVtYWlsIjoic2FuZ2xpQGdtYWlsLmNvbSJ9.umm6gKRqe4RlfjKEqHNhrauGkAC2wcjGdkyr-4DnudTK8WmTZn0oIaIyTxTFai1JSz1qyNOs1_jmEkqw4rwJhuKxgk45haf-_lPZoMGAHFVTLDP9HOD7W_wqF55Wz3Dgo1KnhDmCUSL0zCfdhPfykThXrfwvqvqWdyWX_uTICCbgb0XcGquPag_3OYmmHYt60yBMi8mpttobC7wbluGrxnQpVQz27Hfoe5R09A1NlOy_WAdC9molrGamYqEApztM019ioKOZwJCZDUjc-TFe4McZFhXq0V-CT80hIhT4IeJAIjm2xEVkjtthJHu7kQ1TsZs5Nmc30Cot_BfI7lEjng
+@appId = 13
+
+
+### 1. Login - valid credentials
+POST http://localhost:5173/api/admin/auth
+Content-Type: application/json
+
+{
+  "username": "sangli_admin",
+  "password": "Admin@2024"
+}
+
+###
+GET {{baseUrl}}/api/admin/verify-resubmit?application_id={{appId}}
+Authorization: Bearer {{token}}
+
+###
+GET {{baseUrl}}/api/admin/verify-resubmit?application_id={{appId}}&answers=1
+Authorization: Bearer {{token}}
+
+
+
+
+//////////////////verification quetions 
+
+
+
+### ─── VERIFICATION - GET ANSWERS 
+
+@token = eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI1UGNLYXRXdWlPWUFnV0c4NFZsdUF5aXoxYldrZTBWVHZEWXpzZjFWWkZrIn0.eyJleHAiOjE3NzYzMzMxNDIsImlhdCI6MTc3NjMzMjg0MiwianRpIjoiMDdiN2M4YjItZThkOS00MGY4LWFmNDMtYzgwOGIxZTNhMGQ4IiwiaXNzIjoiaHR0cHM6Ly9rZXljbG9hay5jaGFuYWt5YXNvZnQuY29tL3JlYWxtcy9lZHVjYXRpb24tbG9hbiIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiI5NTE3ZWVhOS1hZmVlLTQzNDUtOTM5Ni04Njg2YWE4NWNmMDAiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJlZHVjYXRpb24tYWRtaW4iLCJzaWQiOiI2NDYwNDVkYi04YjEzLTRjMzUtYjZjOS0wMjllNmVkN2ZmNWMiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImRpc3RyaWN0X2FkbWluIiwiZGVmYXVsdC1yb2xlcy1lZHVjYXRpb24tbG9hbiIsIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6InByb2ZpbGUgZW1haWwiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsIm5hbWUiOiJzYW5nbGkgQWRtaW4iLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJzYW5nbGlfYWRtaW4iLCJnaXZlbl9uYW1lIjoic2FuZ2xpIiwiZmFtaWx5X25hbWUiOiJBZG1pbiIsImVtYWlsIjoic2FuZ2xpQGdtYWlsLmNvbSJ9.Q-vw6tnxbAgD5WNJ82cLzekp_GsaPafpDWZeAtj8rrW5j1E0aRcxaop4SNkdwaYd_2sVWE2XXxrCIDt7XDJnZXqiQr8dJpLbSh2oMA4ONxX7yX-gKtoLownOdin9ZBleVMVqvSJjqE_JBjuv9OSI6fIF9hl6f7n_7BKQKAhix1tLG1NtO94VIq79xggQdZUmDMxtNdgK78ZEeeUMlC_A4FPotlu7ug2I0ISaUTslCLZ-CsZW6TvL7cZ4d8oQoC8XTAM6Z2LuiblTjb17hkUmBZOfPu6-qI9-Ok-UiRi7EHJJwCh5AiguD5tTQ2zzAXNWQAWcxWwadmLXG0cBO0SG6A
+### ─── AUTH 
+
+### 1. Login - valid credentials
+POST http://localhost:5173/api/admin/auth
+Content-Type: application/json
+
+{
+  "username": "sangli_admin",
+  "password": "Admin@2024"
+}
+
+### 13. Get verification answers - valid
+GET http://localhost:5173/api/admin/verify-resubmit?application_id=13
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+###
