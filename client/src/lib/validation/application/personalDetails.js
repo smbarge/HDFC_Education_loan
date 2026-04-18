@@ -33,6 +33,14 @@ const personalDetailsValidation = create((data, t) => {
     enforce(data.currentStreetAddress).isNotEmpty();
   });
 
+  test('currentStreetAddress', t?.personalDetails?.streetMinLength || 'Street address must be at least 3 characters', () => {
+    enforce(data.currentStreetAddress).longerThanOrEquals(3);
+  });
+
+  test('currentStreetAddress', t?.personalDetails?.streetFormat || 'Street address must contain letters and numbers only (no spaces)', () => {
+    enforce(data.currentStreetAddress).matches(/^[A-Za-z0-9][A-Za-z0-9 ]*$/);
+  });
+
   test('currentDistrict', t?.personalDetails?.districtRequired || 'District is required', () => {
     enforce(data.currentDistrict).isNotEmpty();
   });
@@ -45,9 +53,25 @@ const personalDetailsValidation = create((data, t) => {
     enforce(data.currentPlace).isNotEmpty();
   });
 
+  test('currentPlace', t?.personalDetails?.placeFormat || 'Place must contain letters only (no spaces or numbers)', () => {
+  enforce(data.currentPlace).matches(/^[A-Za-z0-9][A-Za-z0-9 ]*$/);
+  });
+
+  test('currentPlace', t?.personalDetails?.placeLength || 'Place address must be at least 3 characters', () => {
+  enforce(data.currentPlace).longerThanOrEquals(3);
+  });    
+
   test('currentArea', t?.personalDetails?.areaRequired || 'Area is required', () => {
     enforce(data.currentArea).isNotEmpty();
   });
+
+  test('currentArea', t?.personalDetails?.areaFormat || 'Place must contain letters only (no spaces or numbers)', () => {
+  enforce(data.currentArea).matches(/^[A-Za-z0-9][A-Za-z0-9 ]*$/);
+  });  
+
+  test('currentArea', t?.personalDetails?.areaLength || 'Area address must be at least 3 characters', () => {
+    enforce(data.currentArea).longerThanOrEquals(3);
+  });  
 
   test('currentPinCode', t?.personalDetails?.pinCodeRequired || 'Pin code is required', () => {
     enforce(data.currentPinCode).isNotEmpty();
@@ -57,12 +81,18 @@ const personalDetailsValidation = create((data, t) => {
     enforce(data.currentPinCode).matches(/^\d{6}$/);
   });
 
+
+
   // Permanent Address Fields - ONLY validate if NOT same as current
   // Skip ALL permanent address validation when sameAsCurrentAddress is true
 
   if (!data.sameAsCurrentAddress) {
     test('permanentStreetAddress', t?.personalDetails?.streetRequired || 'Permanent street address is required', () => {
       enforce(data.permanentStreetAddress).isNotEmpty();
+    });
+
+    test('permanentStreetAddress', t?.personalDetails?.streetFormat || 'Place must contain letters only (no spaces or numbers)', () => {
+    enforce(data.permanentStreetAddress).matches(/^[A-Za-z0-9][A-Za-z0-9 ]*$/);
     });
 
     test('permanentDistrict', t?.personalDetails?.districtRequired || 'District is required', () => {
@@ -77,9 +107,25 @@ const personalDetailsValidation = create((data, t) => {
       enforce(data.permanentPlace).isNotEmpty();
     });
 
+    test('permanentPlace', t?.personalDetails?.placeLength || 'Place address must be at least 3 characters', () => {
+    enforce(data.permanentPlace).longerThanOrEquals(3);
+    });        
+
+    test('permanentPlace', t?.personalDetails?.placeFormat || 'Place must contain letters only (no spaces or numbers)', () => {
+      enforce(data.permanentPlace).matches(/^[A-Za-z0-9][A-Za-z0-9 ]*$/);
+    });
+
     test('permanentArea', t?.personalDetails?.areaRequired || 'Area is required', () => {
       enforce(data.permanentArea).isNotEmpty();
     });
+
+    test('permanentArea', t?.personalDetails?.areaFormat || 'Area must contain letters only (no spaces or numbers)', () => {
+      enforce(data.permanentArea).matches(/^[A-Za-z0-9][A-Za-z0-9 ]*$/);
+    });
+
+    test('permanentArea', t?.personalDetails?.areaLength || 'Area address must be at least 3 characters', () => {
+    enforce(data.permanentArea).longerThanOrEquals(3);
+    });      
 
     test('permanentPinCode', t?.personalDetails?.pinCodeRequired || 'Pin code is required', () => {
       enforce(data.permanentPinCode).isNotEmpty();
@@ -124,6 +170,19 @@ const personalDetailsValidation = create((data, t) => {
   test('annualIncome', t?.personalDetails?.incomeMaxLimit || 'Annual income must not exceed ₹8,00,000', () => {
     const income = parseInt(data.annualIncome);
     enforce(income).lessThanOrEquals(800000);
+  });
+
+  // Parent/Guardian Fields
+  test('parentName', t?.personalDetails?.parentNameRequired || 'Parent/Guardian name is required', () => {
+    enforce(data.parentName).isNotEmpty();
+  });
+
+  test('parentName', t?.personalDetails?.parentNamelength || 'Parent name should be greater than 3 characters', () => {
+    enforce(data.parentName).longerThanOrEquals(3);
+  });
+
+  test('parentName', t?.personalDetails?.parentNameFormat || 'Parent/Guardian name must contain letters only (no spaces or numbers)', () => {
+    enforce(data.parentName).matches(/^[A-Za-z][A-Za-z ]*$/);
   });
 
 

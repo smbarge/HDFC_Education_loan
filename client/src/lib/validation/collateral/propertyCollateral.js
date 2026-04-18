@@ -16,6 +16,10 @@ const propertyCollateralValidation = create((data, t) => {
     enforce(data.surveyNo).isNotEmpty();
   });
 
+  test('surveyNo', t?.collateralDetails?.surveyNoFormat || 'Survey No. must contain letters and numbers only (no spaces)', () => {
+  enforce(data.surveyNo).matches(/^[A-Za-z0-9][A-Za-z0-9 ]*$/);
+  });      
+
   // District
   test('district', t?.collateralDetails?.propertyCollateralModal?.districtRequired || 'District is required', () => {
     enforce(data.district).isNotEmpty();
@@ -30,6 +34,10 @@ const propertyCollateralValidation = create((data, t) => {
   test('village', t?.collateralDetails?.propertyCollateralModal?.villageRequired || 'Village is required', () => {
     enforce(data.village).isNotEmpty();
   });
+
+  test('village', t?.collateralDetails?.villageFormat || 'Village Name must contain letters and numbers only (no spaces)', () => {
+  enforce(data.village).matches(/^[A-Za-z0-9][A-Za-z0-9 ]*$/);
+  });  
 
   // PIN Code
   test('pinCode', t?.collateralDetails?.propertyCollateralModal?.pinCodeRequired || 'PIN code is required', () => {

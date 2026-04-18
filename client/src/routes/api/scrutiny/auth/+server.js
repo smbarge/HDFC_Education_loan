@@ -1,50 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 
-// ─── POST: Login ───────────────────────────────────────────────────────────
-export async function POST({ request, cookies }) {
-  const { username, password } = await request.json();
-
-  const params = new URLSearchParams();
-  params.append('client_id',     env.KEYCLOAK_CLIENT_ID);
-  params.append('client_secret', env.KEYCLOAK_CLIENT_SECRET);
-  params.append('grant_type',    'password');
-  params.append('username',       username);
-  params.append('password',       password);
-
-  try {
-    const response = await fetch(
-      `${env.KEYCLOAK_URL}/realms/education-loan/protocol/openid-connect/token`,
-      { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params }
-    );
-    const data = await response.json();
-
-    if (!response.ok) {
-      return json({ error: -1, errorMsg: data.error_description || 'Invalid credentials' }, { status: 401 });
-    }
-
-    const payload          = JSON.parse(Buffer.from(data.access_token.split('.')[1], 'base64').toString());
-    const scrutinyUsername = payload.preferred_username || username;
-    const role             = payload.realm_access?.roles?.includes('scrutiny_officer')
-                               ? 'scrutiny_officer'
-                               : (payload.role || 'scrutiny_officer');
-
-    console.log('Scrutiny login success — user:', scrutinyUsername, '| role:', role);
-
-    return json({
-      error:         0,
-      access_token:  data.access_token,
-      refresh_token: data.refresh_token,
-      username:      scrutinyUsername,
-      role
-    }, { headers: buildCookieHeaders(data.access_token, data.refresh_token, scrutinyUsername) });
-
-  } catch (err) {
-    console.error('Keycloak scrutiny login error:', err);
-    return json({ error: -1, errorMsg: 'Authentication server error' }, { status: 500 });
-  }
-}
-
 // ─── GET: Refresh token ────────────────────────────────────────────────────
 export async function GET({ cookies }) {
 
@@ -57,8 +13,8 @@ export async function GET({ cookies }) {
   }
 
   const params = new URLSearchParams();
-  params.append('client_id',     env.KEYCLOAK_CLIENT_ID);
-  params.append('client_secret', env.KEYCLOAK_CLIENT_SECRET);
+  params.append('client_id',     env.KEYCLOAK_CLIENT_ID_1);
+  params.append('client_secret', env.KEYCLOAK_CLIENT_SECRET_1);
   params.append('grant_type',    'refresh_token');
   params.append('refresh_token',  refreshToken);
 
@@ -79,6 +35,8 @@ export async function GET({ cookies }) {
 
     console.log('Scrutiny token refreshed for:', scrutinyUsername);
 
+
+
     return json({
       error:        0,
       access_token: data.access_token,
@@ -88,6 +46,62 @@ export async function GET({ cookies }) {
   } catch (err) {
     console.error('Scrutiny token refresh error:', err);
     return json({ error: -1, errorMsg: 'Refresh failed' }, { status: 500 });
+  }
+}
+
+// ─── POST: Login ───────────────────────────────────────────────────────────
+export async function POST({ request, cookies }) {
+  const { username, password } = await request.json();
+
+  const params = new URLSearchParams();
+  params.append('client_id',     env.KEYCLOAK_CLIENT_ID_1);
+  params.append('client_secret', env.KEYCLOAK_CLIENT_SECRET_1);
+  params.append('grant_type',    'password');
+  params.append('username',       username);
+  params.append('password',       password);
+
+  try {
+    const response = await fetch(
+      `${env.KEYCLOAK_URL}/realms/education-loan/protocol/openid-connect/token`,
+      { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params }
+    );
+    const data = await response.json();
+
+    if (!response.ok) {
+      return json({ error: -1, errorMsg: data.error_description || 'Invalid credentials' }, { status: 401 });
+    }
+
+    const payload          = JSON.parse(Buffer.from(data.access_token.split('.')[1], 'base64').toString());
+    const scrutinyUsername = payload.preferred_username || '';
+    const roles            = payload.realm_access?.roles || [];
+
+    // Case-sensitive username check — submitted must exactly match JWT
+    if (username !== scrutinyUsername) {
+      console.warn('Login blocked — username case mismatch. Submitted:', username, '| Actual:', scrutinyUsername);
+      return json({ error: -1, errorMsg: 'Invalid credentials.' }, { status: 401 });
+    }
+
+    //  Role check — must have state-scrutiny role
+    if (!roles.includes('state-scrutiny')) {
+      console.warn('Login blocked — user lacks state-scrutiny role:', scrutinyUsername, '| roles:', roles);
+      return json({ error: -1, errorMsg: 'Access denied. Insufficient permissions.' }, { status: 403 });
+    }
+
+    const role = 'state-scrutiny';
+
+    console.log('Scrutiny login success — user:', scrutinyUsername, '| role:', role);
+
+    return json({
+      error:         0,
+      access_token:  data.access_token,
+      refresh_token: data.refresh_token,
+      username:      scrutinyUsername,
+      role
+    }, { headers: buildCookieHeaders(data.access_token, data.refresh_token, scrutinyUsername) });
+
+  } catch (err) {
+    console.error('Keycloak scrutiny login error:', err);
+    return json({ error: -1, errorMsg: 'Authentication server error' }, { status: 500 });
   }
 }
 

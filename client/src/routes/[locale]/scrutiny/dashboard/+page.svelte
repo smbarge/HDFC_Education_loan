@@ -213,35 +213,17 @@ onMount(async () => {
   // Stats cards config
   $: statCards = [
     {
-      label: 'Total Applications',
-      value: stateTotal,
-      icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z',
-      color: 'bg-purple-100 text-purple-600'
-    },
-    {
-      label: 'Forwarded',
-      value: stateApproved,
-      icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
-      color: 'bg-green-100 text-green-600'
-    },
-    {
-      label: 'Under Review',
-      value: stateUnderReview,
-      icon: 'M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z',
-      color: 'bg-orange-100 text-orange-600'
-    },
-    {
-      label: 'Pending',
-      value: statePending,
-      icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
-      color: 'bg-yellow-100 text-yellow-600'
-    },
-    {
-      label: 'Rejected',
-      value: stateRejected,
-      icon: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z',
-      color: 'bg-red-100 text-red-600'
-    }
+    label: 'Total Forwarded',
+    value: stateTotal,
+    icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z',
+    color: 'bg-purple-100 text-purple-600'
+  },
+  {
+    label: 'Forwarded by Districts',
+    value: stateApproved,
+    icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+    color: 'bg-purple-100 text-purple-600'
+  }
   ];
 </script>
 
@@ -250,7 +232,7 @@ onMount(async () => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
 </svelte:head>
 
-<div class="min-h-screen flex flex-col" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 40%, #e0f2fe 100%)">
+<div class="min-h-screen flex flex-col" style="background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 40%, #e0f2fe 100%)">
 
   <!-- ── Header ── -->
   <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
@@ -275,13 +257,13 @@ onMount(async () => {
       <!-- Right: user badge + logout -->
       <div class="flex items-center gap-1.5 sm:gap-2 md:gap-3 flex-shrink-0">
         {#if scrutinyUser}
-          <div class="hidden md:flex items-center gap-2 px-2 lg:px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg">
-            <div class="w-6 h-6 lg:w-7 lg:h-7 rounded-full bg-green-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+          <div class="hidden md:flex items-center gap-2 px-2 lg:px-3 py-1.5 bg-purple-50 border border-purple-200 rounded-lg">
+            <div class="w-6 h-6 lg:w-7 lg:h-7 rounded-full bg-purple-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
               {scrutinyUser.username?.[0]?.toUpperCase() || 'S'}
             </div>
             <div class="flex flex-col min-w-0">
-              <span class="text-xs lg:text-sm font-medium text-green-700 truncate">{scrutinyUser.username}</span>
-              <span class="text-[10px] lg:text-xs text-green-500 font-medium">🏛️ State Scrutiny Officer</span>
+              <span class="text-xs lg:text-sm font-medium text-purple-700 truncate">{scrutinyUser.username}</span>
+              <span class="text-[10px] lg:text-xs text-purple-500 font-medium">🏛️ State Scrutiny Officer</span>
             </div>
           </div>
         {/if}
@@ -306,16 +288,16 @@ onMount(async () => {
     <!-- Page heading -->
     <div class="mb-4 sm:mb-6 lg:mb-8">
       <div class="flex items-center gap-2 mb-1">
-        <div class="w-1 h-6 bg-green-500 rounded-full"></div>
+        <div class="w-1 h-6 bg-purple-500 rounded-full"></div>
         <h2 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">State Scrutiny Dashboard</h2>
       </div>
       <p class="text-xs sm:text-sm lg:text-base text-gray-500 ml-3">
-        All applications across <span class="font-semibold text-green-600">Maharashtra State</span>
+        All applications across <span class="font-semibold text-puprle-600">Maharashtra State</span>
       </p>
     </div>
 
     <!-- Stats cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-5 mb-6 lg:mb-8">
+    <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-5 mb-6 lg:mb-8">
       {#each statCards as card}
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 sm:p-4 lg:p-5 flex items-center gap-2 sm:gap-3 lg:gap-4">
           <div class="w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-xl {card.color} flex items-center justify-center flex-shrink-0">
@@ -347,26 +329,23 @@ onMount(async () => {
             type="text"
             bind:value={searchQuery}
             placeholder="Search by name, application no., email, mobile..."
-            class="w-full pl-9 pr-4 py-2 sm:py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition-colors"
+            class="w-full pl-9 pr-4 py-2 sm:py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-colors"
           />
         </div>
 
         <!-- Status filter -->
         <select
           bind:value={filterStatus}
-          class="w-full sm:w-44 px-3 py-2 sm:py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-400 text-gray-700"
+          class="w-full sm:w-44 px-3 py-2 sm:py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-400 text-gray-700"
         >
-          <option value="all">All Statuses</option>
-          <option value="Pending">Pending</option>
-          <option value="Under Review">Under Review</option>
+          <option value="all">All Forwarded</option>
           <option value="Forwarded">Forwarded</option>
-          <option value="Rejected">Rejected</option>
         </select>
 
         <!-- District filter (from current page data) -->
         <select
           bind:value={filterDistrict}
-          class="w-full sm:w-44 px-3 py-2 sm:py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-400 text-gray-700"
+          class="w-full sm:w-44 px-3 py-2 sm:py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-400 text-gray-700"
         >
           <option value="all">All Districts</option>
           {#each districts as d}
@@ -567,7 +546,7 @@ onMount(async () => {
                 on:click={() => fetchCandidates(p)}
                 class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-xs font-semibold transition-colors
                   {currentPage === p
-                    ? 'bg-green-600 text-white shadow-sm'
+                    ? 'bg-purple-600 text-white shadow-sm'
                     : 'border border-gray-200 bg-white text-gray-600 hover:bg-gray-50'}"
               >{p}</button>
             {/each}

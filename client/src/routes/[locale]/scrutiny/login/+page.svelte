@@ -117,8 +117,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
 </svelte:head>
 
-<div class="min-h-screen flex flex-col" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 40%, #e0f2fe 100%)">
-
+<div class="min-h-screen flex flex-col" style="background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 40%, #e0f2fe 100%)">
   <!-- Header -->
   <header class="bg-white shadow-sm border-b border-gray-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-3 lg:py-4 flex items-center justify-between">
@@ -142,7 +141,7 @@
           <button
             on:click={() => goto(`/${code}/scrutiny/login`)}
             class="px-2 sm:px-3 lg:px-4 py-1 sm:py-1.5 lg:py-2 rounded-md text-xs sm:text-sm font-medium transition-colors
-              {locale === code ? 'bg-green-600 text-white' : 'text-gray-600 hover:bg-gray-100'}"
+              {locale === code ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100'}"
           >{label}</button>
         {/each}
       </div>
@@ -181,7 +180,7 @@
 
           <!-- Title -->
           <div class="mb-6 lg:mb-8">
-            <h2 class="text-3xl lg:text-4xl font-bold text-green-600">Scrutiny Login</h2>
+            <h2 class="text-3xl lg:text-4xl font-bold text-purple-600">Scrutiny Login</h2>
             <p class="text-sm text-gray-500 mt-1">State-level application review portal</p>
           </div>
 
@@ -207,7 +206,7 @@
               on:input={() => validateField('username')}
               on:keydown={handleKeydown}
               placeholder="Enter username"
-              class="w-full px-4 py-3 border rounded-lg text-sm lg:text-base focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 bg-gray-50
+              class="w-full px-4 py-3 border rounded-lg text-sm lg:text-base focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 bg-gray-50
                 {errors.username ? 'border-red-400 bg-red-50' : 'border-gray-300'}"
             />
             {#if errors.username}
@@ -236,7 +235,7 @@
                 on:input={() => validateField('password')}
                 on:keydown={handleKeydown}
                 placeholder="Enter password"
-                class="w-full px-4 py-3 border rounded-lg text-sm lg:text-base focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 bg-gray-50
+                class="w-full px-4 py-3 border rounded-lg text-sm lg:text-base focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 bg-gray-50
                   {errors.password ? 'border-red-400 bg-red-50' : 'border-gray-300'}"
               />
             {:else}
@@ -246,7 +245,7 @@
                 on:input={() => validateField('password')}
                 on:keydown={handleKeydown}
                 placeholder="Enter password"
-                class="w-full px-4 py-3 border rounded-lg text-sm lg:text-base focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 bg-gray-50
+                class="w-full px-4 py-3 border rounded-lg text-sm lg:text-base focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 bg-gray-50
                   {errors.password ? 'border-red-400 bg-red-50' : 'border-gray-300'}"
               />
             {/if}
@@ -263,7 +262,7 @@
           <button
             on:click={handleLogin}
             disabled={isSubmitting}
-            class="w-full py-3 lg:py-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold rounded-lg transition-all text-base lg:text-lg shadow-md"
+            class="w-full py-3 lg:py-4 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold rounded-lg transition-all text-base lg:text-lg shadow-md"
           >
             {#if isSubmitting}
               <span class="inline-flex items-center justify-center gap-2">
