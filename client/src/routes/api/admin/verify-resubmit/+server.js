@@ -40,7 +40,6 @@ async function getOfficeId(client, username) {
   return result.rows[0]?.dist_id || 1;
 }
 
-
 export async function GET({ request, url }) {
   if (!checkAuth(request)) {
     return json({ error: -1, errorMsg: 'Unauthorized' }, { status: 401 });
@@ -138,7 +137,6 @@ export async function GET({ request, url }) {
     client.release();
   }
 }
-
 
 export async function POST({ request }) {
   if (!checkAuth(request)) {
